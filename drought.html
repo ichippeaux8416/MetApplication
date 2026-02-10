@@ -1,434 +1,313 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MetApplication</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MetApplication — Long Term Drought Odds</title>
   <style>
     :root{
-      --bg:#0b0d10;
-      --panel:#12161c;
-      --panel2:#0f1318;
-      --stroke:#202734;
-      --stroke2:#2a3344;
-      --text:#e8eef6;
-      --muted:#9aa7b8;
-      --accent:#5fa8ff;     /* light blue */
-      --good:#2bd27c;
-      --bad:#ff5d5d;
-      --chip:#0c1016;
+      --bg:#05070a;
+      --panel:#0b0f16;
+      --panel2:#0e141e;
+      --line:#1a2331;
+      --muted:#93a4bd;
+      --text:#e9eef8;
+      --blue:#6bb6ff;
+      --blue2:#9fd2ff;
+      --chip:#0f1724;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       background:var(--bg);
       color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
+      letter-spacing:.1px;
     }
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:22px 28px;
-      border-bottom:1px solid var(--stroke);
-      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.0));
+      display:flex; align-items:flex-end; justify-content:space-between;
+      padding:22px 28px 14px;
+      border-bottom:1px solid var(--line);
     }
     .brand{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
+      display:flex; flex-direction:column; gap:4px;
     }
     .brand .title{
       font-size:34px;
       font-weight:800;
       letter-spacing:1.6px;
-      line-height:1.05;
     }
     .brand .sub{
       font-size:12px;
-      letter-spacing:1.2px;
       color:var(--muted);
+      letter-spacing:1.2px;
       text-transform:uppercase;
+      font-weight:700;
     }
     .nav{
-      display:flex;
-      gap:10px;
-      align-items:center;
+      display:flex; gap:10px; align-items:center;
     }
-    .nav a{
-      text-decoration:none;
-      color:var(--text);
-      border:1px solid var(--stroke2);
+    .btn{
+      appearance:none; border:1px solid var(--line);
       background:var(--panel);
-      padding:10px 14px;
+      color:var(--text);
+      padding:10px 12px;
       font-weight:700;
-      letter-spacing:0.2px;
+      letter-spacing:.6px;
       border-radius:10px; /* less rounded */
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
+      cursor:pointer;
     }
-    .nav a:hover{
-      border-color:rgba(95,168,255,0.55);
-      box-shadow:0 0 0 3px rgba(95,168,255,0.12) inset;
+    .btn:hover{border-color:#2a3850}
+    .btn.primary{
+      background:#122033;
+      border-color:#274160;
+      color:var(--blue2);
     }
     .wrap{
-      padding:22px 22px 34px;
-      max-width:1240px;
-      margin:0 auto;
-    }
-    .grid{
+      max-width:1100px;
+      margin:22px auto;
+      padding:0 18px 40px;
       display:grid;
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: 380px 1fr;
       gap:18px;
-      align-items:start;
     }
     .card{
-      border:1px solid var(--stroke2);
-      background:var(--panel);
-      border-radius:12px; /* less rounded */
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+      border:1px solid var(--line);
+      border-radius:14px; /* less rounded */
       overflow:hidden;
-      box-shadow:0 10px 30px rgba(0,0,0,0.35);
+      box-shadow:0 18px 60px rgba(0,0,0,.45);
     }
-    .cardHead{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+    .card .hd{
       padding:14px 16px;
-      background:var(--panel2);
-      border-bottom:1px solid var(--stroke);
-    }
-    .cardHead .h{
+      background:rgba(255,255,255,0.02);
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      letter-spacing:1.2px;
+      text-transform:uppercase;
       font-weight:800;
-      letter-spacing:0.8px;
-      color:var(--muted);
-      font-size:13px;
+      color:#cfe2ff;
+      font-size:12px;
     }
-    .cardBody{padding:16px}
+    .card .bd{padding:16px}
     label{
       display:block;
-      font-size:12px;
-      letter-spacing:0.6px;
-      text-transform:uppercase;
       color:var(--muted);
-      margin-bottom:8px;
+      font-size:12px;
+      letter-spacing:1.2px;
+      text-transform:uppercase;
       font-weight:800;
+      margin-bottom:8px;
     }
-    .row{
+    select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:var(--panel2);
+      color:var(--text);
+      font-size:16px;
+      outline:none;
+    }
+    select:focus{border-color:#2f4d73}
+    .sp{height:14px}
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--chip);
+      font-weight:900;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      font-size:12px;
+      color:#cfe2ff;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--blue);
+      box-shadow:0 0 0 3px rgba(107,182,255,.12);
+    }
+    .big{
+      font-size:44px;
+      font-weight:900;
+      letter-spacing:.6px;
+      margin:10px 0 2px;
+    }
+    .muted{color:var(--muted)}
+    .grid2{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:12px;
-      margin-bottom:12px;
     }
-    .row3{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap:12px;
-      margin-bottom:12px;
-    }
-    select,input{
-      width:100%;
-      padding:14px 14px;
-      border-radius:10px; /* less rounded */
-      border:1px solid var(--stroke2);
-      background:#0c1016;
-      color:var(--text);
-      outline:none;
-      font-size:16px;
-    }
-    input::placeholder{color:#6f7c8f}
-    select:focus,input:focus{
-      border-color:rgba(95,168,255,0.65);
-      box-shadow:0 0 0 3px rgba(95,168,255,0.15);
-    }
-    .btn{
-      width:100%;
-      padding:14px 14px;
-      border-radius:10px;
-      border:1px solid rgba(95,168,255,0.6);
-      background:rgba(95,168,255,0.18);
-      color:var(--text);
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:0.4px;
-      cursor:pointer;
-    }
-    .btn:hover{
-      background:rgba(95,168,255,0.24);
-    }
-    .pill{
-      display:inline-flex;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--stroke2);
-      background:#0c1016;
-      font-weight:900;
-      letter-spacing:0.4px;
-    }
-    .dot{
-      width:9px;height:9px;border-radius:50%;
-      background:var(--good);
-      box-shadow:0 0 0 4px rgba(43,210,124,0.12);
-    }
-    .resultTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      padding:16px;
-    }
-    .action{
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:0.7px;
-      color:var(--muted);
-    }
-    .bigSignal{
-      margin-top:12px;
-      display:flex;
-      justify-content:flex-start;
-    }
-    .bigSignal .tag{
-      border-radius:999px;
-      border:1px solid var(--stroke2);
-      background:#0c1016;
-      padding:10px 14px;
-      font-weight:1000;
-      letter-spacing:0.8px;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-    }
-    .tag.buyyes{border-color:rgba(43,210,124,0.55)}
-    .tag.buyno{border-color:rgba(255,93,93,0.55)}
-    .tag.pass{border-color:rgba(154,167,184,0.35)}
-    .tag .badge{
-      width:10px;height:10px;border-radius:50%;
-      background:var(--muted);
-    }
-    .tag.buyyes .badge{background:var(--good)}
-    .tag.buyno .badge{background:var(--bad)}
-    .tag.pass .badge{background:#7f8aa0}
-
-    /* Chart frame placeholder area (your current JS probably draws here) */
-    .chartFrame{
-      border:1px solid var(--stroke2);
-      background:#0c1016;
+    .kv{
+      border:1px solid var(--line);
       border-radius:12px;
-      padding:10px;
-      height:220px;
-      position:relative;
+      padding:12px 12px;
+      background:rgba(255,255,255,0.02);
+    }
+    .k{color:var(--muted); font-weight:900; letter-spacing:1.1px; text-transform:uppercase; font-size:12px}
+    .v{margin-top:6px; font-size:16px; font-weight:800}
+    .bars{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:rgba(255,255,255,0.02);
+    }
+    .barrow{
+      display:flex; align-items:center; justify-content:space-between;
+      margin:12px 0 8px;
+      font-weight:900;
+      letter-spacing:.4px;
+    }
+    .track{
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      background:#0b0f16;
+      border:1px solid var(--line);
       overflow:hidden;
     }
-    .chartFrame canvas{
-      width:100%;
+    .fill{
       height:100%;
-      display:block;
+      background:linear-gradient(90deg, var(--blue), var(--blue2));
+      width:50%;
     }
-
+    .small{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px}
+    .err{
+      margin-top:10px;
+      color:#ffb4b4;
+      font-weight:800;
+    }
     @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-      .topbar{flex-direction:column; align-items:flex-start; gap:14px}
-      .nav{width:100%}
-      .nav a{flex:1; justify-content:center}
+      .wrap{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
+  <div class="topbar">
     <div class="brand">
       <div class="title">MetApplication</div>
-      <div class="sub">High Temperature Prediction Market Guidance</div>
+      <div class="sub">Long Term Drought Odds</div>
+    </div>
+    <div class="nav">
+      <a class="btn" href="/">High Temp</a>
+      <button class="btn primary" id="runBtn">Evaluate</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="hd">Inputs</div>
+      <div class="bd">
+        <label>City</label>
+        <select id="city">
+          <option value="den">Denver</option>
+          <option value="nyc">New York City</option>
+          <option value="dal">Dallas</option>
+          <option value="chi" selected>Chicago</option>
+        </select>
+        <div class="sp"></div>
+        <div class="pill"><span class="dot"></span><span id="statusTxt">ready</span></div>
+        <div class="err" id="errTxt" style="display:none;"></div>
+      </div>
     </div>
 
-    <nav class="nav">
-      <!-- IMPORTANT: this must be /drought.html -->
-      <a href="/drought.html" id="goDrought" title="Long Term Drought Odds">Long Term Drought Odds</a>
-    </nav>
-  </header>
+    <div class="card">
+      <div class="hd">
+        <span>Result</span>
+        <span id="cityName" style="opacity:.9; letter-spacing:1.4px;">—</span>
+      </div>
+      <div class="bd">
+        <div class="big" id="odds">—</div>
+        <div class="muted" style="font-weight:800; letter-spacing:.4px;">Expected drought through ~90 days</div>
 
-  <main class="wrap">
-    <div class="grid">
-      <section class="card">
-        <div class="cardHead">
-          <div class="h">Inputs</div>
-          <div class="h">Evaluate Market</div>
-        </div>
-        <div class="cardBody">
-          <div class="row">
-            <div>
-              <label>City</label>
-              <select id="city">
-                <option>Denver</option>
-                <option>New York City</option>
-                <option>Dallas</option>
-                <option>Chicago</option>
-              </select>
-            </div>
-            <div>
-              <label>Date</label>
-              <input id="date" placeholder="MM/DD/YYYY" value="02/10/2026" />
-            </div>
+        <div class="sp"></div>
+
+        <div class="grid2">
+          <div class="kv">
+            <div class="k">Seasonal Drought Outlook</div>
+            <div class="v" id="sdoCat">—</div>
+            <div class="small" id="sdoValid">—</div>
           </div>
-
-          <div class="row3">
-            <div>
-              <label>Potential High Temp</label>
-              <input id="t" type="number" step="1" value="42" />
-            </div>
-            <div>
-              <label>Yes Cost</label>
-              <input id="yes" type="number" step="1" value="30" />
-            </div>
-            <div>
-              <label>No Cost</label>
-              <input id="no" type="number" step="1" value="70" />
-            </div>
+          <div class="kv">
+            <div class="k">3-Month Precip Outlook</div>
+            <div class="v" id="pCat">—</div>
+            <div class="small" id="pValid">—</div>
           </div>
-
-          <button class="btn" id="evalBtn">Evaluate Market</button>
         </div>
-      </section>
 
-      <aside class="card">
-        <div class="cardHead">
-          <div class="h">Result</div>
-          <div class="h" id="headline">—</div>
+        <div class="bars">
+          <div class="k" style="margin-bottom:8px;">Precip Signal</div>
+
+          <div class="barrow"><span>Drier bias</span><span id="drierPct">—</span></div>
+          <div class="track"><div class="fill" id="drierFill" style="width:0%"></div></div>
+
+          <div class="barrow" style="margin-top:14px;"><span>Wetter bias</span><span id="wetterPct">—</span></div>
+          <div class="track"><div class="fill" id="wetterFill" style="width:0%"></div></div>
+
+          <div class="small" style="margin-top:10px;" id="debugLine"></div>
         </div>
-        <div class="cardBody">
-          <div class="chartFrame">
-            <!-- if you already draw a chart, keep your canvas id -->
-            <canvas id="chart"></canvas>
-          </div>
-
-          <div class="bigSignal">
-            <div class="tag pass" id="signalTag">
-              <span class="badge"></span>
-              <span id="signalText">PASS</span>
-            </div>
-          </div>
-
-          <div style="margin-top:14px; color:var(--muted); font-weight:700;" id="details"></div>
-        </div>
-      </aside>
+      </div>
     </div>
-  </main>
+  </div>
 
-  <script>
-    // Your backend is same-origin on Render, so this works on Render + local.
-    const API_BASE = "";
+<script>
+  const $ = (id)=>document.getElementById(id);
 
-    function cityToCode(name){
-      const v = (name || "").toLowerCase().trim();
-      if (v.startsWith("den")) return "den";
-      if (v.startsWith("new york")) return "nyc";
-      if (v.startsWith("dal")) return "dal";
-      if (v.startsWith("chi")) return "chi";
-      return "den";
-    }
+  function setStatus(t){
+    $("statusTxt").textContent = t;
+    $("errTxt").style.display = "none";
+  }
+  function setErr(t){
+    $("errTxt").textContent = t;
+    $("errTxt").style.display = "block";
+  }
 
-    function setSignal(signal){
-      const tag = document.getElementById("signalTag");
-      const text = document.getElementById("signalText");
-      const head = document.getElementById("headline");
-      text.textContent = signal;
-      head.textContent = signal;
-
-      tag.classList.remove("buyyes","buyno","pass");
-      if (signal === "BUY YES") tag.classList.add("buyyes");
-      else if (signal === "BUY NO") tag.classList.add("buyno");
-      else tag.classList.add("pass");
-    }
-
-    async function evaluate(){
-      const cityName = document.getElementById("city").value;
-      const payload = {
-        city: cityName,
-        date: document.getElementById("date").value,
-        t: Number(document.getElementById("t").value),
-        yes_cents: Number(document.getElementById("yes").value),
-        no_cents: Number(document.getElementById("no").value),
-      };
-
-      const res = await fetch(API_BASE + "/api/evaluate", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(payload)
-      });
-
+  async function evaluate(){
+    const city = $("city").value;
+    setStatus("loading");
+    try{
+      const res = await fetch(`/api/drought?city=${encodeURIComponent(city)}`);
       const data = await res.json();
-
-      if (data.error){
-        setSignal("PASS");
-        document.getElementById("details").textContent = "Error: " + data.error;
-        return;
+      if(!res.ok || data.error){
+        throw new Error(data.error || ("HTTP " + res.status));
       }
 
-      setSignal(data.action || "PASS");
+      $("cityName").textContent = (data.city_name || "—").toUpperCase();
 
-      const yes = Number(data.mkt_yes || 0).toFixed(3);
-      const no  = Number(data.mkt_no  || 0).toFixed(3);
-      const pyes= Number(data.p_yes   || 0).toFixed(4);
-      const pno = Number(data.p_no    || 0).toFixed(4);
-      const mu  = Number(data.mu      || 0).toFixed(2);
-      const sg  = Number(data.sigma   || 0).toFixed(2);
+      const odds = (data.expected_drought_prob!=null) ? (data.expected_drought_prob*100) : null;
+      $("odds").textContent = (odds==null) ? "—" : (odds.toFixed(1) + "%");
 
-      document.getElementById("details").textContent =
-        `${cityName} • μ ${mu} • σ ${sg} • Fair YES ${pyes} / NO ${pno} • Market YES ${yes} / NO ${no}`;
+      $("sdoCat").textContent = data.sdo_cat || "—";
+      $("sdoValid").textContent = data.sdo_valid || "—";
 
-      // If your existing chart code was elsewhere, keep it.
-      // Minimal placeholder draw so the canvas isn't blank:
-      drawPlaceholderChart();
+      $("pCat").textContent = (data.precip_cat || "—") + (data.precip_prob!=null ? (" • " + (data.precip_prob*100).toFixed(0) + "%") : "");
+      $("pValid").textContent = data.precip_valid || "—";
+
+      const drier = Math.round((data.p_drier||0)*100);
+      const wetter = Math.round((data.p_wetter||0)*100);
+
+      $("drierPct").textContent = drier + "%";
+      $("wetterPct").textContent = wetter + "%";
+      $("drierFill").style.width = Math.max(0, Math.min(100, drier)) + "%";
+      $("wetterFill").style.width = Math.max(0, Math.min(100, wetter)) + "%";
+
+      const dbg = data.debug || {};
+      $("debugLine").textContent = `SDO hit: ${dbg.sdo_hit ? "yes":"no"} • Precip hit: ${dbg.precip_hit ? "yes":"no"} • SDO layer: ${dbg.sdo_layer ?? "—"}`;
+
+      setStatus("ready");
+    }catch(e){
+      setStatus("ready");
+      setErr(String(e.message || e));
     }
+  }
 
-    function drawPlaceholderChart(){
-      const c = document.getElementById("chart");
-      const ctx = c.getContext("2d");
-      const w = c.width = c.clientWidth;
-      const h = c.height = c.clientHeight;
+  $("runBtn").addEventListener("click", evaluate);
+  $("city").addEventListener("change", evaluate);
 
-      ctx.clearRect(0,0,w,h);
-
-      // grid
-      ctx.globalAlpha = 0.25;
-      ctx.strokeStyle = "#2a3344";
-      for(let i=1;i<6;i++){
-        const x = (w/6)*i;
-        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
-      }
-      for(let i=1;i<4;i++){
-        const y = (h/4)*i;
-        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
-      }
-      ctx.globalAlpha = 1.0;
-
-      // "fair price" line placeholder
-      ctx.strokeStyle = "#5fa8ff";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, h*0.25);
-      ctx.bezierCurveTo(w*0.35, h*0.25, w*0.45, h*0.25, w*0.6, h*0.6);
-      ctx.bezierCurveTo(w*0.75, h*0.9, w*0.9, h*0.95, w, h*0.95);
-      ctx.stroke();
-    }
-
-    document.getElementById("evalBtn").addEventListener("click", (e) => {
-      e.preventDefault();
-      evaluate().catch(err=>{
-        setSignal("PASS");
-        document.getElementById("details").textContent = "Error: " + err;
-      });
-    });
-
-    // Make sure drought link always works even if something tries to prevent default elsewhere.
-    document.getElementById("goDrought").addEventListener("click", (e) => {
-      // no preventDefault here; we WANT navigation
-    });
-
-    // initial placeholder
-    drawPlaceholderChart();
-  </script>
+  // auto-load once
+  evaluate();
+</script>
 </body>
 </html>
