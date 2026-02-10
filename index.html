@@ -188,6 +188,28 @@
       .grid{grid-template-columns:1fr}
       .brand .title{font-size:38px; letter-spacing:5px;}
     }
+
+    /* ---- ONLY ADDITION: drought button styling ---- */
+    .navbtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(6,10,16,.55);
+      color: rgba(231,238,252,.92);
+      text-decoration:none;
+      font-weight:900;
+      letter-spacing:1.2px;
+      font-size:12px;
+      text-transform:uppercase;
+    }
+    .navbtn:hover{
+      background: rgba(6,10,16,.72);
+      border-color: rgba(96,165,255,.30);
+    }
+    /* ---------------------------------------------- */
   </style>
 </head>
 <body>
@@ -196,7 +218,9 @@
       <div class="title">MetApplication</div>
       <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
     </div>
-    <div></div>
+
+    <!-- ONLY CHANGE: one button that links to drought.html -->
+    <a class="navbtn" href="/drought.html">Long Term Drought Odds</a>
   </div>
 
   <div class="wrap">
@@ -309,26 +333,19 @@
   function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
 
   function drawChart(mu, sigma, t, fairAtT, yourYesPrice){
-    // Plot fair YES price as function of threshold temp (x)
-    // Using a smooth logistic-like curve purely for visualization, anchored to backend parameters:
-    // We approximate P(High >= x) with a logistic around mu and sigma.
-    // This is just the DISPLAY curve; the actual fairAtT comes from backend.
     const w = chart.width, h = chart.height;
     ctx.clearRect(0,0,w,h);
 
-    // paddings
     const padL = 58, padR = 20, padT = 18, padB = 40;
     const iw = w - padL - padR;
     const ih = h - padT - padB;
 
-    // x-range around mu ± 4*sigma (reasonable view)
     const xmin = Math.floor(mu - 4*sigma);
     const xmax = Math.ceil(mu + 4*sigma);
 
     function xToPx(x){ return padL + ( (x - xmin) / (xmax - xmin) ) * iw; }
     function yToPx(y){ return padT + (1 - y) * ih; }
 
-    // background grid
     ctx.globalAlpha = 1;
     ctx.strokeStyle = "rgba(255,255,255,0.06)";
     ctx.lineWidth = 1;
@@ -341,7 +358,6 @@
       ctx.beginPath(); ctx.moveTo(padL,gy); ctx.lineTo(padL+iw,gy); ctx.stroke();
     }
 
-    // axes labels
     ctx.fillStyle = "rgba(231,238,252,0.65)";
     ctx.font = "bold 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace";
     ctx.textAlign = "center";
@@ -354,14 +370,12 @@
     ctx.fillText("0.5", padL-10, yToPx(0.5)+4);
     ctx.fillText("0.0", padL-10, yToPx(0.0)+4);
 
-    // Fair curve: P(High >= x) ≈ 1/(1+exp((x-mu)/(sigma*0.85)))
     const k = sigma*0.85 || 1.0;
     function fairCurve(x){
       const z = (x - mu) / k;
       return 1/(1+Math.exp(z));
     }
 
-    // draw curve
     ctx.strokeStyle = "rgba(96,165,255,0.95)";
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -373,21 +387,17 @@
     }
     ctx.stroke();
 
-    // point = user's yes price at threshold t
     const pxT = xToPx(t);
     const pyYour = yToPx(clamp(yourYesPrice,0,1));
 
-    // glow
     ctx.fillStyle = "rgba(156,199,255,0.18)";
     ctx.beginPath(); ctx.arc(pxT, pyYour, 14, 0, Math.PI*2); ctx.fill();
 
-    // dot
     ctx.fillStyle = "rgba(156,199,255,0.90)";
     ctx.strokeStyle = "rgba(255,255,255,0.20)";
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(pxT, pyYour, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-    // Optional: marker on curve at t using backend fairAtT (so display matches truth)
     const pyFair = yToPx(clamp(fairAtT,0,1));
     ctx.strokeStyle = "rgba(96,165,255,0.35)";
     ctx.lineWidth = 2;
@@ -430,11 +440,9 @@
     if(!Number.isFinite(t)){ $("status").textContent = "Enter Potential High Temp."; return; }
     if(!Number.isFinite(yesC) || !Number.isFinite(noC)){ $("status").textContent = "Enter Yes/No Cost in cents."; return; }
 
-    // show contract line
     $("contractLine").textContent = `${date} — ${t} — yes:${yesC} / no:${noC}`;
     $("marketLine").textContent = `YES ${(yesC/100).toFixed(4)} | NO ${(noC/100).toFixed(4)}`;
 
-    // call backend (single explicit endpoint)
     let resp, data;
     try{
       resp = await fetch("/api/evaluate_one", {
@@ -463,14 +471,12 @@
 
     $("cityName").textContent = data.city_name.toUpperCase();
 
-    // IMPORTANT: Use backend truth (no local/fake math for signal)
     setSignal(data.signal);
 
     $("modelLine").textContent = `μ ${fmt4(data.mu)} | σ ${fmt4(data.sigma)}`;
     $("fairLine").textContent = `YES ${fmt4(data.fair_yes)} | NO ${fmt4(data.fair_no)}`;
     $("edgeLine").textContent = `YES ${fmt4(data.edge_yes)} | NO ${fmt4(data.edge_no)}`;
 
-    // draw chart
     drawChart(
       data.mu,
       data.sigma,
@@ -479,13 +485,11 @@
       data.market_yes
     );
 
-    // Debug status (quiet)
     $("status").textContent = `OK — ${data.signal}`;
   }
 
   $("go").addEventListener("click", (e)=>{ e.preventDefault(); evaluate(); });
 
-  // Draw an initial empty-looking chart
   drawChart(50, 6, 50, 0.5, 0.5);
   setSignal("PASS");
 </script>
