@@ -5,177 +5,487 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>High Temperature Prediction Market Guidance</title>
   <style>
-    :root { color-scheme: light; }
-    body { font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:0; background:#fff; color:#111; }
-    header { padding:16px 20px; border-bottom:1px solid #e6e6e6; }
-    header h1 { margin:0; font-size:18px; font-weight:800; letter-spacing:.2px; }
-
-    .wrap { max-width:1100px; margin:0 auto; padding:18px 20px 40px; }
-    .grid { display:grid; grid-template-columns: 1.1fr 1fr; gap:16px; }
-    @media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
-
-    .card { border:1px solid #e6e6e6; border-radius:10px; padding:14px; background:#fff; }
-    .card h2 { margin:0 0 10px; font-size:13px; font-weight:800; letter-spacing:.2px; }
-
-    .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
-    label { font-size:12px; color:#333; }
-
-    select, button, textarea, input {
-      font: inherit;
-      border: 1px solid #d8d8d8;
-      border-radius: 8px;
-      padding: 10px 10px;
-      background: #fff;
-      color:#111;
-      outline: none;
+    :root{
+      --bg0:#0b1020;
+      --bg1:#0f1630;
+      --card:#0e1733cc;
+      --card2:#111b3b;
+      --line:#243159;
+      --line2:#2e3a66;
+      --text:#e8ecff;
+      --muted:#aab3d8;
+      --muted2:#7d88b5;
+      --green:#2dd4bf;
+      --green2:#1fb99f;
+      --red:#fb7185;
+      --red2:#f43f5e;
+      --amber:#fbbf24;
+      --blue:#60a5fa;
+      --shadow: 0 18px 45px rgba(0,0,0,.45);
+      --radius:16px;
+      --radius2:12px;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      --sans: -apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif;
     }
-    select { min-width:220px; }
-    input { width:140px; }
-    textarea { width:100%; min-height:140px; line-height:1.35; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; }
 
-    button { cursor:pointer; font-weight:800; }
-    button.primary { background:#111; color:#fff; border-color:#111; }
-    button:disabled { opacity:.55; cursor:not-allowed; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% 0%, rgba(96,165,250,.20), transparent 55%),
+        radial-gradient(1000px 700px at 90% 20%, rgba(45,212,191,.14), transparent 55%),
+        radial-gradient(900px 700px at 50% 100%, rgba(251,191,36,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
 
-    .mono { font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(11,16,32,.82), rgba(11,16,32,.58));
+      border-bottom:1px solid rgba(36,49,89,.55);
+    }
+    .topbar-inner{
+      max-width:1180px;
+      margin:0 auto;
+      padding:16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      min-width:260px;
+    }
+    .logo{
+      width:36px; height:36px; border-radius:12px;
+      background:
+        radial-gradient(12px 12px at 30% 35%, rgba(255,255,255,.75), transparent 65%),
+        linear-gradient(135deg, rgba(96,165,250,.95), rgba(45,212,191,.85));
+      box-shadow: 0 12px 30px rgba(45,212,191,.18);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .title{
+      display:flex; flex-direction:column; gap:2px;
+      line-height:1.05;
+    }
+    .title h1{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.22px;
+      font-weight:900;
+      text-transform:none;
+    }
+    .title .sub{
+      font-size:12px;
+      color:var(--muted2);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
 
-    table { width:100%; border-collapse:collapse; font-size:12px; }
-    th, td { padding:8px 8px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
-    th { color:#333; font-weight:900; background:#fafafa; }
-    tr:hover td { background:#fcfcfc; }
+    .pillbar{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(46,58,102,.8);
+      background: rgba(14,23,51,.55);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.15px;
+    }
+    .pill strong{color:var(--text)}
+    .wrap{
+      max-width:1180px;
+      margin:0 auto;
+      padding:18px 18px 44px;
+    }
 
-    .status { font-size:12px; margin-top:8px; color:#444; }
-    .error { color:#b00; white-space:pre-wrap; }
-    .ok { color:#0a6; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .brand{min-width:auto}
+    }
 
-    .signal { font-weight:900; }
-    .buyyes { color:#0b6; }
-    .buyno  { color:#c20; }
-    .pass   { color:#555; }
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(14,23,51,.72), rgba(14,23,51,.50));
+      border: 1px solid rgba(36,49,89,.85);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(400px 160px at 20% 0%, rgba(96,165,250,.14), transparent 60%),
+                  radial-gradient(420px 160px at 80% 0%, rgba(45,212,191,.10), transparent 60%);
+      pointer-events:none;
+    }
+    .card-header{
+      position:relative;
+      padding:14px 14px 12px;
+      border-bottom:1px solid rgba(36,49,89,.75);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card-header h2{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.22px;
+      font-weight:900;
+      color: rgba(232,236,255,.95);
+      text-transform:uppercase;
+    }
+    .card-body{
+      position:relative;
+      padding:14px;
+    }
 
-    .box { border:1px solid #eee; border-radius:10px; padding:10px; background:#fcfcfc; }
-    .controls-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 980px) { .controls-grid { grid-template-columns:1fr; } }
-    .mini-btn { padding: 8px 10px; border-radius: 8px; }
-    .danger { border-color:#f2c6c6; background:#fff5f5; color:#900; }
+    .row{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap}
+    .field{display:flex; flex-direction:column; gap:7px}
+    .label{
+      font-size:11px;
+      color: var(--muted2);
+      font-weight:900;
+      letter-spacing:.18px;
+      text-transform:uppercase;
+    }
+
+    select, input, textarea, button{
+      font: inherit;
+      outline:none;
+      border-radius: 12px;
+      border:1px solid rgba(46,58,102,.95);
+      background: rgba(17,27,59,.72);
+      color: var(--text);
+      padding: 11px 12px;
+    }
+    select{min-width:190px}
+    input{width:140px}
+    textarea{
+      width:100%;
+      min-height:150px;
+      font-family: var(--mono);
+      font-size:12px;
+      line-height:1.35;
+      background: rgba(11,16,32,.35);
+    }
+    input::placeholder{color: rgba(170,179,216,.55)}
+    button{
+      cursor:pointer;
+      font-weight:900;
+      letter-spacing:.14px;
+      padding: 11px 12px;
+      background: rgba(17,27,59,.72);
+    }
+    button:hover{border-color: rgba(96,165,250,.65)}
+    button:disabled{opacity:.45; cursor:not-allowed}
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(45,212,191,.85));
+      border-color: rgba(255,255,255,.10);
+      color: #071025;
+      box-shadow: 0 14px 40px rgba(45,212,191,.18);
+    }
+    .btn-danger{
+      background: linear-gradient(135deg, rgba(251,113,133,.18), rgba(244,63,94,.10));
+      border-color: rgba(244,63,94,.38);
+      color: rgba(255,220,227,.95);
+    }
+    .btn-ghost{
+      background: rgba(11,16,32,.35);
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media (max-width: 520px){
+      .split{grid-template-columns:1fr}
+      select, input{min-width: 100%; width:100%}
+    }
+
+    .status{
+      margin-top:10px;
+      font-size:12px;
+      font-weight:800;
+      color: var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: rgba(170,179,216,.55);
+      box-shadow: 0 0 0 6px rgba(170,179,216,.08);
+    }
+    .ok .dot{background: rgba(45,212,191,.92); box-shadow:0 0 0 6px rgba(45,212,191,.12)}
+    .warn .dot{background: rgba(251,191,36,.95); box-shadow:0 0 0 6px rgba(251,191,36,.12)}
+    .bad .dot{background: rgba(244,63,94,.92); box-shadow:0 0 0 6px rgba(244,63,94,.12)}
+    .status .msg{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+    .errorbox{
+      margin-top:10px;
+      display:none;
+      border-radius:12px;
+      border:1px solid rgba(244,63,94,.35);
+      background: rgba(244,63,94,.10);
+      padding:10px 12px;
+      color: rgba(255,220,227,.95);
+      font-family: var(--mono);
+      font-size:12px;
+      white-space:pre-wrap;
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:12px;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(36,49,89,.85);
+      background: rgba(11,16,32,.25);
+    }
+    thead th{
+      text-align:left;
+      padding:10px 10px;
+      font-size:11px;
+      color: rgba(170,179,216,.85);
+      font-weight:900;
+      letter-spacing:.18px;
+      text-transform:uppercase;
+      background: rgba(17,27,59,.70);
+      border-bottom: 1px solid rgba(36,49,89,.85);
+    }
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(36,49,89,.45);
+      color: rgba(232,236,255,.90);
+      vertical-align:top;
+    }
+    tbody tr:hover td{background: rgba(96,165,250,.06)}
+    tbody tr:last-child td{border-bottom:none}
+
+    .mono{font-family: var(--mono)}
+    .muted{color: rgba(170,179,216,.85)}
+    .kpi{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      color: rgba(170,179,216,.92);
+      font-size:12px;
+      font-weight:900;
+    }
+    .tag{
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(46,58,102,.85);
+      background: rgba(11,16,32,.35);
+      color: rgba(170,179,216,.92);
+      font-weight:900;
+      letter-spacing:.12px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .tag b{color: rgba(232,236,255,.95)}
+
+    .signal{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:1000;
+      letter-spacing:.14px;
+      border:1px solid rgba(46,58,102,.85);
+      background: rgba(11,16,32,.35);
+      white-space:nowrap;
+    }
+    .signal .s-dot{width:8px; height:8px; border-radius:999px; background: rgba(170,179,216,.6)}
+    .signal.buyyes{border-color: rgba(45,212,191,.40); background: rgba(45,212,191,.10)}
+    .signal.buyyes .s-dot{background: rgba(45,212,191,.95)}
+    .signal.buyno{border-color: rgba(244,63,94,.40); background: rgba(244,63,94,.10)}
+    .signal.buyno .s-dot{background: rgba(244,63,94,.95)}
+    .signal.pass{border-color: rgba(170,179,216,.22); background: rgba(11,16,32,.25)}
+    .signal.pass .s-dot{background: rgba(170,179,216,.65)}
+
+    .footer-note{
+      margin-top:14px;
+      color: rgba(170,179,216,.62);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.12px;
+      text-transform:uppercase;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>High Temperature Prediction Market Guidance</h1>
-  </header>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">
+          <h1>High Temperature Prediction Market Guidance</h1>
+          <div class="sub">Paper • NOAA/NWS</div>
+        </div>
+      </div>
+
+      <div class="pillbar">
+        <div class="pill">City: <strong id="pillCity">den</strong></div>
+        <div class="pill">Status: <strong id="pillStatus">idle</strong></div>
+      </div>
+    </div>
+  </div>
 
   <div class="wrap">
     <div class="grid">
-      <!-- LEFT -->
+      <!-- LEFT: INPUTS -->
       <div class="card">
-        <h2>Inputs</h2>
-
-        <div class="row" style="margin-bottom:10px;">
-          <div>
-            <label for="city">City</label><br/>
-            <select id="city">
-              <option value="den">den</option>
-              <option value="nyc">nyc</option>
-              <option value="dal">dal</option>
-              <option value="chi">chi</option>
-            </select>
+        <div class="card-header">
+          <h2>Trade</h2>
+          <div class="kpi">
+            <span class="tag">Queue <b id="qCount">0</b></span>
+            <button id="btnEval" class="btn-primary">Run</button>
           </div>
-
-          <button id="btnHighs">Load</button>
-
-          <div style="flex:1"></div>
-
-          <button id="btnEval" class="primary">Run</button>
         </div>
 
-        <div class="box">
-          <div class="controls-grid">
-            <div>
-              <label for="dateSel">Date</label><br/>
+        <div class="card-body">
+          <div class="row">
+            <div class="field">
+              <div class="label">City</div>
+              <select id="city">
+                <option value="den">den</option>
+                <option value="nyc">nyc</option>
+                <option value="dal">dal</option>
+                <option value="chi">chi</option>
+              </select>
+            </div>
+
+            <button id="btnHighs" class="btn-ghost">Load</button>
+
+            <div style="flex:1"></div>
+
+            <button id="btnClear" class="btn-danger" disabled>Clear</button>
+          </div>
+
+          <div class="split">
+            <div class="field">
+              <div class="label">Date</div>
               <select id="dateSel" disabled>
                 <option value="">—</option>
               </select>
             </div>
 
-            <div>
-              <label for="tempSel">Temp</label><br/>
+            <div class="field">
+              <div class="label">Temp</div>
               <select id="tempSel" disabled>
                 <option value="">—</option>
               </select>
             </div>
 
-            <div>
-              <label for="yesCents">Yes</label><br/>
+            <div class="field">
+              <div class="label">Yes</div>
               <input id="yesCents" inputmode="decimal" placeholder="cents" />
             </div>
 
-            <div>
-              <label for="noCents">No</label><br/>
+            <div class="field">
+              <div class="label">No</div>
               <input id="noCents" inputmode="decimal" placeholder="cents" />
             </div>
           </div>
 
           <div class="row" style="margin-top:10px;">
-            <button id="btnAdd" class="primary" disabled>Add</button>
-            <button id="btnClear" class="danger mini-btn" disabled>Clear</button>
+            <button id="btnAdd" class="btn-primary" disabled>Add</button>
           </div>
-        </div>
 
-        <div class="row" style="margin-top:12px;">
-          <div style="flex:1;">
-            <label for="builtLines">Queue</label>
+          <div class="field" style="margin-top:12px;">
+            <div class="label">Queue</div>
             <textarea id="builtLines" class="mono" spellcheck="false" readonly></textarea>
           </div>
-        </div>
 
-        <div id="status" class="status"></div>
+          <div id="status" class="status">
+            <span class="dot"></span>
+            <span class="msg" id="statusMsg">idle</span>
+          </div>
+
+          <div id="rawError" class="errorbox"></div>
+
+          <div class="footer-note">mm/dd/yyyy - t - yes:$$ / no:$$</div>
+        </div>
       </div>
 
-      <!-- RIGHT -->
+      <!-- RIGHT: HIGHS -->
       <div class="card">
-        <h2>Highs</h2>
-
-        <div style="overflow:auto; max-height: 470px;">
-          <table id="highsTable" style="display:none;">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>High</th>
-              </tr>
-            </thead>
-            <tbody id="highsBody"></tbody>
-          </table>
+        <div class="card-header">
+          <h2>Highs</h2>
+          <div class="kpi">
+            <span class="tag">Days <b id="hCount">0</b></span>
+          </div>
         </div>
 
-        <div id="rawError" class="status error" style="display:none;"></div>
+        <div class="card-body" style="padding:14px;">
+          <div style="overflow:auto; max-height: 520px;">
+            <table id="highsTable" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>High</th>
+                </tr>
+              </thead>
+              <tbody id="highsBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- RESULTS -->
-    <div class="card" style="margin-top:16px;">
-      <h2>Results</h2>
-
-      <div style="overflow:auto; margin-top:10px;">
-        <table id="resultsTable" style="display:none;">
-          <thead>
-            <tr>
-              <th>Contract</th>
-              <th>Market</th>
-              <th>Model</th>
-              <th>Fair</th>
-              <th>Edge</th>
-              <th>Signal</th>
-            </tr>
-          </thead>
-          <tbody id="resultsBody"></tbody>
-        </table>
+    <div class="card" style="margin-top:14px;">
+      <div class="card-header">
+        <h2>Results</h2>
+        <div class="kpi">
+          <span class="tag">Rows <b id="rCount">0</b></span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="overflow:auto;">
+          <table id="resultsTable" style="display:none;">
+            <thead>
+              <tr>
+                <th>Contract</th>
+                <th>Market</th>
+                <th>Model</th>
+                <th>Fair</th>
+                <th>Edge</th>
+                <th>Signal</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const API_BASE = "http://localhost:8000";
+    // On Render, this page is served by the same backend. Use relative URLs.
+    const API_BASE = "";
 
     const elCity = document.getElementById("city");
     const btnHighs = document.getElementById("btnHighs");
@@ -190,6 +500,7 @@
     const elBuilt = document.getElementById("builtLines");
 
     const elStatus = document.getElementById("status");
+    const elStatusMsg = document.getElementById("statusMsg");
     const elRawError = document.getElementById("rawError");
 
     const elHighsTable = document.getElementById("highsTable");
@@ -198,16 +509,31 @@
     const elResultsTable = document.getElementById("resultsTable");
     const elResultsBody = document.getElementById("resultsBody");
 
+    const pillCity = document.getElementById("pillCity");
+    const pillStatus = document.getElementById("pillStatus");
+
+    const qCount = document.getElementById("qCount");
+    const hCount = document.getElementById("hCount");
+    const rCount = document.getElementById("rCount");
+
     let highs = {};       // dateISO -> highF
     let builtLines = [];  // exact lines for backend
 
-    function setStatus(msg, cls="") {
-      elStatus.className = "status " + cls;
-      elStatus.textContent = msg || "";
+    function setPills() {
+      pillCity.textContent = elCity.value;
     }
+
+    function setStatus(msg, state="idle") {
+      // state: idle | ok | warn | bad | run
+      elStatusMsg.textContent = msg;
+      pillStatus.textContent = state === "run" ? "running" : state;
+      elStatus.className = "status " + (state === "ok" ? "ok" : state === "warn" ? "warn" : state === "bad" ? "bad" : "");
+    }
+
     function showError(msg) {
       elRawError.style.display = "block";
       elRawError.textContent = msg;
+      setStatus("error", "bad");
     }
     function clearError() {
       elRawError.style.display = "none";
@@ -238,6 +564,7 @@
     function rebuildQueue() {
       elBuilt.value = builtLines.join("\n");
       btnClear.disabled = builtLines.length === 0;
+      qCount.textContent = String(builtLines.length);
     }
 
     function populateDateDropdown() {
@@ -285,15 +612,18 @@
 
     async function loadHighs() {
       clearError();
-      setStatus("Loading…");
+      setStatus("loading", "run");
       btnHighs.disabled = true;
       btnAdd.disabled = true;
 
       highs = {};
       elHighsBody.innerHTML = "";
       elHighsTable.style.display = "none";
+      hCount.textContent = "0";
+
       elResultsBody.innerHTML = "";
       elResultsTable.style.display = "none";
+      rCount.textContent = "0";
 
       elDateSel.disabled = true;
       elTempSel.disabled = true;
@@ -315,13 +645,13 @@
           elHighsBody.appendChild(tr);
         }
         elHighsTable.style.display = list.length ? "table" : "none";
+        hCount.textContent = String(list.length);
 
         populateDateDropdown();
         populateTempDropdownForDate();
-        setStatus("Ready", "ok");
+        setStatus("ready", "ok");
       } catch (e) {
-        showError(`Load failed:\n\n${e}`);
-        setStatus("", "");
+        showError(`Load failed\n\n${e}`);
       } finally {
         btnHighs.disabled = false;
       }
@@ -343,7 +673,7 @@
       elYes.value = "";
       elNo.value = "";
       updateAddEnabled();
-      setStatus("Added", "ok");
+      setStatus("added", "ok");
     }
 
     function clearAll() {
@@ -351,27 +681,30 @@
       rebuildQueue();
       elResultsBody.innerHTML = "";
       elResultsTable.style.display = "none";
-      setStatus("", "");
+      rCount.textContent = "0";
+      setStatus("idle", "idle");
+      clearError();
     }
 
-    function signalClass(sig) {
+    function sigBadge(sig) {
       const x = (sig || "").toUpperCase();
-      if (x.includes("BUY YES")) return "signal buyyes";
-      if (x.includes("BUY NO"))  return "signal buyno";
-      return "signal pass";
+      if (x.includes("BUY YES")) return `<span class="signal buyyes"><span class="s-dot"></span>BUY YES</span>`;
+      if (x.includes("BUY NO"))  return `<span class="signal buyno"><span class="s-dot"></span>BUY NO</span>`;
+      return `<span class="signal pass"><span class="s-dot"></span>PASS</span>`;
     }
 
     async function evaluate() {
       clearError();
       elResultsBody.innerHTML = "";
       elResultsTable.style.display = "none";
+      rCount.textContent = "0";
 
       if (!builtLines.length) {
-        setStatus("Add first", "error");
+        setStatus("queue empty", "warn");
         return;
       }
 
-      setStatus("Running…");
+      setStatus("running", "run");
       btnEval.disabled = true;
 
       try {
@@ -393,7 +726,7 @@
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td class="mono">${(x.raw || "").replace(/</g,"&lt;")}</td>
-              <td colspan="5" class="mono" style="color:#b00;">${(x.error || "").replace(/</g,"&lt;")}</td>
+              <td colspan="5" class="mono" style="color:rgba(255,220,227,.95);"> ${String(x.error).replace(/</g,"&lt;")} </td>
             `;
             elResultsBody.appendChild(tr);
             continue;
@@ -402,26 +735,30 @@
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td class="mono">${x.date} ≥ ${x.t}F</td>
-            <td class="mono">Y ${x.market_yes.toFixed(4)}<br/>N ${x.market_no.toFixed(4)}</td>
-            <td class="mono">μ ${x.mu.toFixed(1)}<br/>σ ${x.sigma.toFixed(1)}</td>
-            <td class="mono">${x.fair_yes.toFixed(4)}</td>
-            <td class="mono">${x.edge_yes.toFixed(4)}<br/>${x.edge_no.toFixed(4)}</td>
-            <td class="${signalClass(x.signal)}">${x.signal}</td>
+            <td class="mono">Y ${x.market_yes.toFixed(4)}<br><span class="muted">N ${x.market_no.toFixed(4)}</span></td>
+            <td class="mono">μ ${x.mu.toFixed(1)}<br><span class="muted">σ ${x.sigma.toFixed(1)}</span></td>
+            <td class="mono">${x.fair_yes.toFixed(4)}<br><span class="muted">${x.fair_no.toFixed(4)}</span></td>
+            <td class="mono">${x.edge_yes.toFixed(4)}<br><span class="muted">${x.edge_no.toFixed(4)}</span></td>
+            <td>${sigBadge(x.signal)}</td>
           `;
           elResultsBody.appendChild(tr);
         }
 
         elResultsTable.style.display = results.length ? "table" : "none";
-        setStatus("Done", "ok");
+        rCount.textContent = String(results.length);
+
+        // Summary status: if any BUY, show ok; else warn.
+        const anyBuy = results.some(r => (r.signal || "").toUpperCase().includes("BUY"));
+        setStatus(anyBuy ? "signal" : "pass", anyBuy ? "ok" : "warn");
       } catch (e) {
-        showError(`Run failed:\n\n${e}`);
-        setStatus("", "");
+        showError(`Run failed\n\n${e}`);
       } finally {
         btnEval.disabled = false;
       }
     }
 
     // Events
+    elCity.addEventListener("change", () => { setPills(); });
     btnHighs.addEventListener("click", loadHighs);
     btnAdd.addEventListener("click", addLine);
     btnClear.addEventListener("click", clearAll);
@@ -435,10 +772,10 @@
     elYes.addEventListener("input", updateAddEnabled);
     elNo.addEventListener("input", updateAddEnabled);
 
-    window.addEventListener("load", () => {
-      setStatus("", "");
-      rebuildQueue();
-    });
+    // Init
+    setPills();
+    rebuildQueue();
+    setStatus("idle", "idle");
   </script>
 </body>
 </html>
