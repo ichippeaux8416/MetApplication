@@ -9,6 +9,9 @@ import math
 import os
 import requests
 
+# ✅ NEW: drought engine
+from drought_long import evaluate_city as drought_evaluate_city
+
 # ---------------- CONFIG ----------------
 USER_AGENT = "metapplication/1.0 (contact: you@example.com)"
 TIMEOUT = 12
@@ -141,7 +144,7 @@ def home():
     return HTMLResponse("<h3>index.html not found. Put index.html next to server.py</h3>")
 
 
-# ✅ ONLY CHANGE: serve drought.html at /drought.html (for your one button)
+# ✅ serve drought.html
 @app.get("/drought.html")
 def drought_page():
     p = file_if_exists("drought.html")
@@ -237,3 +240,17 @@ def api_evaluate_one(req: EvalOneRequest):
         "signal": signal,
         "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
     }
+
+
+# ✅ NEW: drought API endpoint used by drought.html (POST /api/drought)
+class DroughtRequest(BaseModel):
+    city: str  # den/nyc/dal/chi
+
+
+@app.post("/api/drought")
+def api_drought(req: DroughtRequest):
+    code = req.city.strip().lower()
+    # drought_long.py validates too, but we keep consistent error shape
+    if code not in CITIES:
+        return {"error": "unknown_city", "allowed": list(CITIES.keys())}
+    return drought_evaluate_city(code)
