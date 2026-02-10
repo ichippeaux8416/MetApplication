@@ -1,284 +1,363 @@
 # drought_long.py
+# Long-term drought odds engine for MetApplication
+#
+# Uses CPC + USDM ArcGIS REST services (point query by lat/lon).
+# No shapefile downloads, no forbidden directory scraping.
+#
+# Expected output shape (used by drought.html):
+# {
+#   "expected_drought_90d": float 0..1,
+#   "components": {
+#       "usdm_category": "None|D0|D1|D2|D3|D4",
+#       "sdo": "<label>",
+#       "precip_probs": {"dry":0..1,"normal":0..1,"wet":0..1}
+#   },
+#   "notes": "..."
+# }
+
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, timedelta
 import math
+import os
+import time
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Tuple
+
 import requests
 
-# --- HTTP ---
-TIMEOUT = 18
-UA = "metapplication/1.0 (contact: you@example.com)"
-S = requests.Session()
 
-def _get_json(url: str, params: dict | None = None) -> dict:
-    r = S.get(url, params=params, timeout=TIMEOUT, headers={"User-Agent": UA})
-    r.raise_for_status()
-    return r.json()
+# -------------------------
+# Services (ArcGIS REST)
+# -------------------------
+# CPC seasonal precip outlook (probabilities)
+CPC_PRECIP_SERVICE = "https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/cpc_sea_precip_outlk/MapServer"
+# CPC seasonal drought outlook
+CPC_DROUGHT_SERVICE = "https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/cpc_drought_outlk/MapServer"
 
-def _post_json(url: str, body: dict) -> dict:
-    r = S.post(url, json=body, timeout=TIMEOUT, headers={"User-Agent": UA})
-    r.raise_for_status()
-    return r.json()
+# US Drought Monitor current conditions (NDMC ArcGIS)
+# This is a commonly-used public ArcGIS endpoint for USDM current layer.
+# If NDMC ever changes it, you can update just this string.
+USDM_CURRENT_SERVICE_CANDIDATES = [
+    "https://gis.droughtmonitor.unl.edu/arcgis/rest/services/USDM/USDM_Current/MapServer",
+    "https://gis.droughtmonitor.unl.edu/arcgis/rest/services/USDM/USDM_Current_Conditions/MapServer",
+]
 
-# --- Census reverse geocode to county FIPS (works without an API key) ---
-def county_fips_from_latlon(lat: float, lon: float) -> str:
-    # Census Geocoder: returns county FIPS inside "COUNTY"
-    url = "https://geocoding.geo.census.gov/geocoder/geographies/coordinates"
-    params = {
-        "x": lon,
-        "y": lat,
-        "benchmark": "Public_AR_Current",
-        "vintage": "Current_Current",
-        "format": "json",
-    }
-    js = _get_json(url, params=params)
-    geos = js.get("result", {}).get("geographies", {})
-    counties = geos.get("Counties", [])
-    if not counties:
-        raise RuntimeError("Census geocoder: no county found for point")
-    # COUNTY is 3-digit within state; STATE is 2-digit; full county FIPS is 5 digits
-    c = counties[0]
-    return f"{c['STATE']}{c['COUNTY']}"
+USER_AGENT = os.getenv("METAPP_UA", "metapplication/1.0 (contact: you@example.com)")
+TIMEOUT = float(os.getenv("METAPP_TIMEOUT", "14"))
 
-# --- USDM Data Services (official programmatic way; avoids blocked directories) ---
-# Web service documentation: https://droughtmonitor.unl.edu/.../WebServiceInfo.aspx
-# We use: CountyStatistics / GetDroughtSeverityStatisticsByAreaPercent (JSON)
-USDM_COUNTY_STATS = (
-    "https://usdmdataservices.unl.edu/api/CountyStatistics/"
-    "GetDroughtSeverityStatisticsByAreaPercent/"
-)
+# Debug logging (set METAPP_DROUGHT_DEBUG=1 on Render)
+DEBUG = os.getenv("METAPP_DROUGHT_DEBUG", "0") == "1"
 
-@dataclass
-class UsdmNow:
-    # % area in each category (0..4), plus "None"
-    none: float
-    d0: float
-    d1: float
-    d2: float
-    d3: float
-    d4: float
-    # computed
-    expected_severity: float  # 0..4
-    most_likely: str          # "None", "D0".."D4"
+_session = requests.Session()
+_session.headers.update({"User-Agent": USER_AGENT})
 
-def usdm_latest_for_county(county_fips5: str) -> UsdmNow:
-    # Ask for a recent window; service returns weekly entries.
-    end = date.today()
-    start = end - timedelta(days=90)
 
-    params = {
-        "aoi": county_fips5,
-        "startdate": start.isoformat(),
-        "enddate": end.isoformat(),
-        "statisticsType": 1,  # 1 = percent area
-        "format": "json",
-    }
-    js = _get_json(USDM_COUNTY_STATS, params=params)
+def _log(msg: str):
+    if DEBUG:
+        print(f"[drought_long] {msg}", flush=True)
 
-    # Response shape varies slightly; normalize to a list of rows.
-    rows = None
-    if isinstance(js, list):
-        rows = js
-    elif isinstance(js, dict):
-        for k in ("data", "Data", "result", "Result"):
-            if isinstance(js.get(k), list):
-                rows = js[k]
-                break
-    if not rows:
-        raise RuntimeError("USDM service: unexpected response (no rows)")
 
-    last = rows[-1]
-    # Common keys seen in this service:
-    # None/D0/D1/D2/D3/D4 (percent). Be defensive with fallbacks.
-    def g(*keys, default=0.0):
-        for kk in keys:
-            if kk in last:
-                try:
-                    return float(last[kk])
-                except Exception:
-                    pass
-        return float(default)
+# -------------------------
+# Helpers
+# -------------------------
+def _clamp(x: float, lo: float, hi: float) -> float:
+    return lo if x < lo else hi if x > hi else x
 
-    none = g("None", "NONE", "NoDrought", default=0.0)
-    d0 = g("D0", "D0Pct", default=0.0)
-    d1 = g("D1", "D1Pct", default=0.0)
-    d2 = g("D2", "D2Pct", default=0.0)
-    d3 = g("D3", "D3Pct", default=0.0)
-    d4 = g("D4", "D4Pct", default=0.0)
 
-    # Expected severity index (0..4) using % weights.
-    expected = (0*d0 + 1*d1 + 2*d2 + 3*d3 + 4*d4) / 100.0
+def _safe_float(v: Any) -> Optional[float]:
+    try:
+        if v is None:
+            return None
+        # ArcGIS often returns ints, floats, or numeric strings
+        return float(v)
+    except Exception:
+        return None
 
-    # Most-likely category by max percent (including None)
-    cat_map = {"None": none, "D0": d0, "D1": d1, "D2": d2, "D3": d3, "D4": d4}
-    most = max(cat_map.items(), key=lambda kv: kv[1])[0]
 
-    return UsdmNow(none=none, d0=d0, d1=d1, d2=d2, d3=d3, d4=d4, expected_severity=expected, most_likely=most)
-
-# --- CPC layers via NOAA ArcGIS REST Identify (point query) ---
-# These are NOAA mapservices (ArcGIS REST) and support Identify.
-# (Service names can change; this approach is robust if URLs stay stable.)
-CPC_SDO_MAPSERVER = "https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/cpc_drought_outlk/MapServer"
-CPC_3MO_PRECIP_MAPSERVER = "https://mapservices.weather.noaa.gov/vector/rest/services/outlooks/cpc_3M_precip_outlk/MapServer"
-
-def arcgis_identify(mapserver_url: str, lat: float, lon: float) -> dict | None:
+def _arcgis_query_point(service_url: str, layer_id: int, lon: float, lat: float) -> Optional[Dict[str, Any]]:
     """
-    Returns the first Identify result's attributes at this point, or None.
+    Query a FeatureLayer by a point and return first feature's attributes.
     """
-    url = mapserver_url.rstrip("/") + "/identify"
+    url = f"{service_url}/{layer_id}/query"
     params = {
-        "f": "pjson",
+        "f": "json",
+        "where": "1=1",
         "geometry": f"{lon},{lat}",
         "geometryType": "esriGeometryPoint",
-        "sr": 4326,
-        "layers": "all",
-        "tolerance": 2,
-        "mapExtent": "-180,-90,180,90",
-        "imageDisplay": "800,600,96",
+        "inSR": "4326",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "*",
         "returnGeometry": "false",
+        "resultRecordCount": "1",
     }
-    js = _get_json(url, params=params)
-    results = js.get("results") or []
-    if not results:
+    r = _session.get(url, params=params, timeout=TIMEOUT)
+    r.raise_for_status()
+    js = r.json()
+    feats = js.get("features") or []
+    if not feats:
         return None
-    return results[0].get("attributes") or None
+    attrs = feats[0].get("attributes") or {}
+    return attrs
 
-def parse_sdo_label(attrs: dict | None) -> str:
-    if not attrs:
-        return "—"
-    # Try common attribute names:
-    for k in ("Outlook", "CATEGORY", "CAT", "Label", "LABEL", "SDO", "TYPE"):
-        v = attrs.get(k)
-        if isinstance(v, str) and v.strip():
-            return v.strip()
-    # If nothing obvious, show a compact fallback
-    return "—"
 
-def parse_precip_probs(attrs: dict | None) -> dict:
-    """
-    Return dry/normal/wet probabilities in 0..1.
-    CPC precip outlook polygons typically encode which tercile is favored and by how much.
-    Attributes vary; we’ll try multiple key patterns.
-    """
-    if not attrs:
+def _normalize_prob_triplet(dry: float, normal: float, wet: float) -> Dict[str, float]:
+    dry = max(0.0, dry)
+    normal = max(0.0, normal)
+    wet = max(0.0, wet)
+    s = dry + normal + wet
+    if s <= 0:
         return {"dry": 1/3, "normal": 1/3, "wet": 1/3}
+    return {"dry": dry / s, "normal": normal / s, "wet": wet / s}
 
-    # Sometimes services store explicit percentages for BN/NN/AN.
-    # We'll check a few likely keys.
-    def gf(*keys):
-        for k in keys:
-            v = attrs.get(k)
-            try:
-                if v is None:
-                    continue
-                fv = float(v)
-                return fv
-            except Exception:
-                continue
+
+# -------------------------
+# CPC: 3-month precip outlook
+# -------------------------
+def get_cpc_precip_probs(lon: float, lat: float) -> Tuple[Dict[str, float], str]:
+    """
+    Returns ({dry,normal,wet}, notes)
+    Uses Lead 1 layer (0) by default: this is the first upcoming 3-month season.
+    """
+    # Most deployments: layer 0 = Lead 1. If CPC changes, adjust layer id here.
+    layer_id = 0
+
+    attrs = _arcgis_query_point(CPC_PRECIP_SERVICE, layer_id, lon, lat)
+    if not attrs:
+        return {"dry": 1/3, "normal": 1/3, "wet": 1/3}, "CPC precip: no feature at point (fallback 33/33/33)."
+
+    # Field names vary; we scan for likely keys.
+    # Typical keys seen in CPC outlook layers include words like:
+    # BELOW / ABOVE / NEAR, or B / A / N, or DRY / WET / NORMAL.
+    keys = {k.lower(): k for k in attrs.keys()}
+
+    def pick(*cands: str) -> Optional[float]:
+        for c in cands:
+            for lk, ok in keys.items():
+                if c in lk:
+                    v = _safe_float(attrs.get(ok))
+                    if v is not None:
+                        return v
         return None
 
-    dry = gf("Below", "BN", "BELOW", "P_BN", "PB", "PROB_BN")
-    wet = gf("Above", "AN", "ABOVE", "P_AN", "PA", "PROB_AN")
-    nor = gf("Near", "NN", "NEAR", "P_NN", "PN", "PROB_NN")
+    below = pick("below", "dry", "b_prob", "bprob", "prob_b", "pb")
+    near = pick("near", "normal", "n_prob", "nprob", "prob_n", "pn")
+    above = pick("above", "wet", "a_prob", "aprob", "prob_a", "pa")
 
-    # If we got explicit probs, normalize.
-    got = [x for x in (dry, nor, wet) if x is not None]
-    if got:
-        # Many services use percent (0..100). Convert if needed.
-        def to01(x):
-            return x/100.0 if x > 1.01 else x
-        d = to01(dry or 0.0)
-        n = to01(nor or 0.0)
-        w = to01(wet or 0.0)
-        s = d + n + w
-        if s > 0:
-            return {"dry": d/s, "normal": n/s, "wet": w/s}
+    # Sometimes probabilities are stored as whole percents (e.g., 40) not fractions.
+    # Detect and convert if needed.
+    trip = [below, near, above]
+    if all(v is not None for v in trip):
+        b, n, a = float(below), float(near), float(above)
+        # If values look like 0-100, convert to 0-1
+        if max(b, n, a) > 1.5:
+            b /= 100.0
+            n /= 100.0
+            a /= 100.0
+        probs = _normalize_prob_triplet(b, n, a)
+        return probs, "CPC precip: OK."
 
-    # Otherwise, look for a “favored tercile” + “probability” style encoding.
-    # Example: attrs might contain something like "Tercile" and "Prob"
-    tercile = None
-    for k in ("TERCILE", "Tercile", "FAVORED", "FAV", "CAT"):
-        v = attrs.get(k)
-        if isinstance(v, str):
-            tercile = v.upper()
-            break
-    p = gf("PROB", "Prob", "PROBABILITY", "PCT", "PERCENT", "VALUE")
-    if p is not None:
-        p01 = p/100.0 if p > 1.01 else p
-        p01 = max(0.33, min(0.9, p01))  # keep sane
-        # Allocate: favored tercile gets p01, other two split remaining.
-        rem = 1.0 - p01
-        if tercile and ("BELOW" in tercile or "BN" in tercile or "DRY" in tercile):
-            return {"dry": p01, "normal": rem/2, "wet": rem/2}
-        if tercile and ("ABOVE" in tercile or "AN" in tercile or "WET" in tercile):
-            return {"dry": rem/2, "normal": rem/2, "wet": p01}
-        # default to equal
-        return {"dry": rem/2, "normal": p01, "wet": rem/2}
+    # If we couldn't find explicit prob fields, fallback
+    return {"dry": 1/3, "normal": 1/3, "wet": 1/3}, "CPC precip: fields not found (fallback 33/33/33)."
 
-    return {"dry": 1/3, "normal": 1/3, "wet": 1/3}
 
-def drought_probability_90d(usdm: UsdmNow, precip_probs: dict, sdo_label: str) -> float:
+# -------------------------
+# CPC: Seasonal Drought Outlook (SDO)
+# -------------------------
+def get_cpc_drought_outlook_label(lon: float, lat: float) -> Tuple[str, str]:
     """
-    Simple, transparent equation:
-    - baseline drought risk from current severity (USDM expected severity)
-    - adjust by precip outlook (dry vs wet)
-    - adjust by SDO category if it clearly implies development/removal
-    Output 0..1
+    Returns (label, notes).
+    Queries the CPC drought outlook map service.
     """
-    # Baseline: map expected severity 0..4 to probability 0.10..0.85
-    base = 0.10 + (usdm.expected_severity / 4.0) * 0.75
+    # CPC drought service typically has layer 1 and 2 as feature layers (CONUS vs AK/HI/PR etc).
+    # We'll try layer 1 first, then 2.
+    for layer_id in (1, 2):
+        try:
+            attrs = _arcgis_query_point(CPC_DROUGHT_SERVICE, layer_id, lon, lat)
+            if not attrs:
+                continue
 
-    # Precip signal: dry - wet in [-1,1]
+            # Heuristic extraction of label/category fields
+            # Look for something like "CATEGORY", "LABEL", "OUTLOOK", "SOMETHING"
+            best = None
+            for k, v in attrs.items():
+                lk = str(k).lower()
+                if any(s in lk for s in ("label", "category", "outlook", "class", "cat")):
+                    if isinstance(v, str) and v.strip():
+                        best = v.strip()
+                        break
+
+            if best:
+                return best, f"CPC drought outlook: OK (layer {layer_id})."
+
+            # If only numeric code exists, map it
+            # Common codes (varies): try to interpret:
+            # 0 none, 1 improvement, 2 removal, 3 development, 4 persistence
+            code = None
+            for k, v in attrs.items():
+                lk = str(k).lower()
+                if "code" in lk or lk.endswith("cat") or "class" in lk:
+                    code = _safe_float(v)
+                    if code is not None:
+                        break
+            if code is not None:
+                code_i = int(round(code))
+                mapping = {
+                    0: "None / No drought signal",
+                    1: "Improvement likely",
+                    2: "Drought removal likely",
+                    3: "Drought development likely",
+                    4: "Drought persistence likely",
+                }
+                return mapping.get(code_i, f"Unknown code {code_i}"), f"CPC drought outlook: OK (coded, layer {layer_id})."
+
+        except Exception as e:
+            _log(f"SDO layer {layer_id} failed: {e}")
+
+    return "—", "CPC drought outlook: unavailable (—)."
+
+
+# -------------------------
+# USDM: Current drought category at point
+# -------------------------
+def get_usdm_current_category(lon: float, lat: float) -> Tuple[str, str]:
+    """
+    Returns (category, notes) where category in None/D0..D4.
+    Tries a couple of known NDMC ArcGIS endpoints.
+    """
+    for svc in USDM_CURRENT_SERVICE_CANDIDATES:
+        # USDM current layer is usually layer 0, but try 0..3 quickly.
+        for layer_id in (0, 1, 2, 3):
+            try:
+                attrs = _arcgis_query_point(svc, layer_id, lon, lat)
+                if not attrs:
+                    continue
+
+                # Look for a drought category field
+                # Common names include: DM, Dm, drought, cat, category, USDM, etc.
+                cat_val = None
+                for k, v in attrs.items():
+                    lk = str(k).lower()
+                    if lk in ("dm", "d0", "drought", "category") or "dm" == lk or "drought" in lk or "usdm" in lk:
+                        cat_val = v
+                        break
+
+                # If string like "D2"
+                if isinstance(cat_val, str) and cat_val.strip():
+                    s = cat_val.strip().upper()
+                    if s in ("NONE", "N", "0"):
+                        return "None", f"USDM current: OK ({svc}, layer {layer_id})."
+                    if s.startswith("D") and len(s) == 2 and s[1].isdigit():
+                        return s, f"USDM current: OK ({svc}, layer {layer_id})."
+
+                # If numeric code, map:
+                code = _safe_float(cat_val)
+                if code is None:
+                    # try any numeric-like field that looks like category
+                    for k, v in attrs.items():
+                        lk = str(k).lower()
+                        if "dm" in lk or "cat" in lk or "class" in lk:
+                            code = _safe_float(v)
+                            if code is not None:
+                                break
+
+                if code is not None:
+                    # Many services use: 0=None,1=D0,2=D1,...,5=D4
+                    i = int(round(code))
+                    mapping = {0: "None", 1: "D0", 2: "D1", 3: "D2", 4: "D3", 5: "D4"}
+                    return mapping.get(i, "None"), f"USDM current: OK ({svc}, layer {layer_id})."
+
+            except Exception as e:
+                _log(f"USDM {svc} layer {layer_id} failed: {e}")
+
+    return "None", "USDM current: unavailable (None)."
+
+
+# -------------------------
+# Drought odds model (simple, transparent)
+# -------------------------
+def compute_expected_drought_probability(
+    usdm_cat: str,
+    sdo_label: str,
+    precip_probs: Dict[str, float],
+) -> Tuple[float, float, str]:
+    """
+    Returns (p_drought_90d, expected_severity_0to4, notes)
+    """
+
+    # Base severity from current USDM category
+    base_map = {"None": 0.0, "D0": 0.5, "D1": 1.0, "D2": 2.0, "D3": 3.0, "D4": 4.0}
+    base = base_map.get(usdm_cat, 0.0)
+
+    # Precip signal: wet - dry. Positive => wetter => lower drought risk
     dry = float(precip_probs.get("dry", 1/3))
     wet = float(precip_probs.get("wet", 1/3))
-    signal = dry - wet  # positive => drier bias
+    precip_index = _clamp(wet - dry, -1.0, 1.0)
 
-    # SDO hint
+    # SDO signal mapping (heuristic)
     s = (sdo_label or "").lower()
-    sdo_adj = 0.0
-    if any(k in s for k in ("develop", "development", "onset")):
-        sdo_adj += 0.10
-    if any(k in s for k in ("persist", "persistence")):
-        sdo_adj += 0.05
-    if any(k in s for k in ("improve", "improvement")):
-        sdo_adj -= 0.08
-    if any(k in s for k in ("remove", "removal")):
-        sdo_adj -= 0.12
+    sdo_delta = 0.0
+    if "development" in s:
+        sdo_delta = +0.9
+    elif "persistence" in s:
+        sdo_delta = +0.5
+    elif "improve" in s:
+        sdo_delta = -0.4
+    elif "removal" in s:
+        sdo_delta = -0.8
+    elif s.strip() in ("—", "-", "") or "none" in s:
+        sdo_delta = 0.0
 
-    # Combine
-    p = base + 0.35 * signal + sdo_adj
+    # Convert precip_index to a severity delta: wetter => negative delta, drier => positive delta
+    precip_delta = -1.2 * precip_index
 
-    # squash to 0..1
-    return max(0.0, min(1.0, p))
+    expected_sev = _clamp(base + sdo_delta + precip_delta, 0.0, 4.0)
 
-def evaluate_city(lat: float, lon: float) -> dict:
-    fips = county_fips_from_latlon(lat, lon)
-    usdm = usdm_latest_for_county(fips)
+    # Convert expected severity to probability of having drought (>= D1-ish) in ~90 days.
+    # Logistic curve: center near 0.8; steeper with k.
+    k = 1.35
+    center = 0.8
+    p = 1.0 / (1.0 + math.exp(-k * (expected_sev - center)))
+    p = _clamp(p, 0.0, 1.0)
 
-    sdo_attrs = arcgis_identify(CPC_SDO_MAPSERVER, lat, lon)
-    sdo_label = parse_sdo_label(sdo_attrs)
+    notes = f"Model: base={base:.2f} sdoΔ={sdo_delta:+.2f} precipΔ={precip_delta:+.2f} → sev={expected_sev:.2f}."
+    return p, expected_sev, notes
 
-    pr_attrs = arcgis_identify(CPC_3MO_PRECIP_MAPSERVER, lat, lon)
-    precip_probs = parse_precip_probs(pr_attrs)
 
-    p90 = drought_probability_90d(usdm, precip_probs, sdo_label)
+# -------------------------
+# Public entrypoint used by server.py
+# -------------------------
+def evaluate_city(city_code: str, city_name: str, lat: float, lon: float) -> Dict[str, Any]:
+    """
+    Main function your /api/drought handler should call.
+    """
+    started = time.time()
+
+    precip_probs, precip_note = get_cpc_precip_probs(lon, lat)
+    sdo_label, sdo_note = get_cpc_drought_outlook_label(lon, lat)
+    usdm_cat, usdm_note = get_usdm_current_category(lon, lat)
+
+    p, expected_sev, model_note = compute_expected_drought_probability(usdm_cat, sdo_label, precip_probs)
+
+    # Never allow NaN through
+    if not isinstance(p, float) or math.isnan(p) or math.isinf(p):
+        p = 0.5
+
+    elapsed_ms = int((time.time() - started) * 1000)
 
     return {
-        "expected_drought_90d": p90,
+        "city": city_code,
+        "city_name": city_name,
+        "expected_drought_90d": float(p),
+        "expected_severity_0to4": float(expected_sev),
         "components": {
-            "county_fips": fips,
-            "usdm_most_likely": usdm.most_likely,
-            "usdm_expected_severity": usdm.expected_severity,
-            "usdm_percent": {
-                "none": usdm.none,
-                "d0": usdm.d0,
-                "d1": usdm.d1,
-                "d2": usdm.d2,
-                "d3": usdm.d3,
-                "d4": usdm.d4,
-            },
+            "usdm_category": usdm_cat,
             "sdo": sdo_label,
             "precip_probs": precip_probs,
+        },
+        "notes": f"{model_note} {usdm_note} {sdo_note} {precip_note} ({elapsed_ms}ms)",
+        "sources": {
+            "cpc_precip_service": CPC_PRECIP_SERVICE,
+            "cpc_drought_service": CPC_DROUGHT_SERVICE,
+            "usdm_service_candidates": USDM_CURRENT_SERVICE_CANDIDATES,
         },
     }
