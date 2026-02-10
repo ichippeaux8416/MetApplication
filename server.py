@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta, date
 from pathlib import Path
 
@@ -38,7 +38,6 @@ DROUGHT_HTML = BASE_DIR / "drought.html"
 
 app = FastAPI(title="MetApplication Backend")
 
-# Allow your HTML to call the API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,6 +53,8 @@ def http_get_json(url: str, headers=None, params=None):
     r.raise_for_status()
     return r.json()
 
+
+# -------------------- TEMPERATURE MODEL --------------------
 
 def nws_forecast_periods(lat: float, lon: float) -> list[dict]:
     points = http_get_json(
@@ -85,7 +86,6 @@ def norm_cdf(x: float) -> float:
 
 
 def prob_ge(mu: float, sigma: float, threshold: float) -> float:
-    # Continuity correction for integer-ish threshold markets
     z = (threshold - 0.5 - mu) / sigma
     return max(0.0, min(1.0, 1.0 - norm_cdf(z)))
 
@@ -98,7 +98,6 @@ def sigma_for(target_date: date) -> float:
     return SIGMA_BY_LEAD_DAYS.get(lead, DEFAULT_SIGMA)
 
 
-# Parse: mm/dd/yyyy - t - yes:$$/no:$$
 LINE_RE = re.compile(
     r"""^\s*
     (?P<d>\d{1,2}/\d{1,2}/\d{4})\s*-\s*
@@ -143,7 +142,7 @@ class EvalRequest(BaseModel):
     lines: List[str]
 
 
-# ---------------- PAGES ----------------
+# -------------------- PAGES --------------------
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -159,7 +158,6 @@ def drought_page():
     return HTMLResponse("<h3>drought.html not found next to server.py</h3>")
 
 
-# Optional: allow direct /drought.html too (nice for debugging)
 @app.get("/drought.html")
 def drought_html_file():
     if DROUGHT_HTML.exists():
@@ -167,7 +165,7 @@ def drought_html_file():
     return HTMLResponse("<h3>drought.html not found next to server.py</h3>")
 
 
-# ---------------- APIs ----------------
+# -------------------- TEMPERATURE APIs --------------------
 
 @app.get("/api/highs")
 def api_highs(city: str = Query(...)):
@@ -236,3 +234,84 @@ def api_evaluate(req: EvalRequest) -> Dict[str, Any]:
         })
 
     return {"city": code, "city_name": info["name"], "results": results}
+
+
+# -------------------- DROUGHT API (FIXES YOUR 404) --------------------
+
+class DroughtRequest(BaseModel):
+    city: str
+
+
+def _drought_fallback(city_code: str) -> Dict[str, Any]:
+    # Placeholder so the UI never 404s.
+    # We’ll wire real CPC/USDM parsing next.
+    return {
+        "city": city_code,
+        "city_name": CITIES.get(city_code, {}).get("name", city_code),
+        "expected_drought_90d": 0.50,
+        "drought_outlook": {"type": "unknown", "label": "—"},
+        "precip_outlook_3mo": {"dry": 0.33, "normal": 0.34, "wet": 0.33},
+        "notes": "Fallback values (real CPC/USDM parsing not active yet).",
+    }
+
+
+def evaluate_drought(city_code: str) -> Dict[str, Any]:
+    """
+    Tries to call your drought_long.py if present:
+      - evaluate_drought(city_code) OR
+      - evaluate(city_code)
+    Otherwise returns fallback (never errors).
+    """
+    try:
+        import drought_long as dl  # your file: drought_long.py
+
+        if hasattr(dl, "evaluate_drought"):
+            data = dl.evaluate_drought(city_code)
+        elif hasattr(dl, "evaluate"):
+            data = dl.evaluate(city_code)
+        else:
+            return _drought_fallback(city_code)
+
+        # Ensure minimum keys exist (so front-end doesn’t break)
+        if not isinstance(data, dict):
+            return _drought_fallback(city_code)
+
+        data.setdefault("city", city_code)
+        data.setdefault("city_name", CITIES.get(city_code, {}).get("name", city_code))
+        data.setdefault("expected_drought_90d", 0.50)
+        data.setdefault("drought_outlook", {"type": "unknown", "label": "—"})
+        data.setdefault("precip_outlook_3mo", {"dry": 0.33, "normal": 0.34, "wet": 0.33})
+        data.setdefault("notes", "Returned by drought_long.py")
+        return data
+
+    except Exception as e:
+        out = _drought_fallback(city_code)
+        out["notes"] = f"Fallback (error calling drought_long.py: {type(e).__name__}: {e})"
+        return out
+
+
+@app.get("/api/drought")
+def api_drought_get(city: str = Query(...)) -> Dict[str, Any]:
+    code = city.strip().lower()
+    if code not in CITIES:
+        return {"error": "unknown city", "allowed": list(CITIES.keys())}
+    return evaluate_drought(code)
+
+
+@app.post("/api/drought")
+def api_drought_post(req: DroughtRequest) -> Dict[str, Any]:
+    code = req.city.strip().lower()
+    if code not in CITIES:
+        return {"error": "unknown city", "allowed": list(CITIES.keys())}
+    return evaluate_drought(code)
+
+
+# Aliases so your drought.html won't 404 even if it calls a different path
+@app.post("/api/drought_odds")
+def api_drought_odds(req: DroughtRequest) -> Dict[str, Any]:
+    return api_drought_post(req)
+
+
+@app.post("/api/drought/evaluate")
+def api_drought_evaluate(req: DroughtRequest) -> Dict[str, Any]:
+    return api_drought_post(req)
