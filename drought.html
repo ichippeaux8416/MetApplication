@@ -1,308 +1,460 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MetApplication — Long Term Drought Odds</title>
   <style>
     :root{
-      --bg:#05070a;
-      --panel:#0b0f16;
-      --panel2:#0e141e;
-      --line:#1a2331;
-      --muted:#93a4bd;
-      --text:#e9eef8;
-      --blue:#6bb6ff;
-      --blue2:#9fd2ff;
-      --chip:#0f1724;
+      --bg:#07090c;
+      --panel:#0c1017;
+      --panel2:#0a0e14;
+      --line:#1b2432;
+      --line2:#111827;
+      --text:#e7edf6;
+      --muted:#93a4bc;
+      --blue:#60a5fa;     /* light blue accent */
+      --blue2:#3b82f6;
+      --good:#34d399;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --shadow: 0 20px 80px rgba(0,0,0,.65);
+      --radius: 12px;     /* less rounded */
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      background:var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 700px at 20% -10%, rgba(96,165,250,.14), transparent 60%),
+        radial-gradient(900px 600px at 110% 0%, rgba(96,165,250,.10), transparent 55%),
+        radial-gradient(1200px 700px at 40% 120%, rgba(255,255,255,.05), transparent 60%),
+        var(--bg);
       color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
     }
-    .topbar{
-      display:flex; align-items:flex-end; justify-content:space-between;
-      padding:22px 28px 14px;
-      border-bottom:1px solid var(--line);
+    .wrap{max-width:1200px;margin:0 auto;padding:28px 24px 40px}
+    header{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px
     }
-    .brand{display:flex; flex-direction:column; gap:4px;}
-    .brand .title{
-      font-size:34px; font-weight:900; letter-spacing:1.8px;
+    .brand{
+      font-weight:900;
+      font-size:44px;
+      letter-spacing:.10em;
+      line-height:1.02;
+      margin:0;
     }
-    .brand .sub{
-      font-size:12px; color:var(--muted);
-      letter-spacing:1.2px; text-transform:uppercase; font-weight:800;
+    .sub{
+      margin-top:6px;
+      color:var(--muted);
+      letter-spacing:.14em;
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
     }
-    .nav{display:flex; gap:10px; align-items:center;}
+    .topBtns{display:flex;gap:10px;align-items:center}
     .btn{
-      appearance:none; border:1px solid var(--line);
-      background:var(--panel);
+      appearance:none;border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       color:var(--text);
-      padding:10px 12px;
-      font-weight:800;
-      letter-spacing:.8px;
+      padding:10px 14px;
       border-radius:10px;
+      font-weight:700;
+      letter-spacing:.02em;
       cursor:pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
       text-decoration:none;
-      display:inline-flex; align-items:center;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
     }
-    .btn:hover{border-color:#2a3850}
+    .btn:hover{border-color:#243246}
     .btn.primary{
-      background:#122033;
-      border-color:#274160;
-      color:var(--blue2);
+      background:linear-gradient(180deg, rgba(96,165,250,.25), rgba(96,165,250,.12));
+      border-color: rgba(96,165,250,.35);
     }
 
-    .wrap{
-      max-width:980px;
-      margin:22px auto;
-      padding:0 18px 40px;
+    .grid{
       display:grid;
-      grid-template-columns: 420px 1fr;
-      gap:18px;
+      grid-template-columns: 1.05fr 1fr;
+      gap:16px;
+      align-items:start;
+      margin-top:16px;
     }
     .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       border:1px solid var(--line);
-      border-radius:14px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       overflow:hidden;
-      box-shadow:0 18px 60px rgba(0,0,0,.45);
     }
-    .card .hd{
+    .cardHdr{
       padding:14px 16px;
-      background:rgba(255,255,255,0.02);
-      border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between;
-      letter-spacing:1.2px; text-transform:uppercase;
-      font-weight:900; color:#cfe2ff; font-size:12px;
+      border-bottom:1px solid var(--line2);
+      display:flex;align-items:center;justify-content:space-between;
+      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0));
     }
-    .card .bd{padding:16px;}
+    .cardHdr .t{
+      font-weight:900;
+      letter-spacing:.14em;
+      font-size:12px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .cardBody{padding:16px}
     label{
       display:block;
-      color:var(--muted);
-      font-size:12px;
-      letter-spacing:1.2px;
-      text-transform:uppercase;
       font-weight:900;
+      letter-spacing:.14em;
+      font-size:11px;
+      text-transform:uppercase;
+      color:var(--muted);
       margin-bottom:8px;
     }
     select{
       width:100%;
-      padding:12px 12px;
+      padding:14px 14px;
       border-radius:10px;
       border:1px solid var(--line);
-      background:var(--panel2);
+      background: rgba(5,8,12,.55);
       color:var(--text);
       font-size:16px;
       outline:none;
     }
-    select:focus{border-color:#2f4d73}
+    select:focus{border-color: rgba(96,165,250,.55); box-shadow: 0 0 0 4px rgba(96,165,250,.12);}
 
-    .cta{
+    .bigBtn{
       margin-top:14px;
       width:100%;
-      padding:14px 14px;
+      padding:16px 16px;
       border-radius:12px;
-      border:1px solid #274160;
-      background:#17304b;
-      color:#e9f3ff;
+      border:1px solid rgba(96,165,250,.35);
+      background: linear-gradient(180deg, rgba(96,165,250,.24), rgba(96,165,250,.12));
+      color:var(--text);
       font-weight:900;
-      letter-spacing:.8px;
+      letter-spacing:.04em;
+      font-size:18px;
       cursor:pointer;
-      font-size:16px;
     }
-    .cta:hover{filter:brightness(1.06)}
+    .bigBtn:hover{filter:brightness(1.03)}
+    .pillRow{
+      display:flex;gap:10px;align-items:center;margin-top:12px
+    }
     .pill{
-      display:inline-flex; align-items:center; gap:10px;
-      padding:10px 12px;
-      border-radius:999px;
+      display:inline-flex;align-items:center;gap:10px;
+      padding:9px 12px;border-radius:999px;
       border:1px solid var(--line);
-      background:var(--chip);
-      font-weight:900;
-      letter-spacing:1px;
+      background: rgba(0,0,0,.25);
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.10em;
       text-transform:uppercase;
-      font-size:12px;
-      color:#cfe2ff;
-      margin-top:12px;
+      font-size:11px;
     }
-    .dot{width:10px;height:10px;border-radius:999px;background:var(--blue); box-shadow:0 0 0 3px rgba(107,182,255,.12);}
+    .dot{width:9px;height:9px;border-radius:99px;background:var(--warn);box-shadow:0 0 0 4px rgba(251,191,36,.12)}
+    .dot.ok{background:var(--good);box-shadow:0 0 0 4px rgba(52,211,153,.12)}
+    .dot.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(251,113,133,.12)}
 
-    .big{
-      font-size:56px;
+    .kpi{
+      font-size:44px;
       font-weight:950;
-      letter-spacing:.8px;
-      margin:4px 0 2px;
+      letter-spacing:.02em;
+      margin:2px 0 10px;
     }
-    .muted{color:var(--muted); font-weight:800; letter-spacing:.4px;}
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-      margin-top:14px;
+    .kpiSub{
+      color:var(--muted);
+      margin-top:-2px;
+      font-weight:700;
+      letter-spacing:.04em;
     }
-    .kv{
+    .miniGrid{
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px
+    }
+    .mini{
       border:1px solid var(--line);
       border-radius:12px;
-      padding:12px 12px;
-      background:rgba(255,255,255,0.02);
-    }
-    .k{color:var(--muted); font-weight:900; letter-spacing:1.1px; text-transform:uppercase; font-size:12px}
-    .v{margin-top:6px; font-size:16px; font-weight:900}
-
-    .bars{
-      margin-top:12px;
-      border:1px solid var(--line);
-      border-radius:12px;
+      background: rgba(0,0,0,.18);
       padding:12px;
-      background:rgba(255,255,255,0.02);
     }
-    .barrow{display:flex; align-items:center; justify-content:space-between; margin:12px 0 8px; font-weight:900;}
+    .mini .h{
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-size:11px;
+      margin-bottom:8px;
+    }
+    .bars{
+      margin-top:10px;
+      display:grid;gap:10px;
+    }
+    .barRow{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .barLabel{font-weight:850;font-size:16px}
+    .barVal{color:var(--muted);font-weight:900;letter-spacing:.08em}
     .track{
-      width:100%;
-      height:12px;
-      border-radius:999px;
-      background:#0b0f16;
-      border:1px solid var(--line);
+      height:12px;border-radius:99px;background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
       overflow:hidden;
+      margin-top:8px;
     }
     .fill{
       height:100%;
-      background:linear-gradient(90deg, var(--blue), var(--blue2));
-      width:50%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(96,165,250,.95), rgba(96,165,250,.55));
     }
-    .small{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.4px}
-    .err{margin-top:10px; color:#ffb4b4; font-weight:900; display:none;}
-    @media (max-width: 920px){ .wrap{grid-template-columns:1fr} }
+
+    .debug{
+      margin-top:12px;
+      border:1px dashed rgba(255,255,255,.15);
+      background: rgba(0,0,0,.18);
+      border-radius:12px;
+      padding:10px 12px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      white-space:pre-wrap;
+      overflow:auto;
+      max-height:180px;
+    }
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .brand{font-size:36px}
+    }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="brand">
-      <div class="title">MetApplication</div>
-      <div class="sub">Long Term Drought Odds</div>
-    </div>
-    <div class="nav">
-      <a class="btn" href="/">High Temp</a>
-      <button class="btn primary" id="evalBtn">Evaluate</button>
-    </div>
-  </div>
-
   <div class="wrap">
-    <div class="card">
-      <div class="hd">Inputs</div>
-      <div class="bd">
-        <label>City</label>
-        <select id="city">
-          <option value="den">Denver</option>
-          <option value="nyc">New York City</option>
-          <option value="dal">Dallas</option>
-          <option value="chi" selected>Chicago</option>
-        </select>
-
-        <button class="cta" id="evalBtn2">Evaluate Drought Odds</button>
-
-        <div class="pill"><span class="dot"></span><span id="statusTxt">ready</span></div>
-        <div class="err" id="errTxt"></div>
+    <header>
+      <div>
+        <div class="brand">MetApplication</div>
+        <div class="sub">Long Term Drought Odds</div>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="hd">
-        <span>Result</span>
-        <span id="cityName" style="opacity:.9; letter-spacing:1.4px;">—</span>
+      <div class="topBtns">
+        <a class="btn" href="/">High Temp</a>
+        <button class="btn primary" id="btnEvalTop" type="button">Evaluate</button>
       </div>
-      <div class="bd">
-        <div class="big" id="odds">—</div>
-        <div class="muted">Expected drought through ~90 days</div>
+    </header>
 
-        <div class="grid2">
-          <div class="kv">
-            <div class="k">Seasonal Drought Outlook</div>
-            <div class="v" id="sdoCat">—</div>
-            <div class="small" id="sdoValid">—</div>
-          </div>
-          <div class="kv">
-            <div class="k">3-Month Precip Outlook</div>
-            <div class="v" id="pCat">—</div>
-            <div class="small" id="pValid">—</div>
-          </div>
+    <div class="grid">
+      <!-- INPUT -->
+      <section class="card">
+        <div class="cardHdr">
+          <div class="t">Inputs</div>
         </div>
+        <div class="cardBody">
+          <label for="city">City</label>
+          <select id="city">
+            <option value="den">Denver</option>
+            <option value="nyc">New York City</option>
+            <option value="dal">Dallas</option>
+            <option value="chi" selected>Chicago</option>
+          </select>
 
-        <div class="bars">
-          <div class="k" style="margin-bottom:8px;">Precip Signal</div>
+          <button class="bigBtn" id="btnEval" type="button">Evaluate Drought Odds</button>
 
-          <div class="barrow"><span>Drier bias</span><span id="drierPct">—</span></div>
-          <div class="track"><div class="fill" id="drierFill" style="width:0%"></div></div>
+          <div class="pillRow">
+            <div class="pill"><span class="dot" id="dot"></span><span id="statusTxt">READY</span></div>
+            <div class="pill" id="httpTxt">—</div>
+          </div>
 
-          <div class="barrow" style="margin-top:14px;"><span>Wetter bias</span><span id="wetterPct">—</span></div>
-          <div class="track"><div class="fill" id="wetterFill" style="width:0%"></div></div>
-
-          <div class="small" style="margin-top:10px;" id="debugLine"></div>
+          <div class="debug" id="debugBox" style="display:none;"></div>
         </div>
-      </div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="card">
+        <div class="cardHdr">
+          <div class="t">Result</div>
+          <div class="t" id="cityName">—</div>
+        </div>
+        <div class="cardBody">
+          <div class="kpi" id="kpi">—</div>
+          <div class="kpiSub">Expected drought through ~90 days</div>
+
+          <div class="miniGrid">
+            <div class="mini">
+              <div class="h">Seasonal Drought Outlook</div>
+              <div id="sdo">—</div>
+            </div>
+            <div class="mini">
+              <div class="h">3-Month Precip Outlook</div>
+              <div id="precip">—</div>
+            </div>
+          </div>
+
+          <div class="mini" style="margin-top:12px">
+            <div class="h">Precip Signal</div>
+
+            <div class="bars">
+              <div>
+                <div class="barRow">
+                  <div class="barLabel">Drier bias</div>
+                  <div class="barVal" id="dryPct">—</div>
+                </div>
+                <div class="track"><div class="fill" id="dryFill"></div></div>
+              </div>
+
+              <div>
+                <div class="barRow">
+                  <div class="barLabel">Wetter bias</div>
+                  <div class="barVal" id="wetPct">—</div>
+                </div>
+                <div class="track"><div class="fill" id="wetFill"></div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
     </div>
   </div>
 
 <script>
-  const $ = (id)=>document.getElementById(id);
+  const $ = (id) => document.getElementById(id);
 
-  function setStatus(t){
-    $("statusTxt").textContent = t;
-    $("errTxt").style.display = "none";
-  }
-  function setErr(t){
-    $("errTxt").textContent = t;
-    $("errTxt").style.display = "block";
+  function setStatus(kind, msg, httpLine="—") {
+    const dot = $("dot");
+    dot.classList.remove("ok","bad");
+    if (kind === "ok") dot.classList.add("ok");
+    if (kind === "bad") dot.classList.add("bad");
+    $("statusTxt").textContent = msg;
+    $("httpTxt").textContent = httpLine;
   }
 
-  async function evaluate(){
-    const city = $("city").value;
-    setStatus("loading");
-    try{
-      const res = await fetch(`/api/drought?city=${encodeURIComponent(city)}`, { cache: "no-store" });
-      const data = await res.json();
-      if(!res.ok || data.error){
-        throw new Error(data.error || ("HTTP " + res.status));
+  function showDebug(text) {
+    const box = $("debugBox");
+    box.style.display = "block";
+    box.textContent = text;
+  }
+
+  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+  // Try multiple endpoints so we never “guess wrong”
+  async function callDroughtAPI(city) {
+    const payload = { city };
+
+    const tries = [
+      { method:"POST", url:"/api/drought", body: JSON.stringify(payload) },
+      { method:"GET",  url:`/api/drought?city=${encodeURIComponent(city)}` },
+      { method:"POST", url:"/api/drought_odds", body: JSON.stringify(payload) },
+      { method:"POST", url:"/api/drought/evaluate", body: JSON.stringify(payload) },
+    ];
+
+    let lastErr = null;
+
+    for (const t of tries) {
+      try {
+        const opts = { method: t.method, headers: {} };
+        if (t.method !== "GET") {
+          opts.headers["Content-Type"] = "application/json";
+          opts.body = t.body;
+        }
+        const res = await fetch(t.url, opts);
+        const txt = await res.text(); // read once
+        let data = null;
+        try { data = JSON.parse(txt); } catch { /* keep raw */ }
+
+        if (res.ok) {
+          return { ok:true, endpoint:`${t.method} ${t.url}`, status:res.status, data: (data ?? txt) };
+        } else {
+          // keep failure but continue trying
+          lastErr = { endpoint:`${t.method} ${t.url}`, status:res.status, body: (data ?? txt) };
+        }
+      } catch (e) {
+        lastErr = { endpoint:`${t.method} ${t.url}`, status:"(network)", body: String(e) };
       }
+    }
 
-      $("cityName").textContent = (data.city_name || "—").toUpperCase();
+    return { ok:false, ...lastErr };
+  }
 
-      const odds = (data.expected_drought_prob!=null) ? (data.expected_drought_prob*100) : null;
-      $("odds").textContent = (odds==null) ? "—" : (odds.toFixed(1) + "%");
+  function renderResult(out) {
+    $("cityName").textContent = out.city_name || "—";
 
-      $("sdoCat").textContent = data.sdo_cat || "—";
-      $("sdoValid").textContent = data.sdo_valid || "—";
+    const p = out.expected_drought_90d;
+    if (typeof p === "number") {
+      $("kpi").textContent = (p*100).toFixed(1) + "%";
+    } else {
+      $("kpi").textContent = "—";
+    }
 
-      $("pCat").textContent =
-        (data.precip_cat || "—") +
-        (data.precip_prob!=null ? (" • " + (data.precip_prob*100).toFixed(0) + "%") : "");
-      $("pValid").textContent = data.precip_valid || "—";
+    // seasonal drought outlook
+    const sdo = out.drought_outlook;
+    $("sdo").textContent =
+      sdo && typeof sdo === "object"
+        ? (sdo.label || sdo.type || "—")
+        : (sdo || "—");
 
-      const drier = Math.round((data.p_drier||0)*100);
-      const wetter = Math.round((data.p_wetter||0)*100);
+    // precip outlook
+    const pr = out.precip_outlook_3mo;
+    if (pr && typeof pr === "object") {
+      const dry = pr.dry ?? pr.below ?? null;
+      const wet = pr.wet ?? pr.above ?? null;
+      const normal = pr.normal ?? pr.near ?? null;
+      const parts = [];
+      if (dry != null) parts.push(`Dry ${(dry*100).toFixed(0)}%`);
+      if (normal != null) parts.push(`Normal ${(normal*100).toFixed(0)}%`);
+      if (wet != null) parts.push(`Wet ${(wet*100).toFixed(0)}%`);
+      $("precip").textContent = parts.length ? parts.join("  ·  ") : "—";
 
-      $("drierPct").textContent = drier + "%";
-      $("wetterPct").textContent = wetter + "%";
-      $("drierFill").style.width = Math.max(0, Math.min(100, drier)) + "%";
-      $("wetterFill").style.width = Math.max(0, Math.min(100, wetter)) + "%";
-
-      const dbg = data.debug || {};
-      $("debugLine").textContent = `SDO: ${dbg.sdo_hit ? "hit":"miss"} • Precip: ${dbg.precip_hit ? "hit":"miss"} • layer ${dbg.sdo_layer ?? "—"}`;
-
-      setStatus("ready");
-    }catch(e){
-      setStatus("ready");
-      setErr(String(e.message || e));
+      // bars
+      const dry01 = clamp01(dry ?? 0);
+      const wet01 = clamp01(wet ?? 0);
+      $("dryPct").textContent = (dry01*100).toFixed(0) + "%";
+      $("wetPct").textContent = (wet01*100).toFixed(0) + "%";
+      $("dryFill").style.width = (dry01*100).toFixed(0) + "%";
+      $("wetFill").style.width = (wet01*100).toFixed(0) + "%";
+    } else {
+      $("precip").textContent = "—";
+      $("dryPct").textContent = "—";
+      $("wetPct").textContent = "—";
+      $("dryFill").style.width = "0%";
+      $("wetFill").style.width = "0%";
     }
   }
 
-  $("evalBtn").addEventListener("click", evaluate);
-  $("evalBtn2").addEventListener("click", evaluate);
+  async function evaluate() {
+    const city = $("city").value;
 
-  // do NOT auto-run; user asked for “choose city and evaluate”
+    setStatus("warn", "LOADING", "…");
+    $("debugBox").style.display = "none";
+
+    const r = await callDroughtAPI(city);
+
+    if (!r.ok) {
+      setStatus("bad", "HTTP " + r.status, `${r.endpoint}  →  ${r.status}`);
+      showDebug(
+        `FAILED ALL ENDPOINTS\n` +
+        `Last attempt: ${r.endpoint}\n` +
+        `Status: ${r.status}\n` +
+        `Body:\n${typeof r.body === "string" ? r.body : JSON.stringify(r.body, null, 2)}`
+      );
+      return;
+    }
+
+    setStatus("ok", "OK", `${r.endpoint}  →  ${r.status}`);
+
+    const data = r.data;
+    if (typeof data === "string") {
+      showDebug("Unexpected non-JSON response:\n" + data);
+      return;
+    }
+
+    renderResult(data);
+
+    // If backend includes notes, show them (optional but helpful)
+    if (data && data.notes) {
+      showDebug(`OK\nEndpoint: ${r.endpoint}\nNotes: ${data.notes}`);
+    }
+  }
+
+  $("btnEval").addEventListener("click", evaluate);
+  $("btnEvalTop").addEventListener("click", evaluate);
 </script>
 </body>
 </html>
