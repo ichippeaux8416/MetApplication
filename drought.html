@@ -4,27 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MetApplication — Long Term Drought Odds</title>
+
+  <!-- Hard anti-cache hints (helps on Render + browser caching) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <style>
     :root{
       --bg:#07090c;
       --panel:#0c1017;
-      --panel2:#0a0e14;
       --line:#1b2432;
       --line2:#111827;
       --text:#e7edf6;
       --muted:#93a4bc;
-      --blue:#60a5fa;     /* light blue accent */
-      --blue2:#3b82f6;
+      --blue:#60a5fa;
       --good:#34d399;
       --bad:#fb7185;
       --warn:#fbbf24;
       --shadow: 0 20px 80px rgba(0,0,0,.65);
-      --radius: 12px;     /* less rounded */
+      --radius: 12px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       background:
         radial-gradient(1200px 700px at 20% -10%, rgba(96,165,250,.14), transparent 60%),
         radial-gradient(900px 600px at 110% 0%, rgba(96,165,250,.10), transparent 55%),
@@ -33,27 +37,12 @@
       color:var(--text);
     }
     .wrap{max-width:1200px;margin:0 auto;padding:28px 24px 40px}
-    header{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px
-    }
-    .brand{
-      font-weight:900;
-      font-size:44px;
-      letter-spacing:.10em;
-      line-height:1.02;
-      margin:0;
-    }
-    .sub{
-      margin-top:6px;
-      color:var(--muted);
-      letter-spacing:.14em;
-      font-size:12px;
-      font-weight:700;
-      text-transform:uppercase;
-    }
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+    .brand{font-weight:900;font-size:44px;letter-spacing:.10em;line-height:1.02;margin:0}
+    .sub{margin-top:6px;color:var(--muted);letter-spacing:.14em;font-size:12px;font-weight:700;text-transform:uppercase}
     .topBtns{display:flex;gap:10px;align-items:center}
     .btn{
-      appearance:none;border:1px solid var(--line);
+      border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       color:var(--text);
       padding:10px 14px;
@@ -61,11 +50,8 @@
       font-weight:700;
       letter-spacing:.02em;
       cursor:pointer;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
       text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
+      display:inline-flex;align-items:center;gap:10px;
     }
     .btn:hover{border-color:#243246}
     .btn.primary{
@@ -73,13 +59,7 @@
       border-color: rgba(96,165,250,.35);
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.05fr 1fr;
-      gap:16px;
-      align-items:start;
-      margin-top:16px;
-    }
+    .grid{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:start;margin-top:16px}
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       border:1px solid var(--line);
@@ -88,137 +68,67 @@
       overflow:hidden;
     }
     .cardHdr{
-      padding:14px 16px;
-      border-bottom:1px solid var(--line2);
+      padding:14px 16px;border-bottom:1px solid var(--line2);
       display:flex;align-items:center;justify-content:space-between;
       background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0));
     }
-    .cardHdr .t{
-      font-weight:900;
-      letter-spacing:.14em;
-      font-size:12px;
-      text-transform:uppercase;
-      color:var(--muted);
-    }
+    .cardHdr .t{font-weight:900;letter-spacing:.14em;font-size:12px;text-transform:uppercase;color:var(--muted)}
     .cardBody{padding:16px}
-    label{
-      display:block;
-      font-weight:900;
-      letter-spacing:.14em;
-      font-size:11px;
-      text-transform:uppercase;
-      color:var(--muted);
-      margin-bottom:8px;
-    }
+    label{display:block;font-weight:900;letter-spacing:.14em;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
     select{
-      width:100%;
-      padding:14px 14px;
-      border-radius:10px;
+      width:100%;padding:14px 14px;border-radius:10px;
       border:1px solid var(--line);
       background: rgba(5,8,12,.55);
       color:var(--text);
-      font-size:16px;
-      outline:none;
+      font-size:16px;outline:none;
     }
-    select:focus{border-color: rgba(96,165,250,.55); box-shadow: 0 0 0 4px rgba(96,165,250,.12);}
-
     .bigBtn{
-      margin-top:14px;
-      width:100%;
-      padding:16px 16px;
-      border-radius:12px;
+      margin-top:14px;width:100%;
+      padding:16px 16px;border-radius:12px;
       border:1px solid rgba(96,165,250,.35);
       background: linear-gradient(180deg, rgba(96,165,250,.24), rgba(96,165,250,.12));
       color:var(--text);
-      font-weight:900;
-      letter-spacing:.04em;
-      font-size:18px;
+      font-weight:900;letter-spacing:.04em;font-size:18px;
       cursor:pointer;
     }
-    .bigBtn:hover{filter:brightness(1.03)}
-    .pillRow{
-      display:flex;gap:10px;align-items:center;margin-top:12px
-    }
+    .pillRow{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
     .pill{
       display:inline-flex;align-items:center;gap:10px;
       padding:9px 12px;border-radius:999px;
       border:1px solid var(--line);
       background: rgba(0,0,0,.25);
       color:var(--muted);
-      font-weight:800;
-      letter-spacing:.10em;
-      text-transform:uppercase;
-      font-size:11px;
+      font-weight:800;letter-spacing:.10em;text-transform:uppercase;font-size:11px;
     }
     .dot{width:9px;height:9px;border-radius:99px;background:var(--warn);box-shadow:0 0 0 4px rgba(251,191,36,.12)}
     .dot.ok{background:var(--good);box-shadow:0 0 0 4px rgba(52,211,153,.12)}
     .dot.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(251,113,133,.12)}
 
-    .kpi{
-      font-size:44px;
-      font-weight:950;
-      letter-spacing:.02em;
-      margin:2px 0 10px;
-    }
-    .kpiSub{
-      color:var(--muted);
-      margin-top:-2px;
-      font-weight:700;
-      letter-spacing:.04em;
-    }
-    .miniGrid{
-      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px
-    }
-    .mini{
-      border:1px solid var(--line);
-      border-radius:12px;
-      background: rgba(0,0,0,.18);
-      padding:12px;
-    }
-    .mini .h{
-      color:var(--muted);
-      font-weight:900;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      font-size:11px;
-      margin-bottom:8px;
-    }
-    .bars{
-      margin-top:10px;
-      display:grid;gap:10px;
-    }
-    .barRow{
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:10px;
-      align-items:center;
-    }
+    .kpi{font-size:44px;font-weight:950;letter-spacing:.02em;margin:2px 0 10px}
+    .kpiSub{color:var(--muted);margin-top:-2px;font-weight:700;letter-spacing:.04em}
+
+    .miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .mini{border:1px solid var(--line);border-radius:12px;background: rgba(0,0,0,.18);padding:12px}
+    .mini .h{color:var(--muted);font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:11px;margin-bottom:8px}
+
+    .track{height:12px;border-radius:99px;background: rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+    .fill{height:100%;width:0%;background: linear-gradient(90deg, rgba(96,165,250,.95), rgba(96,165,250,.55))}
+
+    .barRow{display:grid;grid-template-columns: 1fr auto;gap:10px;align-items:center}
     .barLabel{font-weight:850;font-size:16px}
     .barVal{color:var(--muted);font-weight:900;letter-spacing:.08em}
-    .track{
-      height:12px;border-radius:99px;background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      overflow:hidden;
-      margin-top:8px;
-    }
-    .fill{
-      height:100%;
-      width:0%;
-      background: linear-gradient(90deg, rgba(96,165,250,.95), rgba(96,165,250,.55));
-    }
 
     .debug{
-      margin-top:12px;
-      border:1px dashed rgba(255,255,255,.15);
+      margin-top:12px;border:1px dashed rgba(255,255,255,.15);
       background: rgba(0,0,0,.18);
       border-radius:12px;
       padding:10px 12px;
       color: var(--muted);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       font-size:12px;
       white-space:pre-wrap;
       overflow:auto;
-      max-height:180px;
+      max-height:220px;
     }
 
     @media (max-width: 980px){
@@ -241,11 +151,8 @@
     </header>
 
     <div class="grid">
-      <!-- INPUT -->
       <section class="card">
-        <div class="cardHdr">
-          <div class="t">Inputs</div>
-        </div>
+        <div class="cardHdr"><div class="t">Inputs</div></div>
         <div class="cardBody">
           <label for="city">City</label>
           <select id="city">
@@ -260,13 +167,13 @@
           <div class="pillRow">
             <div class="pill"><span class="dot" id="dot"></span><span id="statusTxt">READY</span></div>
             <div class="pill" id="httpTxt">—</div>
+            <div class="pill" id="verTxt">v2-click-debug</div>
           </div>
 
-          <div class="debug" id="debugBox" style="display:none;"></div>
+          <div class="debug" id="debugBox">Debug will appear here…</div>
         </div>
       </section>
 
-      <!-- RESULT -->
       <section class="card">
         <div class="cardHdr">
           <div class="t">Result</div>
@@ -290,7 +197,7 @@
           <div class="mini" style="margin-top:12px">
             <div class="h">Precip Signal</div>
 
-            <div class="bars">
+            <div style="display:grid;gap:10px;margin-top:10px">
               <div>
                 <div class="barRow">
                   <div class="barLabel">Drier bias</div>
@@ -307,8 +214,8 @@
                 <div class="track"><div class="fill" id="wetFill"></div></div>
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
       </section>
     </div>
@@ -326,83 +233,71 @@
     $("httpTxt").textContent = httpLine;
   }
 
-  function showDebug(text) {
+  function debug(msg) {
     const box = $("debugBox");
-    box.style.display = "block";
-    box.textContent = text;
+    box.textContent = msg;
   }
 
   function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 
-  // Try multiple endpoints so we never “guess wrong”
+  async function tryFetch(method, url, bodyObj=null) {
+    const opts = { method, headers: {} };
+    if (method !== "GET") {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(bodyObj || {});
+    }
+    const res = await fetch(url, opts);
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
   async function callDroughtAPI(city) {
     const payload = { city };
 
-    const tries = [
-      { method:"POST", url:"/api/drought", body: JSON.stringify(payload) },
-      { method:"GET",  url:`/api/drought?city=${encodeURIComponent(city)}` },
-      { method:"POST", url:"/api/drought_odds", body: JSON.stringify(payload) },
-      { method:"POST", url:"/api/drought/evaluate", body: JSON.stringify(payload) },
+    const attempts = [
+      { method:"POST", url:"/api/drought", label:"POST /api/drought" },
+      { method:"GET",  url:`/api/drought?city=${encodeURIComponent(city)}`, label:"GET /api/drought?city=" },
+      { method:"POST", url:"/api/drought_odds", label:"POST /api/drought_odds" },
+      { method:"POST", url:"/api/drought/evaluate", label:"POST /api/drought/evaluate" },
     ];
 
-    let lastErr = null;
-
-    for (const t of tries) {
+    let trail = [];
+    for (const a of attempts) {
       try {
-        const opts = { method: t.method, headers: {} };
-        if (t.method !== "GET") {
-          opts.headers["Content-Type"] = "application/json";
-          opts.body = t.body;
-        }
-        const res = await fetch(t.url, opts);
-        const txt = await res.text(); // read once
-        let data = null;
-        try { data = JSON.parse(txt); } catch { /* keep raw */ }
-
-        if (res.ok) {
-          return { ok:true, endpoint:`${t.method} ${t.url}`, status:res.status, data: (data ?? txt) };
-        } else {
-          // keep failure but continue trying
-          lastErr = { endpoint:`${t.method} ${t.url}`, status:res.status, body: (data ?? txt) };
-        }
+        const r = await tryFetch(a.method, a.url, payload);
+        trail.push(`${a.label} -> ${r.status}`);
+        if (r.ok) return { ok:true, endpoint:a.label, status:r.status, data:(r.json ?? r.text), trail };
       } catch (e) {
-        lastErr = { endpoint:`${t.method} ${t.url}`, status:"(network)", body: String(e) };
+        trail.push(`${a.label} -> NETWORK ERROR: ${String(e)}`);
       }
     }
-
-    return { ok:false, ...lastErr };
+    return { ok:false, endpoint:"(none)", status:"—", data:null, trail };
   }
 
   function renderResult(out) {
-    $("cityName").textContent = out.city_name || "—";
+    $("cityName").textContent = out.city_name || out.city || "—";
 
     const p = out.expected_drought_90d;
-    if (typeof p === "number") {
-      $("kpi").textContent = (p*100).toFixed(1) + "%";
-    } else {
-      $("kpi").textContent = "—";
-    }
+    if (typeof p === "number") $("kpi").textContent = (p*100).toFixed(1) + "%";
+    else $("kpi").textContent = "—";
 
-    // seasonal drought outlook
     const sdo = out.drought_outlook;
-    $("sdo").textContent =
-      sdo && typeof sdo === "object"
-        ? (sdo.label || sdo.type || "—")
-        : (sdo || "—");
+    $("sdo").textContent = (sdo && typeof sdo === "object") ? (sdo.label || sdo.type || "—") : (sdo || "—");
 
-    // precip outlook
     const pr = out.precip_outlook_3mo;
     if (pr && typeof pr === "object") {
       const dry = pr.dry ?? pr.below ?? null;
       const wet = pr.wet ?? pr.above ?? null;
       const normal = pr.normal ?? pr.near ?? null;
+
       const parts = [];
       if (dry != null) parts.push(`Dry ${(dry*100).toFixed(0)}%`);
       if (normal != null) parts.push(`Normal ${(normal*100).toFixed(0)}%`);
       if (wet != null) parts.push(`Wet ${(wet*100).toFixed(0)}%`);
       $("precip").textContent = parts.length ? parts.join("  ·  ") : "—";
 
-      // bars
       const dry01 = clamp01(dry ?? 0);
       const wet01 = clamp01(wet ?? 0);
       $("dryPct").textContent = (dry01*100).toFixed(0) + "%";
@@ -421,40 +316,46 @@
   async function evaluate() {
     const city = $("city").value;
 
-    setStatus("warn", "LOADING", "…");
-    $("debugBox").style.display = "none";
+    // FORCE visible feedback immediately
+    setStatus("warn", "CLICKED", "starting…");
+    debug(`CLICKED\ncity=${city}\nlocation.origin=${location.origin}\npath=${location.pathname}\n`);
 
     const r = await callDroughtAPI(city);
 
+    debug(
+      `ATTEMPTS:\n${r.trail.join("\n")}\n\n` +
+      (r.ok
+        ? `SUCCESS:\n${r.endpoint} -> ${r.status}\n\nBODY:\n${typeof r.data === "string" ? r.data : JSON.stringify(r.data, null, 2)}`
+        : `FAILED:\nNo endpoint returned 200.\n`)
+    );
+
     if (!r.ok) {
-      setStatus("bad", "HTTP " + r.status, `${r.endpoint}  →  ${r.status}`);
-      showDebug(
-        `FAILED ALL ENDPOINTS\n` +
-        `Last attempt: ${r.endpoint}\n` +
-        `Status: ${r.status}\n` +
-        `Body:\n${typeof r.body === "string" ? r.body : JSON.stringify(r.body, null, 2)}`
-      );
+      setStatus("bad", "ERROR", "No route matched");
       return;
     }
 
-    setStatus("ok", "OK", `${r.endpoint}  →  ${r.status}`);
+    setStatus("ok", "OK", `${r.endpoint} → ${r.status}`);
 
-    const data = r.data;
-    if (typeof data === "string") {
-      showDebug("Unexpected non-JSON response:\n" + data);
+    if (typeof r.data === "string") {
+      // got HTML or text instead of json
       return;
     }
 
-    renderResult(data);
-
-    // If backend includes notes, show them (optional but helpful)
-    if (data && data.notes) {
-      showDebug(`OK\nEndpoint: ${r.endpoint}\nNotes: ${data.notes}`);
-    }
+    renderResult(r.data);
   }
 
-  $("btnEval").addEventListener("click", evaluate);
-  $("btnEvalTop").addEventListener("click", evaluate);
+  // Ensure the handlers attach even if this script runs early
+  window.addEventListener("load", () => {
+    const b1 = $("btnEval");
+    const b2 = $("btnEvalTop");
+
+    b1.addEventListener("click", (e) => { e.preventDefault(); evaluate(); });
+    b2.addEventListener("click", (e) => { e.preventDefault(); evaluate(); });
+
+    // prove scripts are loaded
+    setStatus("warn", "READY", "handlers attached");
+    debug("READY\nHandlers attached. Click Evaluate Drought Odds.\n");
+  });
 </script>
 </body>
 </html>
