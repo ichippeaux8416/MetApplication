@@ -22,40 +22,32 @@
       background:var(--bg);
       color:var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
-      letter-spacing:.1px;
     }
     .topbar{
       display:flex; align-items:flex-end; justify-content:space-between;
       padding:22px 28px 14px;
       border-bottom:1px solid var(--line);
     }
-    .brand{
-      display:flex; flex-direction:column; gap:4px;
-    }
+    .brand{display:flex; flex-direction:column; gap:4px;}
     .brand .title{
-      font-size:34px;
-      font-weight:800;
-      letter-spacing:1.6px;
+      font-size:34px; font-weight:900; letter-spacing:1.8px;
     }
     .brand .sub{
-      font-size:12px;
-      color:var(--muted);
-      letter-spacing:1.2px;
-      text-transform:uppercase;
-      font-weight:700;
+      font-size:12px; color:var(--muted);
+      letter-spacing:1.2px; text-transform:uppercase; font-weight:800;
     }
-    .nav{
-      display:flex; gap:10px; align-items:center;
-    }
+    .nav{display:flex; gap:10px; align-items:center;}
     .btn{
       appearance:none; border:1px solid var(--line);
       background:var(--panel);
       color:var(--text);
       padding:10px 12px;
-      font-weight:700;
-      letter-spacing:.6px;
-      border-radius:10px; /* less rounded */
+      font-weight:800;
+      letter-spacing:.8px;
+      border-radius:10px;
       cursor:pointer;
+      text-decoration:none;
+      display:inline-flex; align-items:center;
     }
     .btn:hover{border-color:#2a3850}
     .btn.primary{
@@ -63,18 +55,19 @@
       border-color:#274160;
       color:var(--blue2);
     }
+
     .wrap{
-      max-width:1100px;
+      max-width:980px;
       margin:22px auto;
       padding:0 18px 40px;
       display:grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 420px 1fr;
       gap:18px;
     }
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
       border:1px solid var(--line);
-      border-radius:14px; /* less rounded */
+      border-radius:14px;
       overflow:hidden;
       box-shadow:0 18px 60px rgba(0,0,0,.45);
     }
@@ -83,20 +76,17 @@
       background:rgba(255,255,255,0.02);
       border-bottom:1px solid var(--line);
       display:flex; align-items:center; justify-content:space-between;
-      letter-spacing:1.2px;
-      text-transform:uppercase;
-      font-weight:800;
-      color:#cfe2ff;
-      font-size:12px;
+      letter-spacing:1.2px; text-transform:uppercase;
+      font-weight:900; color:#cfe2ff; font-size:12px;
     }
-    .card .bd{padding:16px}
+    .card .bd{padding:16px;}
     label{
       display:block;
       color:var(--muted);
       font-size:12px;
       letter-spacing:1.2px;
       text-transform:uppercase;
-      font-weight:800;
+      font-weight:900;
       margin-bottom:8px;
     }
     select{
@@ -110,7 +100,21 @@
       outline:none;
     }
     select:focus{border-color:#2f4d73}
-    .sp{height:14px}
+
+    .cta{
+      margin-top:14px;
+      width:100%;
+      padding:14px 14px;
+      border-radius:12px;
+      border:1px solid #274160;
+      background:#17304b;
+      color:#e9f3ff;
+      font-weight:900;
+      letter-spacing:.8px;
+      cursor:pointer;
+      font-size:16px;
+    }
+    .cta:hover{filter:brightness(1.06)}
     .pill{
       display:inline-flex; align-items:center; gap:10px;
       padding:10px 12px;
@@ -122,22 +126,22 @@
       text-transform:uppercase;
       font-size:12px;
       color:#cfe2ff;
+      margin-top:12px;
     }
-    .dot{
-      width:10px;height:10px;border-radius:999px;background:var(--blue);
-      box-shadow:0 0 0 3px rgba(107,182,255,.12);
-    }
+    .dot{width:10px;height:10px;border-radius:999px;background:var(--blue); box-shadow:0 0 0 3px rgba(107,182,255,.12);}
+
     .big{
-      font-size:44px;
-      font-weight:900;
-      letter-spacing:.6px;
-      margin:10px 0 2px;
+      font-size:56px;
+      font-weight:950;
+      letter-spacing:.8px;
+      margin:4px 0 2px;
     }
-    .muted{color:var(--muted)}
+    .muted{color:var(--muted); font-weight:800; letter-spacing:.4px;}
     .grid2{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:12px;
+      margin-top:14px;
     }
     .kv{
       border:1px solid var(--line);
@@ -146,7 +150,8 @@
       background:rgba(255,255,255,0.02);
     }
     .k{color:var(--muted); font-weight:900; letter-spacing:1.1px; text-transform:uppercase; font-size:12px}
-    .v{margin-top:6px; font-size:16px; font-weight:800}
+    .v{margin-top:6px; font-size:16px; font-weight:900}
+
     .bars{
       margin-top:12px;
       border:1px solid var(--line);
@@ -154,12 +159,7 @@
       padding:12px;
       background:rgba(255,255,255,0.02);
     }
-    .barrow{
-      display:flex; align-items:center; justify-content:space-between;
-      margin:12px 0 8px;
-      font-weight:900;
-      letter-spacing:.4px;
-    }
+    .barrow{display:flex; align-items:center; justify-content:space-between; margin:12px 0 8px; font-weight:900;}
     .track{
       width:100%;
       height:12px;
@@ -173,15 +173,9 @@
       background:linear-gradient(90deg, var(--blue), var(--blue2));
       width:50%;
     }
-    .small{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px}
-    .err{
-      margin-top:10px;
-      color:#ffb4b4;
-      font-weight:800;
-    }
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
-    }
+    .small{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.4px}
+    .err{margin-top:10px; color:#ffb4b4; font-weight:900; display:none;}
+    @media (max-width: 920px){ .wrap{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
@@ -192,7 +186,7 @@
     </div>
     <div class="nav">
       <a class="btn" href="/">High Temp</a>
-      <button class="btn primary" id="runBtn">Evaluate</button>
+      <button class="btn primary" id="evalBtn">Evaluate</button>
     </div>
   </div>
 
@@ -207,9 +201,11 @@
           <option value="dal">Dallas</option>
           <option value="chi" selected>Chicago</option>
         </select>
-        <div class="sp"></div>
+
+        <button class="cta" id="evalBtn2">Evaluate Drought Odds</button>
+
         <div class="pill"><span class="dot"></span><span id="statusTxt">ready</span></div>
-        <div class="err" id="errTxt" style="display:none;"></div>
+        <div class="err" id="errTxt"></div>
       </div>
     </div>
 
@@ -220,9 +216,7 @@
       </div>
       <div class="bd">
         <div class="big" id="odds">—</div>
-        <div class="muted" style="font-weight:800; letter-spacing:.4px;">Expected drought through ~90 days</div>
-
-        <div class="sp"></div>
+        <div class="muted">Expected drought through ~90 days</div>
 
         <div class="grid2">
           <div class="kv">
@@ -268,7 +262,7 @@
     const city = $("city").value;
     setStatus("loading");
     try{
-      const res = await fetch(`/api/drought?city=${encodeURIComponent(city)}`);
+      const res = await fetch(`/api/drought?city=${encodeURIComponent(city)}`, { cache: "no-store" });
       const data = await res.json();
       if(!res.ok || data.error){
         throw new Error(data.error || ("HTTP " + res.status));
@@ -282,7 +276,9 @@
       $("sdoCat").textContent = data.sdo_cat || "—";
       $("sdoValid").textContent = data.sdo_valid || "—";
 
-      $("pCat").textContent = (data.precip_cat || "—") + (data.precip_prob!=null ? (" • " + (data.precip_prob*100).toFixed(0) + "%") : "");
+      $("pCat").textContent =
+        (data.precip_cat || "—") +
+        (data.precip_prob!=null ? (" • " + (data.precip_prob*100).toFixed(0) + "%") : "");
       $("pValid").textContent = data.precip_valid || "—";
 
       const drier = Math.round((data.p_drier||0)*100);
@@ -294,7 +290,7 @@
       $("wetterFill").style.width = Math.max(0, Math.min(100, wetter)) + "%";
 
       const dbg = data.debug || {};
-      $("debugLine").textContent = `SDO hit: ${dbg.sdo_hit ? "yes":"no"} • Precip hit: ${dbg.precip_hit ? "yes":"no"} • SDO layer: ${dbg.sdo_layer ?? "—"}`;
+      $("debugLine").textContent = `SDO: ${dbg.sdo_hit ? "hit":"miss"} • Precip: ${dbg.precip_hit ? "hit":"miss"} • layer ${dbg.sdo_layer ?? "—"}`;
 
       setStatus("ready");
     }catch(e){
@@ -303,11 +299,10 @@
     }
   }
 
-  $("runBtn").addEventListener("click", evaluate);
-  $("city").addEventListener("change", evaluate);
+  $("evalBtn").addEventListener("click", evaluate);
+  $("evalBtn2").addEventListener("click", evaluate);
 
-  // auto-load once
-  evaluate();
+  // do NOT auto-run; user asked for “choose city and evaluate”
 </script>
 </body>
 </html>
