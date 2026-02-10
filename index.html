@@ -6,7 +6,6 @@
   <title>High Temperature Prediction Market Guidance</title>
   <style>
     :root{
-      /* Robinhood-ish dark */
       --bg:#000000;
       --panel:#14171c;
       --panel2:#1b1f26;
@@ -17,14 +16,14 @@
       --muted:#a8b0bf;
       --muted2:#7f8797;
 
-      /* Accent = light blue (requested) */
-      --accent:#60a5fa;     /* light blue */
+      /* Accent = light blue */
+      --accent:#60a5fa;
       --accent2:#93c5fd;
 
       --good:#34d399;
       --bad:#fb7185;
 
-      --radius:8px;         /* less rounded */
+      --radius:8px;
       --shadow: 0 10px 26px rgba(0,0,0,.55);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
@@ -39,7 +38,6 @@
       background:var(--bg);
     }
 
-    /* Top nav-ish bar */
     .topbar{
       border-bottom:1px solid var(--line);
       background:var(--bg);
@@ -83,7 +81,6 @@
       padding:18px;
     }
 
-    /* Two-column layout like the screenshot */
     .layout{
       display:grid;
       grid-template-columns: 1.8fr 1fr;
@@ -124,7 +121,6 @@
     }
     .card-b{padding:14px}
 
-    /* Form */
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -161,15 +157,6 @@
       box-shadow: 0 0 0 4px rgba(96,165,250,.18);
     }
 
-    .actions{
-      margin-top:12px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-    }
-
     button{
       width:100%;
       padding:14px 12px;
@@ -203,7 +190,6 @@
       white-space:pre-wrap;
     }
 
-    /* Right panel (result) */
     .side{
       position:sticky;
       top:18px;
@@ -293,41 +279,56 @@
       text-transform:uppercase;
     }
 
-    /* subtle “chart” placeholder to feel like the screenshot, but not flashy */
+    /* Chart */
     .chart{
-      height:140px;
       border:1px solid var(--line);
-      background: #0a0c10;
+      background:#0a0c10;
       border-radius:var(--radius);
-      margin-bottom:12px;
-      position:relative;
       overflow:hidden;
+      position:relative;
+      height:180px;
+      margin-bottom:12px;
     }
-    .chart::before{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        linear-gradient(to bottom, rgba(255,255,255,.04), rgba(255,255,255,0)),
-        repeating-linear-gradient(to right, rgba(255,255,255,.04) 0, rgba(255,255,255,.04) 1px, transparent 1px, transparent 80px),
-        repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 1px, transparent 1px, transparent 46px);
-      opacity:.55;
+    .chart canvas{
+      width:100%;
+      height:100%;
+      display:block;
     }
-    .chartline{
+    .chart-title{
       position:absolute;
-      left:0; right:0; bottom:18px;
-      height:2px;
-      background: rgba(96,165,250,.65);
-      transform: translateY(-32px);
-      box-shadow: 0 0 0 1px rgba(96,165,250,.15);
+      left:12px;
+      top:10px;
+      font-size:12px;
+      color:var(--muted2);
+      font-weight:900;
+      letter-spacing:.10px;
+      text-transform:uppercase;
+      pointer-events:none;
     }
-    .chartlabel{
+    .chart-legend{
       position:absolute;
-      left:12px; top:10px;
+      right:12px;
+      top:10px;
+      display:flex;
+      gap:10px;
+      align-items:center;
       font-size:12px;
       color:var(--muted2);
       font-weight:800;
-      letter-spacing:.10px;
-      text-transform:uppercase;
+      pointer-events:none;
+    }
+    .lg{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .sw{
+      width:10px;height:10px;border-radius:3px;background:var(--accent);
+    }
+    .pt{
+      width:10px;height:10px;border-radius:999px;background:var(--accent2);
+      border:1px solid rgba(255,255,255,.35);
     }
   </style>
 </head>
@@ -402,9 +403,13 @@
             <div class="small">BUY YES / BUY NO / PASS</div>
           </div>
           <div class="card-b">
-            <div class="chart" aria-hidden="true">
-              <div class="chartlabel">Market</div>
-              <div class="chartline"></div>
+            <div class="chart" id="chartBox" aria-label="Fair price chart">
+              <div class="chart-title">Market</div>
+              <div class="chart-legend">
+                <div class="lg"><span class="sw"></span>Fair YES</div>
+                <div class="lg"><span class="pt"></span>Your Yes</div>
+              </div>
+              <canvas id="chart"></canvas>
             </div>
 
             <div class="pillrow">
@@ -435,7 +440,7 @@
               </div>
             </div>
 
-            <div class="note">Uses NOAA/NWS probability from backend.</div>
+            <div class="note">Chart uses μ and σ from backend for that city/date.</div>
           </div>
         </div>
       </div>
@@ -466,6 +471,9 @@
     const vModel = document.getElementById("vModel");
     const vFair = document.getElementById("vFair");
     const vEdge = document.getElementById("vEdge");
+
+    const canvas = document.getElementById("chart");
+    const ctx = canvas.getContext("2d", { alpha: false });
 
     function setStatus(text, state="idle"){
       elStatusText.textContent = text;
@@ -506,6 +514,173 @@
       return (typeof x === "number" && isFinite(x)) ? x.toFixed(4) : "—";
     }
 
+    // ---- Math helpers for Normal CDF ----
+    function erf(x){
+      // Abramowitz & Stegun approximation
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+
+      const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429;
+      const p=0.3275911;
+
+      const t = 1.0/(1.0+p*x);
+      const y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-x*x);
+      return sign*y;
+    }
+
+    function normCdf(z){
+      return 0.5*(1 + erf(z/Math.SQRT2));
+    }
+
+    function fairYes(thresholdF, mu, sigma){
+      // P(High >= threshold) = 1 - Φ((T - μ)/σ)
+      const z = (thresholdF - mu) / sigma;
+      return 1 - normCdf(z);
+    }
+
+    // ---- Chart drawing ----
+    function resizeCanvas(){
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(rect.width));
+      const h = Math.max(140, Math.floor(rect.height));
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      return { w, h };
+    }
+
+    function drawGrid(w,h, pad){
+      ctx.fillStyle = "#0a0c10";
+      ctx.fillRect(0,0,w,h);
+
+      // subtle grid
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1;
+
+      const vx = 6;
+      const vy = 4;
+
+      for (let i=0;i<=vx;i++){
+        const x = pad.l + (w-pad.l-pad.r)*(i/vx);
+        ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,h-pad.b); ctx.stroke();
+      }
+      for (let j=0;j<=vy;j++){
+        const y = pad.t + (h-pad.t-pad.b)*(j/vy);
+        ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+      }
+
+      // axes border
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      ctx.strokeRect(pad.l, pad.t, w-pad.l-pad.r, h-pad.t-pad.b);
+    }
+
+    function drawChart({mu, sigma, userT, userYesPrice}){
+      const {w,h} = resizeCanvas();
+      const pad = { l:46, r:14, t:18, b:32 };
+
+      drawGrid(w,h,pad);
+
+      // domain around mu ± 4σ, but keep reasonable Fahrenheit bounds
+      let xMin = mu - 4*sigma;
+      let xMax = mu + 4*sigma;
+
+      // ensure userT is visible
+      xMin = Math.min(xMin, userT - 6);
+      xMax = Math.max(xMax, userT + 6);
+
+      // clamp to typical Fahrenheit-ish display bounds
+      xMin = Math.max(-40, Math.floor(xMin));
+      xMax = Math.min(130, Math.ceil(xMax));
+      if (xMax - xMin < 10){
+        xMin -= 5; xMax += 5;
+      }
+
+      function X(x){
+        return pad.l + (x - xMin) * (w - pad.l - pad.r) / (xMax - xMin);
+      }
+      function Y(y){
+        // y in [0,1]
+        return pad.t + (1 - y) * (h - pad.t - pad.b);
+      }
+
+      // fair curve
+      const N = 220;
+      ctx.strokeStyle = "rgba(96,165,250,0.95)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i=0;i<=N;i++){
+        const x = xMin + (xMax - xMin) * (i/N);
+        const y = fairYes(x, mu, sigma);
+        const px = X(x), py = Y(y);
+        if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+
+      // user point (T, yesPrice)
+      const ux = X(userT);
+      const uy = Y(userYesPrice);
+
+      // point glow
+      ctx.fillStyle = "rgba(147,197,253,0.25)";
+      ctx.beginPath(); ctx.arc(ux, uy, 8, 0, Math.PI*2); ctx.fill();
+
+      // point
+      ctx.fillStyle = "rgba(147,197,253,0.95)";
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(ux, uy, 4.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+      // labels (axes)
+      ctx.fillStyle = "rgba(168,176,191,0.95)";
+      ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
+
+      // y labels (0, .5, 1)
+      const yTicks = [1.0, 0.5, 0.0];
+      yTicks.forEach(val=>{
+        const yy = Y(val);
+        ctx.fillText(val.toFixed(1), 10, yy+4);
+      });
+
+      // x labels (min, mid, max)
+      const mid = Math.round((xMin+xMax)/2);
+      const xTicks = [xMin, mid, xMax];
+      ctx.fillStyle = "rgba(168,176,191,0.85)";
+      xTicks.forEach((val, idx)=>{
+        const xx = X(val);
+        const s = `${val}°F`;
+        const tw = ctx.measureText(s).width;
+        const y = h - 10;
+        let x = xx - tw/2;
+        if (idx===0) x = Math.max(6, pad.l);
+        if (idx===2) x = Math.min(w - tw - 6, w - pad.r - tw);
+        ctx.fillText(s, x, y);
+      });
+
+      // annotate fair at userT (small)
+      const fairAtUserT = fairYes(userT, mu, sigma);
+      const note = `fair=${fairAtUserT.toFixed(3)}  your=${userYesPrice.toFixed(3)}`;
+      ctx.fillStyle = "rgba(242,244,247,0.85)";
+      ctx.fillText(note, Math.min(w - 14 - ctx.measureText(note).width, pad.l + 6), pad.t + 14);
+    }
+
+    function drawEmptyChart(){
+      const {w,h} = resizeCanvas();
+      const pad = { l:46, r:14, t:18, b:32 };
+      drawGrid(w,h,pad);
+      ctx.fillStyle = "rgba(168,176,191,0.55)";
+      ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
+      const msg = "evaluate to plot fair price";
+      const tw = ctx.measureText(msg).width;
+      ctx.fillText(msg, (w - tw)/2, (h)/2);
+    }
+
+    window.addEventListener("resize", () => {
+      // redraw last chart if we have it
+      if (window.__lastChart) drawChart(window.__lastChart);
+      else drawEmptyChart();
+    });
+
     async function evaluate(){
       clearError();
       setStatus("running", "warn");
@@ -513,15 +688,15 @@
 
       const d = sanitizeDate(dateIn.value);
       const t = num(tempIn.value);
-      const yes = num(yesIn.value);
-      const no = num(noIn.value);
+      const yesCents = num(yesIn.value);
+      const noCents = num(noIn.value);
 
       if (!d) { showError("Bad date. Use mm/dd/yyyy."); btnEval.disabled = false; return; }
       if (t === null) { showError("Bad Potential High Temp."); btnEval.disabled = false; return; }
-      if (yes === null) { showError("Bad Yes Cost."); btnEval.disabled = false; return; }
-      if (no === null) { showError("Bad No Cost."); btnEval.disabled = false; return; }
+      if (yesCents === null) { showError("Bad Yes Cost."); btnEval.disabled = false; return; }
+      if (noCents === null) { showError("Bad No Cost."); btnEval.disabled = false; return; }
 
-      const line = `${d} - ${t} - yes:${yes} / no:${no}`;
+      const line = `${d} - ${t} - yes:${yesCents} / no:${noCents}`;
       contractLine.textContent = line;
 
       try{
@@ -561,6 +736,17 @@
         if (s.includes("BUY")) setStatus("signal", "ok");
         else setStatus("pass", "idle");
 
+        // Plot:
+        // x-axis: threshold temperature (°F)
+        // y-axis: fair YES probability (0..1)
+        // point: (user threshold, user yes price)
+        const userYesPrice = Math.max(0, Math.min(1, (yesCents/100)));
+        const mu = out.mu;
+        const sigma = out.sigma;
+
+        window.__lastChart = { mu, sigma, userT: t, userYesPrice };
+        drawChart(window.__lastChart);
+
       } catch(e){
         showError(String(e));
       } finally{
@@ -574,6 +760,7 @@
     });
 
     setStatus("idle","idle");
+    drawEmptyChart();
   </script>
 </body>
 </html>
