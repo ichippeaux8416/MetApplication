@@ -141,6 +141,15 @@ def home():
     return HTMLResponse("<h3>index.html not found. Put index.html next to server.py</h3>")
 
 
+# ✅ ONLY CHANGE: serve drought.html at /drought.html (for your one button)
+@app.get("/drought.html")
+def drought_page():
+    p = file_if_exists("drought.html")
+    if p:
+        return FileResponse(p, media_type="text/html; charset=utf-8")
+    return HTMLResponse("<h3>drought.html not found. Put drought.html next to server.py</h3>", status_code=404)
+
+
 # Optional: serve a favicon if you add one later
 @app.get("/favicon.ico")
 def favicon():
