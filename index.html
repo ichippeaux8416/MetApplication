@@ -6,26 +6,28 @@
   <title>High Temperature Prediction Market Guidance</title>
   <style>
     :root{
-      --bg0:#0b1020;
-      --bg1:#0f1630;
-      --card:#0e1733cc;
-      --card2:#111b3b;
-      --line:#243159;
-      --line2:#2e3a66;
-      --text:#e8ecff;
-      --muted:#aab3d8;
-      --muted2:#7d88b5;
-      --green:#2dd4bf;
-      --green2:#1fb99f;
-      --red:#fb7185;
-      --red2:#f43f5e;
-      --amber:#fbbf24;
-      --blue:#60a5fa;
-      --shadow: 0 18px 45px rgba(0,0,0,.45);
-      --radius:16px;
-      --radius2:12px;
+      /* Robinhood-ish dark */
+      --bg:#000000;
+      --panel:#14171c;
+      --panel2:#1b1f26;
+      --line:#2a2f3a;
+      --line2:#343b49;
+
+      --text:#f2f4f7;
+      --muted:#a8b0bf;
+      --muted2:#7f8797;
+
+      /* Accent = light blue (requested) */
+      --accent:#60a5fa;     /* light blue */
+      --accent2:#93c5fd;
+
+      --good:#34d399;
+      --bad:#fb7185;
+
+      --radius:8px;         /* less rounded */
+      --shadow: 0 10px 26px rgba(0,0,0,.55);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-      --sans: -apple-system,BlinkMacSystemFont,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif;
+      --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
     }
 
     *{box-sizing:border-box}
@@ -34,303 +36,297 @@
       margin:0;
       font-family:var(--sans);
       color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 10% 0%, rgba(96,165,250,.20), transparent 55%),
-        radial-gradient(1000px 700px at 90% 20%, rgba(45,212,191,.14), transparent 55%),
-        radial-gradient(900px 700px at 50% 100%, rgba(251,191,36,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
+      background:var(--bg);
     }
 
+    /* Top nav-ish bar */
     .topbar{
-      position:sticky; top:0; z-index:20;
-      backdrop-filter: blur(10px);
-      background: linear-gradient(180deg, rgba(11,16,32,.82), rgba(11,16,32,.58));
-      border-bottom:1px solid rgba(36,49,89,.55);
+      border-bottom:1px solid var(--line);
+      background:var(--bg);
     }
     .topbar-inner{
-      max-width:1180px;
+      max-width:1280px;
       margin:0 auto;
-      padding:16px 18px;
+      padding:14px 18px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:16px;
     }
+
     .brand{
-      display:flex; align-items:center; gap:10px;
-      min-width:260px;
-    }
-    .logo{
-      width:36px; height:36px; border-radius:12px;
-      background:
-        radial-gradient(12px 12px at 30% 35%, rgba(255,255,255,.75), transparent 65%),
-        linear-gradient(135deg, rgba(96,165,250,.95), rgba(45,212,191,.85));
-      box-shadow: 0 12px 30px rgba(45,212,191,.18);
-      border:1px solid rgba(255,255,255,.10);
-    }
-    .title{
-      display:flex; flex-direction:column; gap:2px;
-      line-height:1.05;
-    }
-    .title h1{
-      margin:0;
-      font-size:14px;
-      letter-spacing:.22px;
       font-weight:900;
-      text-transform:none;
-    }
-    .title .sub{
-      font-size:12px;
-      color:var(--muted2);
-      font-weight:700;
       letter-spacing:.2px;
-    }
-
-    .pillbar{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .pill{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(46,58,102,.8);
-      background: rgba(14,23,51,.55);
-      color:var(--muted);
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.15px;
-    }
-    .pill strong{color:var(--text)}
-    .wrap{
-      max-width:1180px;
-      margin:0 auto;
-      padding:18px 18px 44px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:14px;
-      align-items:start;
-    }
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-      .brand{min-width:auto}
-    }
-
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(14,23,51,.72), rgba(14,23,51,.50));
-      border: 1px solid rgba(36,49,89,.85);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-    }
-    .card::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(400px 160px at 20% 0%, rgba(96,165,250,.14), transparent 60%),
-                  radial-gradient(420px 160px at 80% 0%, rgba(45,212,191,.10), transparent 60%);
-      pointer-events:none;
-    }
-    .card-header{
-      position:relative;
-      padding:14px 14px 12px;
-      border-bottom:1px solid rgba(36,49,89,.75);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .card-header h2{
-      margin:0;
-      font-size:12px;
-      letter-spacing:.22px;
-      font-weight:900;
-      color: rgba(232,236,255,.95);
-      text-transform:uppercase;
-    }
-    .card-body{
-      position:relative;
-      padding:14px;
-    }
-
-    .row{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap}
-    .field{display:flex; flex-direction:column; gap:7px}
-    .label{
-      font-size:11px;
-      color: var(--muted2);
-      font-weight:900;
-      letter-spacing:.18px;
-      text-transform:uppercase;
-    }
-
-    select, input, textarea, button{
-      font: inherit;
-      outline:none;
-      border-radius: 12px;
-      border:1px solid rgba(46,58,102,.95);
-      background: rgba(17,27,59,.72);
-      color: var(--text);
-      padding: 11px 12px;
-    }
-    select{min-width:190px}
-    input{width:140px}
-    textarea{
-      width:100%;
-      min-height:150px;
-      font-family: var(--mono);
-      font-size:12px;
-      line-height:1.35;
-      background: rgba(11,16,32,.35);
-    }
-    input::placeholder{color: rgba(170,179,216,.55)}
-    button{
-      cursor:pointer;
-      font-weight:900;
-      letter-spacing:.14px;
-      padding: 11px 12px;
-      background: rgba(17,27,59,.72);
-    }
-    button:hover{border-color: rgba(96,165,250,.65)}
-    button:disabled{opacity:.45; cursor:not-allowed}
-    .btn-primary{
-      background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(45,212,191,.85));
-      border-color: rgba(255,255,255,.10);
-      color: #071025;
-      box-shadow: 0 14px 40px rgba(45,212,191,.18);
-    }
-    .btn-danger{
-      background: linear-gradient(135deg, rgba(251,113,133,.18), rgba(244,63,94,.10));
-      border-color: rgba(244,63,94,.38);
-      color: rgba(255,220,227,.95);
-    }
-    .btn-ghost{
-      background: rgba(11,16,32,.35);
-    }
-
-    .split{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      margin-top:10px;
-    }
-    @media (max-width: 520px){
-      .split{grid-template-columns:1fr}
-      select, input{min-width: 100%; width:100%}
+      font-size:16px;
+      white-space:nowrap;
     }
 
     .status{
-      margin-top:10px;
-      font-size:12px;
-      font-weight:800;
-      color: var(--muted);
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:10px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:800;
     }
     .dot{
-      width:8px; height:8px; border-radius:999px;
-      background: rgba(170,179,216,.55);
-      box-shadow: 0 0 0 6px rgba(170,179,216,.08);
+      width:9px;height:9px;border-radius:999px;
+      background:var(--muted2);
     }
-    .ok .dot{background: rgba(45,212,191,.92); box-shadow:0 0 0 6px rgba(45,212,191,.12)}
-    .warn .dot{background: rgba(251,191,36,.95); box-shadow:0 0 0 6px rgba(251,191,36,.12)}
-    .bad .dot{background: rgba(244,63,94,.92); box-shadow:0 0 0 6px rgba(244,63,94,.12)}
-    .status .msg{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .status.ok .dot{background:var(--good)}
+    .status.warn .dot{background:#fbbf24}
+    .status.bad .dot{background:var(--bad)}
 
-    .errorbox{
-      margin-top:10px;
-      display:none;
-      border-radius:12px;
-      border:1px solid rgba(244,63,94,.35);
-      background: rgba(244,63,94,.10);
-      padding:10px 12px;
-      color: rgba(255,220,227,.95);
-      font-family: var(--mono);
+    .wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    /* Two-column layout like the screenshot */
+    .layout{
+      display:grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap:18px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .layout{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:14px 14px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .card-h .kicker{
       font-size:12px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.14px;
+      color:var(--muted);
+    }
+    .card-h .small{
+      font-size:12px;
+      color:var(--muted2);
+      font-weight:700;
+    }
+    .card-b{padding:14px}
+
+    /* Form */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.12px;
+      text-transform:uppercase;
+      color:var(--muted2);
+      margin:0 0 6px;
+    }
+
+    input, select{
+      width:100%;
+      padding:14px 12px;
+      border-radius:var(--radius);
+      border:1px solid var(--line2);
+      background:var(--panel2);
+      color:var(--text);
+      font:inherit;
+      font-size:15px;
+      outline:none;
+    }
+    input::placeholder{color:rgba(168,176,191,.55)}
+    input:focus, select:focus{
+      border-color: rgba(96,165,250,.85);
+      box-shadow: 0 0 0 4px rgba(96,165,250,.18);
+    }
+
+    .actions{
+      margin-top:12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+
+    button{
+      width:100%;
+      padding:14px 12px;
+      border-radius:var(--radius);
+      border:1px solid var(--line2);
+      background:var(--panel2);
+      color:var(--text);
+      font-weight:950;
+      letter-spacing:.12px;
+      cursor:pointer;
+      font-size:15px;
+    }
+    button:hover{border-color: rgba(96,165,250,.55)}
+    button.primary{
+      background:var(--accent);
+      border-color: rgba(96,165,250,.9);
+      color:#081018;
+    }
+    button.primary:hover{filter:brightness(1.03)}
+    button:disabled{opacity:.55; cursor:not-allowed}
+
+    .err{
+      display:none;
+      margin-top:12px;
+      border:1px solid rgba(251,113,133,.45);
+      background: rgba(251,113,133,.10);
+      border-radius:var(--radius);
+      padding:10px 12px;
+      font-family:var(--mono);
+      font-size:13px;
       white-space:pre-wrap;
     }
 
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      font-size:12px;
-      overflow:hidden;
-      border-radius: 14px;
-      border: 1px solid rgba(36,49,89,.85);
-      background: rgba(11,16,32,.25);
+    /* Right panel (result) */
+    .side{
+      position:sticky;
+      top:18px;
     }
-    thead th{
-      text-align:left;
-      padding:10px 10px;
-      font-size:11px;
-      color: rgba(170,179,216,.85);
-      font-weight:900;
-      letter-spacing:.18px;
-      text-transform:uppercase;
-      background: rgba(17,27,59,.70);
-      border-bottom: 1px solid rgba(36,49,89,.85);
+    @media (max-width: 980px){
+      .side{position:static}
     }
-    tbody td{
-      padding:10px 10px;
-      border-bottom:1px solid rgba(36,49,89,.45);
-      color: rgba(232,236,255,.90);
-      vertical-align:top;
-    }
-    tbody tr:hover td{background: rgba(96,165,250,.06)}
-    tbody tr:last-child td{border-bottom:none}
 
-    .mono{font-family: var(--mono)}
-    .muted{color: rgba(170,179,216,.85)}
-    .kpi{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      color: rgba(170,179,216,.92);
-      font-size:12px;
-      font-weight:900;
+    .pillrow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
     }
-    .tag{
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid rgba(46,58,102,.85);
-      background: rgba(11,16,32,.35);
-      color: rgba(170,179,216,.92);
-      font-weight:900;
-      letter-spacing:.12px;
+
+    .badge{
       display:inline-flex;
       align-items:center;
       gap:8px;
-    }
-    .tag b{color: rgba(232,236,255,.95)}
-
-    .signal{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
+      padding:9px 10px;
       border-radius:999px;
+      border:1px solid var(--line2);
+      background:var(--panel2);
       font-weight:1000;
-      letter-spacing:.14px;
-      border:1px solid rgba(46,58,102,.85);
-      background: rgba(11,16,32,.35);
-      white-space:nowrap;
-    }
-    .signal .s-dot{width:8px; height:8px; border-radius:999px; background: rgba(170,179,216,.6)}
-    .signal.buyyes{border-color: rgba(45,212,191,.40); background: rgba(45,212,191,.10)}
-    .signal.buyyes .s-dot{background: rgba(45,212,191,.95)}
-    .signal.buyno{border-color: rgba(244,63,94,.40); background: rgba(244,63,94,.10)}
-    .signal.buyno .s-dot{background: rgba(244,63,94,.95)}
-    .signal.pass{border-color: rgba(170,179,216,.22); background: rgba(11,16,32,.25)}
-    .signal.pass .s-dot{background: rgba(170,179,216,.65)}
-
-    .footer-note{
-      margin-top:14px;
-      color: rgba(170,179,216,.62);
-      font-size:11px;
-      font-weight:800;
       letter-spacing:.12px;
+      font-size:13px;
+    }
+    .badge .b-dot{width:9px;height:9px;border-radius:999px;background:var(--muted2)}
+    .badge.buyyes{border-color: rgba(52,211,153,.35)}
+    .badge.buyyes .b-dot{background: var(--good)}
+    .badge.buyno{border-color: rgba(251,113,133,.35)}
+    .badge.buyno .b-dot{background: var(--bad)}
+    .badge.pass{border-color: rgba(96,165,250,.25)}
+    .badge.pass .b-dot{background: var(--accent)}
+
+    .contract{
+      margin-top:10px;
+      border:1px solid var(--line);
+      background:var(--panel2);
+      border-radius:var(--radius);
+      padding:10px 12px;
+      font-family:var(--mono);
+      font-size:12.5px;
+      color:rgba(242,244,247,.92);
+      word-break:break-word;
+    }
+
+    .kv{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .kv .item{
+      border:1px solid var(--line);
+      background:var(--panel2);
+      border-radius:var(--radius);
+      padding:10px 12px;
+    }
+    .kv .k{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.12px;
+      text-transform:uppercase;
+      color:var(--muted2);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:6px;
+    }
+    .kv .k .bar{
+      width:10px;height:10px;border-radius:3px;background:var(--accent);
+    }
+    .kv .v{
+      font-family:var(--mono);
+      font-size:13px;
+      color:rgba(242,244,247,.92);
+      line-height:1.35;
+    }
+
+    .note{
+      margin-top:12px;
+      color:var(--muted2);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.10px;
+      text-transform:uppercase;
+    }
+
+    /* subtle “chart” placeholder to feel like the screenshot, but not flashy */
+    .chart{
+      height:140px;
+      border:1px solid var(--line);
+      background: #0a0c10;
+      border-radius:var(--radius);
+      margin-bottom:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .chart::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.04), rgba(255,255,255,0)),
+        repeating-linear-gradient(to right, rgba(255,255,255,.04) 0, rgba(255,255,255,.04) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 1px, transparent 1px, transparent 46px);
+      opacity:.55;
+    }
+    .chartline{
+      position:absolute;
+      left:0; right:0; bottom:18px;
+      height:2px;
+      background: rgba(96,165,250,.65);
+      transform: translateY(-32px);
+      box-shadow: 0 0 0 1px rgba(96,165,250,.15);
+    }
+    .chartlabel{
+      position:absolute;
+      left:12px; top:10px;
+      font-size:12px;
+      color:var(--muted2);
+      font-weight:800;
+      letter-spacing:.10px;
       text-transform:uppercase;
     }
   </style>
@@ -338,444 +334,246 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div class="title">
-          <h1>High Temperature Prediction Market Guidance</h1>
-          <div class="sub">Paper • NOAA/NWS</div>
-        </div>
-      </div>
-
-      <div class="pillbar">
-        <div class="pill">City: <strong id="pillCity">den</strong></div>
-        <div class="pill">Status: <strong id="pillStatus">idle</strong></div>
+      <div class="brand">High Temperature Prediction Market Guidance</div>
+      <div id="status" class="status">
+        <span class="dot"></span>
+        <span id="statusText">idle</span>
       </div>
     </div>
   </div>
 
   <div class="wrap">
-    <div class="grid">
-      <!-- LEFT: INPUTS -->
+    <div class="layout">
+      <!-- Left: Inputs -->
       <div class="card">
-        <div class="card-header">
-          <h2>Trade</h2>
-          <div class="kpi">
-            <span class="tag">Queue <b id="qCount">0</b></span>
-            <button id="btnEval" class="btn-primary">Run</button>
-          </div>
+        <div class="card-h">
+          <div class="kicker">Inputs</div>
+          <div class="small">Enter the contract and click Evaluate Market.</div>
         </div>
-
-        <div class="card-body">
-          <div class="row">
-            <div class="field">
-              <div class="label">City</div>
+        <div class="card-b">
+          <div class="grid">
+            <div>
+              <label for="city">City</label>
               <select id="city">
-                <option value="den">den</option>
-                <option value="nyc">nyc</option>
-                <option value="dal">dal</option>
-                <option value="chi">chi</option>
+                <option value="den">Denver</option>
+                <option value="nyc">New York City</option>
+                <option value="dal">Dallas</option>
+                <option value="chi">Chicago</option>
               </select>
             </div>
 
-            <button id="btnHighs" class="btn-ghost">Load</button>
-
-            <div style="flex:1"></div>
-
-            <button id="btnClear" class="btn-danger" disabled>Clear</button>
-          </div>
-
-          <div class="split">
-            <div class="field">
-              <div class="label">Date</div>
-              <select id="dateSel" disabled>
-                <option value="">—</option>
-              </select>
+            <div>
+              <label for="date">Date</label>
+              <input id="date" placeholder="mm/dd/yyyy" inputmode="numeric" />
             </div>
 
-            <div class="field">
-              <div class="label">Temp</div>
-              <select id="tempSel" disabled>
-                <option value="">—</option>
-              </select>
+            <div>
+              <label for="temp">Potential High Temp</label>
+              <input id="temp" placeholder="°F" inputmode="decimal" />
             </div>
 
-            <div class="field">
-              <div class="label">Yes</div>
-              <input id="yesCents" inputmode="decimal" placeholder="cents" />
+            <div>
+              <label for="yes">Yes Cost</label>
+              <input id="yes" placeholder="cents" inputmode="decimal" />
             </div>
 
-            <div class="field">
-              <div class="label">No</div>
-              <input id="noCents" inputmode="decimal" placeholder="cents" />
+            <div>
+              <label for="no">No Cost</label>
+              <input id="no" placeholder="cents" inputmode="decimal" />
+            </div>
+
+            <div>
+              <label>&nbsp;</label>
+              <button id="btnEval" class="primary">Evaluate Market</button>
             </div>
           </div>
 
-          <div class="row" style="margin-top:10px;">
-            <button id="btnAdd" class="btn-primary" disabled>Add</button>
-          </div>
+          <div id="err" class="err"></div>
 
-          <div class="field" style="margin-top:12px;">
-            <div class="label">Queue</div>
-            <textarea id="builtLines" class="mono" spellcheck="false" readonly></textarea>
-          </div>
-
-          <div id="status" class="status">
-            <span class="dot"></span>
-            <span class="msg" id="statusMsg">idle</span>
-          </div>
-
-          <div id="rawError" class="errorbox"></div>
-
-          <div class="footer-note">mm/dd/yyyy - t - yes:$$ / no:$$</div>
+          <div class="note">Format used: mm/dd/yyyy - t - yes:$$ / no:$$</div>
         </div>
       </div>
 
-      <!-- RIGHT: HIGHS -->
-      <div class="card">
-        <div class="card-header">
-          <h2>Highs</h2>
-          <div class="kpi">
-            <span class="tag">Days <b id="hCount">0</b></span>
+      <!-- Right: Result panel -->
+      <div class="side">
+        <div class="card">
+          <div class="card-h">
+            <div class="kicker">Result</div>
+            <div class="small">BUY YES / BUY NO / PASS</div>
           </div>
-        </div>
+          <div class="card-b">
+            <div class="chart" aria-hidden="true">
+              <div class="chartlabel">Market</div>
+              <div class="chartline"></div>
+            </div>
 
-        <div class="card-body" style="padding:14px;">
-          <div style="overflow:auto; max-height: 520px;">
-            <table id="highsTable" style="display:none;">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>High</th>
-                </tr>
-              </thead>
-              <tbody id="highsBody"></tbody>
-            </table>
+            <div class="pillrow">
+              <div id="badge" class="badge pass">
+                <span class="b-dot"></span>
+                <span id="badgeText">PASS</span>
+              </div>
+            </div>
+
+            <div id="contractLine" class="contract">—</div>
+
+            <div class="kv">
+              <div class="item">
+                <div class="k"><span class="bar"></span>Market</div>
+                <div class="v" id="vMarket">—</div>
+              </div>
+              <div class="item">
+                <div class="k"><span class="bar"></span>Model</div>
+                <div class="v" id="vModel">—</div>
+              </div>
+              <div class="item">
+                <div class="k"><span class="bar"></span>Fair</div>
+                <div class="v" id="vFair">—</div>
+              </div>
+              <div class="item">
+                <div class="k"><span class="bar"></span>Edge</div>
+                <div class="v" id="vEdge">—</div>
+              </div>
+            </div>
+
+            <div class="note">Uses NOAA/NWS probability from backend.</div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RESULTS -->
-    <div class="card" style="margin-top:14px;">
-      <div class="card-header">
-        <h2>Results</h2>
-        <div class="kpi">
-          <span class="tag">Rows <b id="rCount">0</b></span>
-        </div>
-      </div>
-      <div class="card-body">
-        <div style="overflow:auto;">
-          <table id="resultsTable" style="display:none;">
-            <thead>
-              <tr>
-                <th>Contract</th>
-                <th>Market</th>
-                <th>Model</th>
-                <th>Fair</th>
-                <th>Edge</th>
-                <th>Signal</th>
-              </tr>
-            </thead>
-            <tbody id="resultsBody"></tbody>
-          </table>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // On Render, this page is served by the same backend. Use relative URLs.
+    // Served by same backend on Render, so use relative URLs.
     const API_BASE = "";
 
-    const elCity = document.getElementById("city");
-    const btnHighs = document.getElementById("btnHighs");
+    const elStatus = document.getElementById("status");
+    const elStatusText = document.getElementById("statusText");
+
+    const city = document.getElementById("city");
+    const dateIn = document.getElementById("date");
+    const tempIn = document.getElementById("temp");
+    const yesIn = document.getElementById("yes");
+    const noIn = document.getElementById("no");
     const btnEval = document.getElementById("btnEval");
 
-    const elDateSel = document.getElementById("dateSel");
-    const elTempSel = document.getElementById("tempSel");
-    const elYes = document.getElementById("yesCents");
-    const elNo = document.getElementById("noCents");
-    const btnAdd = document.getElementById("btnAdd");
-    const btnClear = document.getElementById("btnClear");
-    const elBuilt = document.getElementById("builtLines");
+    const err = document.getElementById("err");
 
-    const elStatus = document.getElementById("status");
-    const elStatusMsg = document.getElementById("statusMsg");
-    const elRawError = document.getElementById("rawError");
+    const badge = document.getElementById("badge");
+    const badgeText = document.getElementById("badgeText");
+    const contractLine = document.getElementById("contractLine");
 
-    const elHighsTable = document.getElementById("highsTable");
-    const elHighsBody = document.getElementById("highsBody");
+    const vMarket = document.getElementById("vMarket");
+    const vModel = document.getElementById("vModel");
+    const vFair = document.getElementById("vFair");
+    const vEdge = document.getElementById("vEdge");
 
-    const elResultsTable = document.getElementById("resultsTable");
-    const elResultsBody = document.getElementById("resultsBody");
-
-    const pillCity = document.getElementById("pillCity");
-    const pillStatus = document.getElementById("pillStatus");
-
-    const qCount = document.getElementById("qCount");
-    const hCount = document.getElementById("hCount");
-    const rCount = document.getElementById("rCount");
-
-    let highs = {};       // dateISO -> highF
-    let builtLines = [];  // exact lines for backend
-
-    function setPills() {
-      pillCity.textContent = elCity.value;
-    }
-
-    function setStatus(msg, state="idle") {
-      // state: idle | ok | warn | bad | run
-      elStatusMsg.textContent = msg;
-      pillStatus.textContent = state === "run" ? "running" : state;
+    function setStatus(text, state="idle"){
+      elStatusText.textContent = text;
       elStatus.className = "status " + (state === "ok" ? "ok" : state === "warn" ? "warn" : state === "bad" ? "bad" : "");
     }
 
-    function showError(msg) {
-      elRawError.style.display = "block";
-      elRawError.textContent = msg;
+    function showError(msg){
+      err.style.display = "block";
+      err.textContent = msg;
       setStatus("error", "bad");
     }
-    function clearError() {
-      elRawError.style.display = "none";
-      elRawError.textContent = "";
+
+    function clearError(){
+      err.style.display = "none";
+      err.textContent = "";
     }
 
-    function isoToMDY(iso) {
-      const [y,m,d] = iso.split("-");
-      return `${m}/${d}/${y}`;
-    }
-
-    function parseNum(s) {
-      const x = String(s || "").trim();
+    function num(v){
+      const x = String(v || "").trim();
       if (!x) return null;
-      const v = Number(x);
-      if (!Number.isFinite(v)) return null;
-      return v;
+      const n = Number(x);
+      return Number.isFinite(n) ? n : null;
     }
 
-    function updateAddEnabled() {
-      const hasDate = !!elDateSel.value;
-      const hasTemp = !!elTempSel.value;
-      const yes = parseNum(elYes.value);
-      const no = parseNum(elNo.value);
-      btnAdd.disabled = !(hasDate && hasTemp && yes !== null && no !== null);
+    function sanitizeDate(mdy){
+      const m = String(mdy || "").trim();
+      if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(m)) return null;
+      return m;
     }
 
-    function rebuildQueue() {
-      elBuilt.value = builtLines.join("\n");
-      btnClear.disabled = builtLines.length === 0;
-      qCount.textContent = String(builtLines.length);
+    function setBadge(sig){
+      const s = (sig || "").toUpperCase();
+      badge.className = "badge " + (s.includes("BUY YES") ? "buyyes" : s.includes("BUY NO") ? "buyno" : "pass");
+      badgeText.textContent = s.includes("BUY YES") ? "BUY YES" : s.includes("BUY NO") ? "BUY NO" : "PASS";
     }
 
-    function populateDateDropdown() {
-      elDateSel.innerHTML = "";
-      const keys = Object.keys(highs).sort();
-      if (!keys.length) {
-        elDateSel.innerHTML = `<option value="">—</option>`;
-        elDateSel.disabled = true;
-        return;
-      }
-      for (const iso of keys) {
-        const opt = document.createElement("option");
-        opt.value = iso;
-        opt.textContent = iso;
-        elDateSel.appendChild(opt);
-      }
-      elDateSel.disabled = false;
-      elDateSel.value = keys[0];
+    function fmt4(x){
+      return (typeof x === "number" && isFinite(x)) ? x.toFixed(4) : "—";
     }
 
-    function populateTempDropdownForDate() {
-      elTempSel.innerHTML = "";
-      const iso = elDateSel.value;
-      if (!iso || highs[iso] === undefined) {
-        elTempSel.innerHTML = `<option value="">—</option>`;
-        elTempSel.disabled = true;
-        return;
-      }
-
-      const mu = highs[iso];
-      const lo = Math.max(-50, mu - 20);
-      const hi = Math.min(140, mu + 20);
-
-      for (let t = lo; t <= hi; t += 1) {
-        const opt = document.createElement("option");
-        opt.value = String(t);
-        opt.textContent = String(t);
-        elTempSel.appendChild(opt);
-      }
-
-      elTempSel.disabled = false;
-      elTempSel.value = String(Math.round(mu));
-      updateAddEnabled();
-    }
-
-    async function loadHighs() {
+    async function evaluate(){
       clearError();
-      setStatus("loading", "run");
-      btnHighs.disabled = true;
-      btnAdd.disabled = true;
-
-      highs = {};
-      elHighsBody.innerHTML = "";
-      elHighsTable.style.display = "none";
-      hCount.textContent = "0";
-
-      elResultsBody.innerHTML = "";
-      elResultsTable.style.display = "none";
-      rCount.textContent = "0";
-
-      elDateSel.disabled = true;
-      elTempSel.disabled = true;
-      elDateSel.innerHTML = `<option value="">—</option>`;
-      elTempSel.innerHTML = `<option value="">—</option>`;
-
-      try {
-        const code = elCity.value;
-        const r = await fetch(`${API_BASE}/api/highs?city=${encodeURIComponent(code)}`);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const data = await r.json();
-        const list = data.highs || [];
-
-        for (const row of list) highs[row.date] = row.high_f;
-
-        for (const iso of Object.keys(highs).sort()) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td class="mono">${iso}</td><td>${highs[iso]}</td>`;
-          elHighsBody.appendChild(tr);
-        }
-        elHighsTable.style.display = list.length ? "table" : "none";
-        hCount.textContent = String(list.length);
-
-        populateDateDropdown();
-        populateTempDropdownForDate();
-        setStatus("ready", "ok");
-      } catch (e) {
-        showError(`Load failed\n\n${e}`);
-      } finally {
-        btnHighs.disabled = false;
-      }
-    }
-
-    function addLine() {
-      const iso = elDateSel.value;
-      const t = Number(elTempSel.value);
-      const yes = parseNum(elYes.value);
-      const no = parseNum(elNo.value);
-      if (!iso || !Number.isFinite(t) || yes === null || no === null) return;
-
-      const mdy = isoToMDY(iso);
-      const line = `${mdy} - ${t} - yes:${yes} / no:${no}`;
-
-      if (!builtLines.includes(line)) builtLines.push(line);
-      rebuildQueue();
-
-      elYes.value = "";
-      elNo.value = "";
-      updateAddEnabled();
-      setStatus("added", "ok");
-    }
-
-    function clearAll() {
-      builtLines = [];
-      rebuildQueue();
-      elResultsBody.innerHTML = "";
-      elResultsTable.style.display = "none";
-      rCount.textContent = "0";
-      setStatus("idle", "idle");
-      clearError();
-    }
-
-    function sigBadge(sig) {
-      const x = (sig || "").toUpperCase();
-      if (x.includes("BUY YES")) return `<span class="signal buyyes"><span class="s-dot"></span>BUY YES</span>`;
-      if (x.includes("BUY NO"))  return `<span class="signal buyno"><span class="s-dot"></span>BUY NO</span>`;
-      return `<span class="signal pass"><span class="s-dot"></span>PASS</span>`;
-    }
-
-    async function evaluate() {
-      clearError();
-      elResultsBody.innerHTML = "";
-      elResultsTable.style.display = "none";
-      rCount.textContent = "0";
-
-      if (!builtLines.length) {
-        setStatus("queue empty", "warn");
-        return;
-      }
-
-      setStatus("running", "run");
+      setStatus("running", "warn");
       btnEval.disabled = true;
 
-      try {
-        const code = elCity.value;
+      const d = sanitizeDate(dateIn.value);
+      const t = num(tempIn.value);
+      const yes = num(yesIn.value);
+      const no = num(noIn.value);
+
+      if (!d) { showError("Bad date. Use mm/dd/yyyy."); btnEval.disabled = false; return; }
+      if (t === null) { showError("Bad Potential High Temp."); btnEval.disabled = false; return; }
+      if (yes === null) { showError("Bad Yes Cost."); btnEval.disabled = false; return; }
+      if (no === null) { showError("Bad No Cost."); btnEval.disabled = false; return; }
+
+      const line = `${d} - ${t} - yes:${yes} / no:${no}`;
+      contractLine.textContent = line;
+
+      try{
         const r = await fetch(`${API_BASE}/api/evaluate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ city: code, lines: builtLines })
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ city: city.value, lines: [line] })
         });
-        if (!r.ok) {
+
+        if (!r.ok){
           const text = await r.text();
           throw new Error(`HTTP ${r.status}\n${text}`);
         }
+
         const data = await r.json();
-        const results = data.results || [];
+        const out = (data.results || [])[0];
 
-        for (const x of results) {
-          if (x.error) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td class="mono">${(x.raw || "").replace(/</g,"&lt;")}</td>
-              <td colspan="5" class="mono" style="color:rgba(255,220,227,.95);"> ${String(x.error).replace(/</g,"&lt;")} </td>
-            `;
-            elResultsBody.appendChild(tr);
-            continue;
-          }
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="mono">${x.date} ≥ ${x.t}F</td>
-            <td class="mono">Y ${x.market_yes.toFixed(4)}<br><span class="muted">N ${x.market_no.toFixed(4)}</span></td>
-            <td class="mono">μ ${x.mu.toFixed(1)}<br><span class="muted">σ ${x.sigma.toFixed(1)}</span></td>
-            <td class="mono">${x.fair_yes.toFixed(4)}<br><span class="muted">${x.fair_no.toFixed(4)}</span></td>
-            <td class="mono">${x.edge_yes.toFixed(4)}<br><span class="muted">${x.edge_no.toFixed(4)}</span></td>
-            <td>${sigBadge(x.signal)}</td>
-          `;
-          elResultsBody.appendChild(tr);
+        if (!out){
+          showError("No response.");
+          btnEval.disabled = false;
+          return;
+        }
+        if (out.error){
+          showError(String(out.error));
+          btnEval.disabled = false;
+          return;
         }
 
-        elResultsTable.style.display = results.length ? "table" : "none";
-        rCount.textContent = String(results.length);
+        setBadge(out.signal);
 
-        // Summary status: if any BUY, show ok; else warn.
-        const anyBuy = results.some(r => (r.signal || "").toUpperCase().includes("BUY"));
-        setStatus(anyBuy ? "signal" : "pass", anyBuy ? "ok" : "warn");
-      } catch (e) {
-        showError(`Run failed\n\n${e}`);
-      } finally {
+        vMarket.textContent = `YES ${fmt4(out.market_yes)} | NO ${fmt4(out.market_no)}`;
+        vModel.textContent  = `μ ${fmt4(out.mu)} | σ ${fmt4(out.sigma)}`;
+        vFair.textContent   = `YES ${fmt4(out.fair_yes)} | NO ${fmt4(out.fair_no)}`;
+        vEdge.textContent   = `YES ${fmt4(out.edge_yes)} | NO ${fmt4(out.edge_no)}`;
+
+        const s = (out.signal || "").toUpperCase();
+        if (s.includes("BUY")) setStatus("signal", "ok");
+        else setStatus("pass", "idle");
+
+      } catch(e){
+        showError(String(e));
+      } finally{
         btnEval.disabled = false;
       }
     }
 
-    // Events
-    elCity.addEventListener("change", () => { setPills(); });
-    btnHighs.addEventListener("click", loadHighs);
-    btnAdd.addEventListener("click", addLine);
-    btnClear.addEventListener("click", clearAll);
     btnEval.addEventListener("click", evaluate);
-
-    elDateSel.addEventListener("change", () => {
-      populateTempDropdownForDate();
-      updateAddEnabled();
+    [dateIn, tempIn, yesIn, noIn].forEach(el => {
+      el.addEventListener("keydown", (ev) => { if (ev.key === "Enter") evaluate(); });
     });
-    elTempSel.addEventListener("change", updateAddEnabled);
-    elYes.addEventListener("input", updateAddEnabled);
-    elNo.addEventListener("input", updateAddEnabled);
 
-    // Init
-    setPills();
-    rebuildQueue();
-    setStatus("idle", "idle");
+    setStatus("idle","idle");
   </script>
 </body>
 </html>
