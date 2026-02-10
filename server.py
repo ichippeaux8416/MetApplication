@@ -1,3 +1,4 @@
+# server.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response
@@ -9,8 +10,10 @@ import math
 import os
 import requests
 
-# ✅ NEW: drought engine
-from drought_long import evaluate_city as drought_evaluate_city
+# --- drought helper (used by /api/drought) ---
+# Make sure drought_long.py is in the same folder as server.py
+from drought_long import evaluate_city  # noqa: E402
+
 
 # ---------------- CONFIG ----------------
 USER_AGENT = "metapplication/1.0 (contact: you@example.com)"
@@ -108,7 +111,7 @@ def decide(fair_yes: float, yes_price: float, no_price: float):
     edge_no = fair_no - no_price
 
     buy_yes_ok = (edge_yes >= MIN_EDGE) and (yes_price <= fair_yes - ENTRY_BUFFER)
-    buy_no_ok  = (edge_no  >= MIN_EDGE) and (no_price  <= fair_no  - ENTRY_BUFFER)
+    buy_no_ok = (edge_no >= MIN_EDGE) and (no_price <= fair_no - ENTRY_BUFFER)
 
     if buy_yes_ok and buy_no_ok:
         signal = "BUY YES" if edge_yes >= edge_no else "BUY NO"
@@ -144,9 +147,9 @@ def home():
     return HTMLResponse("<h3>index.html not found. Put index.html next to server.py</h3>")
 
 
-# ✅ serve drought.html
 @app.get("/drought.html")
 def drought_page():
+    # Serve drought.html located next to server.py
     p = file_if_exists("drought.html")
     if p:
         return FileResponse(p, media_type="text/html; charset=utf-8")
@@ -242,15 +245,27 @@ def api_evaluate_one(req: EvalOneRequest):
     }
 
 
-# ✅ NEW: drought API endpoint used by drought.html (POST /api/drought)
-class DroughtRequest(BaseModel):
+# ---------------- DROUGHT API ----------------
+class DroughtReq(BaseModel):
     city: str  # den/nyc/dal/chi
 
 
 @app.post("/api/drought")
-def api_drought(req: DroughtRequest):
-    code = req.city.strip().lower()
-    # drought_long.py validates too, but we keep consistent error shape
+def api_drought(req: DroughtReq):
+    code = (req.city or "").strip().lower()
     if code not in CITIES:
         return {"error": "unknown_city", "allowed": list(CITIES.keys())}
-    return drought_evaluate_city(code)
+
+    info = CITIES[code]
+    try:
+        out = evaluate_city(info["lat"], info["lon"])
+    except Exception as e:
+        # Return a readable error body so the frontend can show it
+        return {"error": "drought_eval_failed", "detail": str(e)}
+
+    return {
+        "city": code,
+        "city_name": info["name"],
+        "expected_drought_90d": out.get("expected_drought_90d", 0.0),
+        "components": out.get("components", {}),
+    }
