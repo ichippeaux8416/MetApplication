@@ -3,238 +3,284 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MetApplication</title>
+  <title>High Temperature Prediction Market Guidance</title>
   <style>
     :root{
-      --bg:#07090d;
-      --panel:#0e141f;
-      --panel2:#0b1018;
-      --line:#1c2432;
-      --line2:#223047;
-      --text:#e7eefc;
-      --muted:#9aa7bf;
-      --blue:#60a5ff;
-      --blue2:#9cc7ff;
+      --bg:#0a0c10;
+      --panel:#0f131a;
+      --panel2:#0c1016;
+      --line:#1b2330;
+      --text:#e9eef7;
+      --muted:#a0aec2;
+      --blue:#7fb4ff;      /* light blue accent */
+      --blue2:#a6ccff;
+      --good:#2cc38a;
       --warn:#f3c969;
       --bad:#ff6b6b;
-      --ok:#3ddc97;
+      --shadow: 0 16px 55px rgba(0,0,0,.45);
+      --radius:10px;       /* less rounded */
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
       margin:0;
-      background: radial-gradient(1200px 600px at 15% 10%, rgba(96,165,255,.10), transparent 60%),
-                  radial-gradient(900px 500px at 80% 20%, rgba(156,199,255,.08), transparent 55%),
-                  var(--bg);
+      background:var(--bg);
       color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      letter-spacing:.2px;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
     }
-    .topbar{
-      display:flex; align-items:flex-end; justify-content:space-between;
-      padding:28px 28px 18px;
-      border-bottom:1px solid rgba(255,255,255,.06);
+    .wrap{max-width:1180px;margin:0 auto;padding:26px 18px 44px}
+    header{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+      padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);
     }
-    .brand{
-      display:flex; flex-direction:column; gap:6px;
-    }
-    .brand .title{
-      font-size:44px;
-      font-weight:800;
-      letter-spacing:6px;
+    .brand{display:flex;flex-direction:column;gap:8px}
+    .brand h1{
+      margin:0;
+      font-size:48px;
+      font-weight:900;
+      letter-spacing:.18em;
       line-height:1;
-    }
-    .brand .sub{
-      margin-top:-2px;
-      color:rgba(231,238,252,.65);
-      font-size:12px;
-      letter-spacing:2.2px;
-      font-weight:700;
-    }
-    .wrap{padding:22px 28px 36px; max-width:1200px; margin:0 auto;}
-    .grid{
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap:18px;
-      margin-top:18px;
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:16px 18px;
-      display:flex; align-items:center; justify-content:space-between;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      color:rgba(231,238,252,.7);
-      font-weight:800;
-      letter-spacing:2px;
-      font-size:12px;
-      text-transform:uppercase;
-    }
-    .card .bd{padding:18px;}
-    .row{display:grid; grid-template-columns: 1fr 1fr; gap:14px;}
-    label{
-      display:block;
-      margin-bottom:8px;
-      color:rgba(231,238,252,.65);
-      font-weight:800;
-      font-size:12px;
-      letter-spacing:1.8px;
-      text-transform:uppercase;
-    }
-    select,input{
-      width:100%;
-      background: rgba(6,10,16,.65);
-      border:1px solid rgba(255,255,255,.10);
       color:var(--text);
-      padding:14px 14px;
-      border-radius:12px;
-      outline:none;
-      font-size:18px;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
     }
-    input::placeholder{color:rgba(231,238,252,.25)}
-    .btn{
-      margin-top:14px;
-      width:100%;
-      padding:16px 16px;
-      border-radius:12px;
-      border:1px solid rgba(96,165,255,.45);
-      background: rgba(96,165,255,.18);
-      color:var(--text);
+    .sub{
+      color:var(--muted);
       font-weight:800;
-      letter-spacing:1px;
-      font-size:18px;
-      cursor:pointer;
+      letter-spacing:.08em;
+      font-size:13px;
     }
-    .btn:hover{background: rgba(96,165,255,.26)}
+    .topRight{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      padding-top:6px;
+    }
     .pill{
-      display:inline-flex;
-      align-items:center;
+      display:flex;
       gap:10px;
-      padding:10px 14px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(6,10,16,.55);
-      font-weight:900;
-      letter-spacing:1px;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:999px;
-      background: var(--warn);
-      box-shadow:0 0 0 4px rgba(243,201,105,.12);
-    }
-    .dot.ok{background:var(--ok); box-shadow:0 0 0 4px rgba(61,220,151,.12);}
-    .dot.bad{background:var(--bad); box-shadow:0 0 0 4px rgba(255,107,107,.12);}
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-    .kv{
-      padding:14px 16px;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:14px;
-      background: rgba(6,10,16,.50);
-      margin-top:12px;
-    }
-    .kv .k{
-      color:rgba(231,238,252,.55);
-      font-weight:900;
-      letter-spacing:2px;
-      font-size:12px;
-      text-transform:uppercase;
-      margin-bottom:10px;
-    }
-    .kv .v{
-      display:flex;
-      gap:16px;
-      flex-wrap:wrap;
-      font-size:22px;
-      font-weight:800;
-    }
-    .small{
-      color:rgba(231,238,252,.55);
-      font-size:12px;
-      font-weight:700;
-      letter-spacing:1px;
-      margin-top:10px;
-    }
-    canvas{width:100%; height:240px; display:block;}
-    .chartBox{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      overflow:hidden;
-      background: rgba(6,10,16,.45);
-      padding:12px 12px 6px;
-    }
-    .legend{
-      display:flex;
-      justify-content:flex-end;
-      gap:22px;
-      padding:6px 6px 10px;
-      color:rgba(231,238,252,.75);
-      font-weight:900;
-      letter-spacing:2px;
-      font-size:12px;
-      text-transform:uppercase;
-    }
-    .legItem{display:flex; align-items:center; gap:10px;}
-    .swatch{width:14px;height:14px;border-radius:6px;background:var(--blue);}
-    .swatch2{background: rgba(156,199,255,.85); border:1px solid rgba(255,255,255,.18);}
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-      .brand .title{font-size:38px; letter-spacing:5px;}
-    }
-
-    /* ---- ONLY ADDITION: drought button styling ---- */
-    .navbtn{
-      display:inline-flex;
       align-items:center;
-      justify-content:center;
-      padding:12px 16px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(6,10,16,.55);
-      color: rgba(231,238,252,.92);
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      min-width: 280px;
+      justify-content:space-between;
+    }
+    .pill .k{
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      font-size:11px;
+    }
+    .pill .v{
+      font-weight:900;
+      font-size:14px;
+      letter-spacing:.02em;
+      color:var(--text);
+    }
+    .nav{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+    }
+    .nav a{
+      color:var(--text);
       text-decoration:none;
       font-weight:900;
-      letter-spacing:1.2px;
-      font-size:12px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius: 12px;
+    }
+    .nav a:hover{border-color: rgba(127,180,255,.35)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap:18px;
+      margin-top:22px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      letter-spacing:.14em;
+      font-weight:900;
+      color:#c2cde0;
       text-transform:uppercase;
+      font-size:12px;
     }
-    .navbtn:hover{
-      background: rgba(6,10,16,.72);
-      border-color: rgba(96,165,255,.30);
+    .card-b{padding:16px}
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
     }
-    /* ---------------------------------------------- */
+    label{
+      display:block;
+      color:#c2cde0;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    select, input{
+      width:100%;
+      padding:16px 14px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,14,20,.85);
+      color: var(--text);
+      outline:none;
+      font-size:18px;
+    }
+    select:focus, input:focus{border-color: rgba(127,180,255,.55)}
+    .btn{
+      width:100%;
+      margin-top:14px;
+      padding:16px 16px;
+      border-radius: 10px;
+      border:1px solid rgba(127,180,255,.65);
+      background: rgba(127,180,255,.18);
+      color: var(--text);
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.04em;
+      cursor:pointer;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .status{
+      display:flex;align-items:center;gap:10px;margin-top:14px;
+      color: var(--muted);
+      font-weight:800;
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:#667;box-shadow:0 0 0 3px rgba(255,255,255,.05)}
+    .dot.ok{background: var(--good)}
+    .dot.err{background: var(--bad)}
+    .dot.busy{background: var(--blue)}
+    .big{
+      font-size:56px;
+      font-weight:900;
+      letter-spacing:.02em;
+      margin:6px 0 0;
+    }
+    .subtitle{
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.01em;
+      margin-top:6px;
+      font-size:16px;
+    }
+    .miniGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+    .mini{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(10,14,20,.55);
+      border-radius: 12px;
+      padding:12px;
+    }
+    .mini h4{
+      margin:0 0 8px;
+      letter-spacing:.14em;
+      font-weight:900;
+      text-transform:uppercase;
+      color:#c2cde0;
+      font-size:12px;
+    }
+    .mini .val{
+      font-size:14px;
+      font-weight:900;
+      color: var(--text);
+      line-height:1.35;
+      word-break: break-word;
+    }
+
+    .chartWrap{
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(10,14,20,.55);
+      border-radius: 12px;
+      padding:12px;
+      position:relative;
+    }
+    .legend{
+      position:absolute;
+      top:10px;
+      right:12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#c2cde0;
+      background: rgba(10,14,20,.65);
+      border:1px solid rgba(255,255,255,.10);
+      padding:8px 10px;
+      border-radius: 10px;
+    }
+    .sw{
+      width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px;
+    }
+    .sw.fair{background: var(--blue)}
+    .sw.you{background: var(--warn)}
+    canvas{width:100%;height:280px;display:block}
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .brand h1{font-size:36px}
+      .pill{min-width: unset; width: 100%}
+      .topRight{align-items:stretch}
+    }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="brand">
-      <div class="title">MetApplication</div>
-      <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
-    </div>
-
-    <!-- ONLY CHANGE: one button that links to drought.html -->
-    <a class="navbtn" href="/drought.html">Long Term Drought Odds</a>
-  </div>
-
   <div class="wrap">
-    <div class="grid">
-      <!-- Inputs -->
-      <div class="card">
-        <div class="hd">
-          <div>Inputs</div>
-          <div class="mono" style="opacity:.65">Evaluate Market</div>
+    <header>
+      <div class="brand">
+        <h1>MetApplication</h1>
+        <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
+      </div>
+
+      <div class="topRight">
+        <div class="pill">
+          <div class="k">Local Time</div>
+          <div class="v" id="localTime">—</div>
         </div>
-        <div class="bd">
+        <div class="pill">
+          <div class="k">Current Temp</div>
+          <div class="v" id="currentTemp">—</div>
+        </div>
+        <div class="nav">
+          <a href="/drought.html">Drought Odds</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="card-h">
+          <div>Inputs</div>
+          <div id="cityTag" style="font-weight:900;letter-spacing:.14em;color:#c2cde0;text-transform:uppercase;">—</div>
+        </div>
+        <div class="card-b">
           <div class="row">
             <div>
-              <label>City</label>
+              <label for="city">City</label>
               <select id="city">
                 <option value="den">Denver</option>
                 <option value="nyc">New York City</option>
@@ -243,255 +289,402 @@
               </select>
             </div>
             <div>
-              <label>Date</label>
-              <input id="date" placeholder="MM/DD/YYYY" />
+              <label for="date">Date</label>
+              <select id="date"></select>
             </div>
           </div>
 
           <div class="row" style="margin-top:14px;">
             <div>
-              <label>Potential High Temp</label>
-              <input id="temp" type="number" step="1" placeholder="e.g. 42" />
+              <label for="t">Potential High Temp</label>
+              <select id="t"></select>
             </div>
             <div>
-              <label>Yes Cost</label>
-              <input id="yes" type="number" step="0.1" placeholder="cents (e.g. 30)" />
+              <label for="yes">Yes Cost</label>
+              <input id="yes" inputmode="decimal" placeholder="e.g. 32" />
             </div>
           </div>
 
           <div class="row" style="margin-top:14px;">
             <div>
-              <label>No Cost</label>
-              <input id="no" type="number" step="0.1" placeholder="cents (e.g. 70)" />
+              <label for="no">No Cost</label>
+              <input id="no" inputmode="decimal" placeholder="e.g. 68" />
             </div>
             <div>
+              <label>&nbsp;</label>
               <button class="btn" id="go">Evaluate Market</button>
             </div>
           </div>
 
-          <div class="small mono" id="status"></div>
+          <div class="status" id="status">
+            <span class="dot ok" id="dot"></span>
+            <span id="statusText">Ready</span>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Result -->
-      <div class="card">
-        <div class="hd">
+      <section class="card">
+        <div class="card-h">
           <div>Result</div>
-          <div id="cityName" class="mono" style="opacity:.65">—</div>
+          <div id="cityTop" style="font-weight:900;letter-spacing:.14em;color:#c2cde0;text-transform:uppercase;">—</div>
         </div>
-        <div class="bd">
-          <div class="chartBox">
-            <div class="legend">
-              <div class="legItem"><span class="swatch"></span><span>Fair Price</span></div>
-              <div class="legItem"><span class="swatch swatch2"></span><span>Your Price</span></div>
+        <div class="card-b">
+          <div class="big" id="signal">—</div>
+          <div class="subtitle" id="subline">—</div>
+
+          <div class="miniGrid">
+            <div class="mini">
+              <h4>Fair Yes</h4>
+              <div class="val" id="fairYes">—</div>
             </div>
-            <canvas id="chart" width="900" height="300"></canvas>
+            <div class="mini">
+              <h4>Fair No</h4>
+              <div class="val" id="fairNo">—</div>
+            </div>
+            <div class="mini">
+              <h4>Your Yes</h4>
+              <div class="val" id="yourYes">—</div>
+            </div>
+            <div class="mini">
+              <h4>Your No</h4>
+              <div class="val" id="yourNo">—</div>
+            </div>
           </div>
 
-          <div style="margin-top:14px;">
-            <span class="pill" id="signalPill">
-              <span class="dot" id="sigDot"></span>
-              <span id="signalTxt">PASS</span>
-            </span>
-          </div>
-
-          <div class="kv">
-            <div class="k">Contract</div>
-            <div class="v mono" id="contractLine">—</div>
-          </div>
-
-          <div class="kv">
-            <div class="k">Market</div>
-            <div class="v mono" id="marketLine">—</div>
-          </div>
-
-          <div class="kv">
-            <div class="k">Model</div>
-            <div class="v mono" id="modelLine">—</div>
-          </div>
-
-          <div class="kv">
-            <div class="k">Fair</div>
-            <div class="v mono" id="fairLine">—</div>
-          </div>
-
-          <div class="kv">
-            <div class="k">Edge</div>
-            <div class="v mono" id="edgeLine">—</div>
+          <div class="chartWrap">
+            <div class="legend">
+              <span><span class="sw fair"></span>Fair Price</span>
+              <span><span class="sw you"></span>Your Price</span>
+            </div>
+            <canvas id="chart" width="900" height="280"></canvas>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 
 <script>
   const $ = (id)=>document.getElementById(id);
 
-  const chart = $("chart");
-  const ctx = chart.getContext("2d");
+  const cityNames = { den:"Denver", nyc:"New York City", dal:"Dallas", chi:"Chicago" };
 
-  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+  // lat/lon only used for NWS client-side fetch (current temp + time zone)
+  const cityGeo = {
+    den: {lat:39.7392, lon:-104.9903},
+    nyc: {lat:40.7128, lon:-74.0060},
+    dal: {lat:32.7767, lon:-96.7970},
+    chi: {lat:41.8781, lon:-87.6298},
+  };
 
-  function drawChart(mu, sigma, t, fairAtT, yourYesPrice){
-    const w = chart.width, h = chart.height;
+  let latestHighs = []; // [{date:"YYYY-MM-DD", high_f:..}]
+  let latestCity = "den";
+  let latestTz = null;
+  let timer = null;
+
+  function setStatus(kind, text){
+    const dot = $("dot");
+    dot.className = "dot " + (kind || "ok");
+    $("statusText").textContent = text;
+  }
+
+  function pct(x){
+    if (x === null || x === undefined || Number.isNaN(x)) return "—";
+    return (x*100).toFixed(1) + "%";
+  }
+
+  function money(x){
+    if (x === null || x === undefined || Number.isNaN(x)) return "—";
+    return (x*100).toFixed(1) + "¢";
+  }
+
+  function populateTemps(){
+    const sel = $("t");
+    sel.innerHTML = "";
+    // reasonable range
+    for(let f=40; f<=110; f+=1){
+      const o = document.createElement("option");
+      o.value = String(f);
+      o.textContent = String(f) + "°F";
+      sel.appendChild(o);
+    }
+    sel.value = "73";
+  }
+
+  function populateDates(){
+    const sel = $("date");
+    sel.innerHTML = "";
+    for(const h of latestHighs){
+      const o = document.createElement("option");
+      o.value = h.date;
+      o.textContent = h.date;
+      sel.appendChild(o);
+    }
+  }
+
+  async function loadHighs(){
+    const city = $("city").value;
+    latestCity = city;
+    $("cityTag").textContent = (cityNames[city] || "—").toUpperCase();
+    $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
+
+    setStatus("busy", "Loading…");
+    try{
+      const res = await fetch(`/api/highs?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      if(data.error){
+        setStatus("err", data.error);
+        return;
+      }
+      latestHighs = data.highs || [];
+      populateDates();
+      setStatus("ok", "Ready");
+    }catch(e){
+      setStatus("err", "Network error");
+    }
+  }
+
+  // ---- Current Temp + Local Time (client-side NWS) ----
+  async function fetchNwsNow(city){
+    const {lat, lon} = cityGeo[city];
+    // points -> timezone + stations
+    const points = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+      headers: {"Accept":"application/geo+json"}
+    }).then(r=>r.json());
+
+    const tzName = points?.properties?.timeZone || null;
+    latestTz = tzName;
+
+    // stations -> first station -> latest obs
+    const stationsUrl = points?.properties?.observationStations;
+    if(!stationsUrl) return {tempF:null, tz:tzName};
+
+    const stations = await fetch(stationsUrl, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
+    const feats = stations?.features || [];
+    if(!feats.length) return {tempF:null, tz:tzName};
+
+    const stationId = feats[0]?.properties?.stationIdentifier;
+    if(!stationId) return {tempF:null, tz:tzName};
+
+    const obs = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`, {
+      headers: {"Accept":"application/geo+json"}
+    }).then(r=>r.json());
+
+    const tC = obs?.properties?.temperature?.value;
+    const tempF = (typeof tC === "number") ? (tC*9/5 + 32) : null;
+    return {tempF, tz:tzName};
+  }
+
+  function updateLocalTimeDisplay(){
+    if(!latestTz){
+      $("localTime").textContent = "—";
+      return;
+    }
+    const fmt = new Intl.DateTimeFormat(undefined, {
+      timeZone: latestTz,
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      month: "short",
+      day: "numeric"
+    });
+    $("localTime").textContent = fmt.format(new Date());
+  }
+
+  async function refreshNowPanel(){
+    const city = $("city").value;
+    try{
+      const {tempF, tz} = await fetchNwsNow(city);
+      latestTz = tz || latestTz;
+      updateLocalTimeDisplay();
+      if(tempF === null || Number.isNaN(tempF)){
+        $("currentTemp").textContent = "—";
+      }else{
+        $("currentTemp").textContent = `${tempF.toFixed(1)}°F`;
+      }
+    }catch(e){
+      // don't hard-fail UI; just show dashes
+      updateLocalTimeDisplay();
+      $("currentTemp").textContent = "—";
+    }
+  }
+
+  function startNowTicker(){
+    if(timer) clearInterval(timer);
+    // refresh temp/time immediately, then every 60s
+    refreshNowPanel();
+    timer = setInterval(()=>{
+      updateLocalTimeDisplay();
+      // refresh obs every 60s too (simple)
+      refreshNowPanel();
+    }, 60000);
+  }
+
+  // ---- Chart ----
+  function drawChart(fairP, yourP, tVal){
+    const c = $("chart");
+    const ctx = c.getContext("2d");
+    const w = c.width, h = c.height;
+
+    // clear
     ctx.clearRect(0,0,w,h);
 
-    const padL = 58, padR = 20, padT = 18, padB = 40;
-    const iw = w - padL - padR;
-    const ih = h - padT - padB;
+    // padding
+    const padL = 54, padR = 22, padT = 18, padB = 36;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
 
-    const xmin = Math.floor(mu - 4*sigma);
-    const xmax = Math.ceil(mu + 4*sigma);
-
-    function xToPx(x){ return padL + ( (x - xmin) / (xmax - xmin) ) * iw; }
-    function yToPx(y){ return padT + (1 - y) * ih; }
-
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    // axes style
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
     ctx.lineWidth = 1;
-    for(let i=0;i<=6;i++){
-      const gx = padL + (i/6)*iw;
-      ctx.beginPath(); ctx.moveTo(gx,padT); ctx.lineTo(gx,padT+ih); ctx.stroke();
-    }
+
+    // grid + y labels
+    ctx.fillStyle = "rgba(255,255,255,.35)";
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
     for(let i=0;i<=4;i++){
-      const gy = padT + (i/4)*ih;
-      ctx.beginPath(); ctx.moveTo(padL,gy); ctx.lineTo(padL+iw,gy); ctx.stroke();
+      const y = padT + (plotH * (i/4));
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL+plotW, y);
+      ctx.stroke();
+      const p = (1 - i/4);
+      ctx.fillText(Math.round(p*100)+"%", 10, y+4);
     }
 
-    ctx.fillStyle = "rgba(231,238,252,0.65)";
-    ctx.font = "bold 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(`${xmin}°F`, xToPx(xmin), padT+ih+28);
-    ctx.fillText(`${Math.round(mu)}°F`, xToPx(mu), padT+ih+28);
-    ctx.fillText(`${xmax}°F`, xToPx(xmax), padT+ih+28);
+    // x range: around threshold for display
+    const t0 = Math.max(30, tVal - 10);
+    const t1 = Math.min(120, tVal + 10);
 
-    ctx.textAlign = "right";
-    ctx.fillText("1.0", padL-10, yToPx(1.0)+4);
-    ctx.fillText("0.5", padL-10, yToPx(0.5)+4);
-    ctx.fillText("0.0", padL-10, yToPx(0.0)+4);
-
-    const k = sigma*0.85 || 1.0;
-    function fairCurve(x){
-      const z = (x - mu) / k;
-      return 1/(1+Math.exp(z));
+    // x labels
+    ctx.fillStyle = "rgba(255,255,255,.35)";
+    for(let i=0;i<=4;i++){
+      const x = padL + (plotW * (i/4));
+      const tv = Math.round(t0 + (t1-t0)*(i/4));
+      ctx.fillText(tv+"°", x-10, padT+plotH+24);
     }
 
-    ctx.strokeStyle = "rgba(96,165,255,0.95)";
+    // axis lines
+    ctx.strokeStyle = "rgba(255,255,255,.18)";
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT+plotH);
+    ctx.lineTo(padL+plotW, padT+plotH);
+    ctx.stroke();
+
+    // draw fair price "function" as a smooth step around tVal
+    // This is just a UI curve centered on the chosen threshold, anchored at fairP at tVal.
+    // (Backend fairP is the real value used.)
+    function sigmoid(x){ return 1/(1+Math.exp(-x)); }
+    const k = 0.55;
+    const xAt = (tv)=> (tv - tVal);
+    const baseAt = sigmoid(0); // 0.5
+    // scale curve so it passes through (tVal, fairP)
+    const offset = fairP - baseAt;
+
     ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
-    for(let i=0;i<=200;i++){
-      const x = xmin + (i/200)*(xmax-xmin);
-      const y = clamp(fairCurve(x),0,1);
-      const px = xToPx(x), py = yToPx(y);
-      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    for(let i=0;i<=160;i++){
+      const tv = t0 + (t1-t0)*(i/160);
+      let p = sigmoid(-k * xAt(tv)) + offset;
+      p = Math.max(0, Math.min(1, p));
+      const x = padL + (plotW * ((tv - t0)/(t1-t0)));
+      const y = padT + (plotH * (1 - p));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
     ctx.stroke();
 
-    const pxT = xToPx(t);
-    const pyYour = yToPx(clamp(yourYesPrice,0,1));
-
-    ctx.fillStyle = "rgba(156,199,255,0.18)";
-    ctx.beginPath(); ctx.arc(pxT, pyYour, 14, 0, Math.PI*2); ctx.fill();
-
-    ctx.fillStyle = "rgba(156,199,255,0.90)";
-    ctx.strokeStyle = "rgba(255,255,255,0.20)";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(pxT, pyYour, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-
-    const pyFair = yToPx(clamp(fairAtT,0,1));
-    ctx.strokeStyle = "rgba(96,165,255,0.35)";
-    ctx.lineWidth = 2;
+    // point: your price at tVal
+    const xP = padL + (plotW * ((tVal - t0)/(t1-t0)));
+    const yP = padT + (plotH * (1 - Math.max(0, Math.min(1, yourP))));
+    ctx.fillStyle = "rgba(243,201,105,.95)";
     ctx.beginPath();
-    ctx.moveTo(pxT, pyFair);
-    ctx.lineTo(pxT, padT+ih);
-    ctx.stroke();
-  }
+    ctx.arc(xP, yP, 6, 0, Math.PI*2);
+    ctx.fill();
 
-  function setSignal(sig){
-    const dot = $("sigDot");
-    const txt = $("signalTxt");
-    txt.textContent = sig;
-
-    dot.classList.remove("ok","bad");
-    if(sig === "BUY YES" || sig === "BUY NO"){
-      dot.classList.add("ok");
-    } else if(sig === "PASS"){
-      // keep warn color
-    } else {
-      dot.classList.add("bad");
-    }
-  }
-
-  function fmt4(x){
-    if(x === null || x === undefined || Number.isNaN(x)) return "—";
-    return (Math.round(x*10000)/10000).toFixed(4);
+    // point: fair price at tVal
+    const yF = padT + (plotH * (1 - Math.max(0, Math.min(1, fairP))));
+    ctx.fillStyle = "rgba(127,180,255,.95)";
+    ctx.beginPath();
+    ctx.arc(xP, yF, 5, 0, Math.PI*2);
+    ctx.fill();
   }
 
   async function evaluate(){
-    $("status").textContent = "";
-
     const city = $("city").value;
-    const date = $("date").value.trim();
-    const t = parseFloat($("temp").value);
-    const yesC = parseFloat($("yes").value);
-    const noC = parseFloat($("no").value);
+    const date = $("date").value;
+    const t = parseFloat($("t").value);
+    const yes = parseFloat($("yes").value);
+    const no = parseFloat($("no").value);
 
-    if(!date){ $("status").textContent = "Enter Date."; return; }
-    if(!Number.isFinite(t)){ $("status").textContent = "Enter Potential High Temp."; return; }
-    if(!Number.isFinite(yesC) || !Number.isFinite(noC)){ $("status").textContent = "Enter Yes/No Cost in cents."; return; }
+    if(!date || Number.isNaN(t) || Number.isNaN(yes) || Number.isNaN(no)){
+      setStatus("err", "Missing inputs");
+      return;
+    }
 
-    $("contractLine").textContent = `${date} — ${t} — yes:${yesC} / no:${noC}`;
-    $("marketLine").textContent = `YES ${(yesC/100).toFixed(4)} | NO ${(noC/100).toFixed(4)}`;
+    setStatus("busy", "Evaluating…");
 
-    let resp, data;
     try{
-      resp = await fetch("/api/evaluate_one", {
+      const res = await fetch("/api/evaluate_one", {
         method:"POST",
-        headers:{ "Content-Type":"application/json" },
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify({
           city,
           date,
           threshold_f: t,
-          yes_cents: yesC,
-          no_cents: noC
+          yes_cents: yes,
+          no_cents: no
         })
       });
-      data = await resp.json();
+
+      const data = await res.json();
+      if(data.error){
+        setStatus("err", data.error);
+        $("signal").textContent = "—";
+        $("subline").textContent = "—";
+        $("fairYes").textContent = "—";
+        $("fairNo").textContent = "—";
+        $("yourYes").textContent = "—";
+        $("yourNo").textContent = "—";
+        drawChart(0.5, 0.5, t);
+        return;
+      }
+
+      const fairYes = data.fair_yes;
+      const fairNo = data.fair_no;
+      const yourYes = data.market_yes;
+      const yourNo = data.market_no;
+
+      $("signal").textContent = data.signal;
+      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ ${data.mu_forecast_high ?? data.mu}°F`;
+
+      $("fairYes").textContent = pct(fairYes);
+      $("fairNo").textContent = pct(fairNo);
+      $("yourYes").textContent = money(yourYes);
+      $("yourNo").textContent = money(yourNo);
+
+      // plot fair curve and user point (using YES side)
+      drawChart(fairYes, yourYes, t);
+
+      setStatus("ok", "OK");
     }catch(e){
-      $("status").textContent = "Network error.";
-      setSignal("ERROR");
-      return;
+      setStatus("err", "Network error");
     }
-
-    if(!resp.ok || data.error){
-      $("status").textContent = `Error: ${data.error || "request_failed"}`;
-      setSignal("ERROR");
-      return;
-    }
-
-    $("cityName").textContent = data.city_name.toUpperCase();
-
-    setSignal(data.signal);
-
-    $("modelLine").textContent = `μ ${fmt4(data.mu)} | σ ${fmt4(data.sigma)}`;
-    $("fairLine").textContent = `YES ${fmt4(data.fair_yes)} | NO ${fmt4(data.fair_no)}`;
-    $("edgeLine").textContent = `YES ${fmt4(data.edge_yes)} | NO ${fmt4(data.edge_no)}`;
-
-    drawChart(
-      data.mu,
-      data.sigma,
-      data.threshold_f,
-      data.fair_yes,
-      data.market_yes
-    );
-
-    $("status").textContent = `OK — ${data.signal}`;
   }
 
-  $("go").addEventListener("click", (e)=>{ e.preventDefault(); evaluate(); });
+  $("city").addEventListener("change", async ()=>{
+    await loadHighs();
+    startNowTicker();
+  });
 
-  drawChart(50, 6, 50, 0.5, 0.5);
-  setSignal("PASS");
+  $("go").addEventListener("click", evaluate);
+
+  (function init(){
+    populateTemps();
+    loadHighs().then(()=>startNowTicker());
+    drawChart(0.5, 0.5, 73);
+    $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
+    $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
+  })();
 </script>
 </body>
 </html>
