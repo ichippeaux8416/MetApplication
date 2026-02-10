@@ -4,217 +4,300 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MetApplication — Long Term Drought Odds</title>
-
-  <!-- Hard anti-cache hints (helps on Render + browser caching) -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
   <style>
     :root{
-      --bg:#07090c;
-      --panel:#0c1017;
-      --line:#1b2432;
-      --line2:#111827;
-      --text:#e7edf6;
-      --muted:#93a4bc;
-      --blue:#60a5fa;
-      --good:#34d399;
-      --bad:#fb7185;
-      --warn:#fbbf24;
-      --shadow: 0 20px 80px rgba(0,0,0,.65);
-      --radius: 12px;
+      --bg:#05070b;
+      --panel:#0b0f16;
+      --panel2:#0a0d14;
+      --line:#1a2230;
+      --muted:#93a0b5;
+      --text:#e8edf6;
+      --blue:#66aaff;
+      --blue2:#8bc1ff;
+      --good:#2cc38a;
+      --warn:#f3c969;
+      --bad:#ff6b6b;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius:14px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background:
-        radial-gradient(1200px 700px at 20% -10%, rgba(96,165,250,.14), transparent 60%),
-        radial-gradient(900px 600px at 110% 0%, rgba(96,165,250,.10), transparent 55%),
-        radial-gradient(1200px 700px at 40% 120%, rgba(255,255,255,.05), transparent 60%),
-        var(--bg);
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(102,170,255,.10), transparent 55%),
+                  radial-gradient(1200px 700px at 80% 10%, rgba(120,255,220,.06), transparent 55%),
+                  var(--bg);
       color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
-    .wrap{max-width:1200px;margin:0 auto;padding:28px 24px 40px}
-    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
-    .brand{font-weight:900;font-size:44px;letter-spacing:.10em;line-height:1.02;margin:0}
-    .sub{margin-top:6px;color:var(--muted);letter-spacing:.14em;font-size:12px;font-weight:700;text-transform:uppercase}
-    .topBtns{display:flex;gap:10px;align-items:center}
-    .btn{
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    .wrap{max-width:1200px;margin:0 auto;padding:28px 22px 48px}
+    header{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+      padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{
+      display:flex;flex-direction:column;gap:6px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:44px;
+      letter-spacing:.14em;
+      font-weight:800;
+      line-height:1.0;
+    }
+    .brand .sub{
+      color:var(--muted);
+      letter-spacing:.18em;
+      font-size:12px;
+      font-weight:700;
+    }
+    .nav{
+      display:flex;gap:10px;align-items:center;padding-top:6px;
+    }
+    .pill{
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       color:var(--text);
       padding:10px 14px;
-      border-radius:10px;
+      border-radius:12px;
       font-weight:700;
-      letter-spacing:.02em;
       cursor:pointer;
       text-decoration:none;
-      display:inline-flex;align-items:center;gap:10px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
     }
-    .btn:hover{border-color:#243246}
-    .btn.primary{
-      background:linear-gradient(180deg, rgba(96,165,250,.25), rgba(96,165,250,.12));
-      border-color: rgba(96,165,250,.35);
+    .pill:hover{border-color: rgba(102,170,255,.35)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap:18px;
+      margin-top:22px;
     }
-
-    .grid{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:start;margin-top:16px}
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .cardHdr{
-      padding:14px 16px;border-bottom:1px solid var(--line2);
-      display:flex;align-items:center;justify-content:space-between;
-      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0));
+    .card-h{
+      padding:18px 18px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      letter-spacing:.14em;
+      font-weight:800;
+      color:#b8c4d8;
+      text-transform:uppercase;
+      font-size:12px;
     }
-    .cardHdr .t{font-weight:900;letter-spacing:.14em;font-size:12px;text-transform:uppercase;color:var(--muted)}
-    .cardBody{padding:16px}
-    label{display:block;font-weight:900;letter-spacing:.14em;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .card-b{padding:18px}
+    label{
+      display:block;
+      color:#b7c4d7;
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-size:12px;
+      margin-bottom:10px;
+    }
     select{
-      width:100%;padding:14px 14px;border-radius:10px;
-      border:1px solid var(--line);
-      background: rgba(5,8,12,.55);
-      color:var(--text);
-      font-size:16px;outline:none;
+      width:100%;
+      padding:16px 14px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(8,12,18,.85);
+      color: var(--text);
+      outline:none;
+      font-size:18px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
     }
-    .bigBtn{
-      margin-top:14px;width:100%;
-      padding:16px 16px;border-radius:12px;
-      border:1px solid rgba(96,165,250,.35);
-      background: linear-gradient(180deg, rgba(96,165,250,.24), rgba(96,165,250,.12));
-      color:var(--text);
-      font-weight:900;letter-spacing:.04em;font-size:18px;
+    select:focus{border-color: rgba(102,170,255,.45)}
+    .btn{
+      width:100%;
+      margin-top:14px;
+      padding:16px 16px;
+      border-radius: 12px;
+      border:1px solid rgba(102,170,255,.45);
+      background: linear-gradient(180deg, rgba(102,170,255,.35), rgba(102,170,255,.18));
+      color: var(--text);
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.04em;
       cursor:pointer;
     }
-    .pillRow{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
-    .pill{
-      display:inline-flex;align-items:center;gap:10px;
-      padding:9px 12px;border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.25);
-      color:var(--muted);
-      font-weight:800;letter-spacing:.10em;text-transform:uppercase;font-size:11px;
-    }
-    .dot{width:9px;height:9px;border-radius:99px;background:var(--warn);box-shadow:0 0 0 4px rgba(251,191,36,.12)}
-    .dot.ok{background:var(--good);box-shadow:0 0 0 4px rgba(52,211,153,.12)}
-    .dot.bad{background:var(--bad);box-shadow:0 0 0 4px rgba(251,113,133,.12)}
-
-    .kpi{font-size:44px;font-weight:950;letter-spacing:.02em;margin:2px 0 10px}
-    .kpiSub{color:var(--muted);margin-top:-2px;font-weight:700;letter-spacing:.04em}
-
-    .miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    .mini{border:1px solid var(--line);border-radius:12px;background: rgba(0,0,0,.18);padding:12px}
-    .mini .h{color:var(--muted);font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:11px;margin-bottom:8px}
-
-    .track{height:12px;border-radius:99px;background: rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
-    .fill{height:100%;width:0%;background: linear-gradient(90deg, rgba(96,165,250,.95), rgba(96,165,250,.55))}
-
-    .barRow{display:grid;grid-template-columns: 1fr auto;gap:10px;align-items:center}
-    .barLabel{font-weight:850;font-size:16px}
-    .barVal{color:var(--muted);font-weight:900;letter-spacing:.08em}
-
-    .debug{
-      margin-top:12px;border:1px dashed rgba(255,255,255,.15);
-      background: rgba(0,0,0,.18);
-      border-radius:12px;
-      padding:10px 12px;
+    .btn:hover{filter:brightness(1.05)}
+    .status{
+      display:flex;align-items:center;gap:10px;margin-top:14px;
       color: var(--muted);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      font-size:12px;
-      white-space:pre-wrap;
-      overflow:auto;
-      max-height:220px;
+      font-weight:700;
     }
-
+    .dot{width:10px;height:10px;border-radius:999px;background:#667;box-shadow:0 0 0 3px rgba(255,255,255,.05)}
+    .dot.ok{background: var(--good)}
+    .dot.err{background: var(--bad)}
+    .dot.busy{background: var(--blue)}
+    .big{
+      font-size:64px;
+      font-weight:900;
+      letter-spacing:.02em;
+      margin:6px 0 0;
+    }
+    .citytag{
+      font-weight:900;
+      letter-spacing:.16em;
+      color:#b8c4d8;
+      text-transform:uppercase;
+    }
+    .subtitle{
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:.02em;
+      margin-top:6px;
+      font-size:18px;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      margin-top:16px;
+    }
+    .mini{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(6,10,16,.55);
+      border-radius: 14px;
+      padding:14px;
+    }
+    .mini h4{
+      margin:0 0 10px;
+      letter-spacing:.14em;
+      font-weight:900;
+      text-transform:uppercase;
+      color:#b8c4d8;
+      font-size:12px;
+    }
+    .mini .val{
+      font-size:16px;
+      font-weight:800;
+      color: var(--text);
+      line-height:1.35;
+    }
+    .bars{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(6,10,16,.55);
+      border-radius: 14px;
+      padding:14px;
+      margin-top:14px;
+    }
+    .bars h4{margin:0 0 12px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#b8c4d8;font-size:12px}
+    .bar{
+      display:grid;
+      grid-template-columns: 1fr 64px;
+      gap:12px;
+      align-items:center;
+      margin:10px 0 14px;
+    }
+    .bar .name{font-weight:900;font-size:28px;letter-spacing:.01em}
+    .bar .pct{font-weight:900;font-size:28px;color:#b8c4d8;text-align:right}
+    .track{
+      grid-column:1 / -1;
+      height:14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(102,170,255,.95), rgba(139,193,255,.95));
+    }
+    .note{
+      margin-top:10px;
+      color: var(--muted);
+      font-weight:700;
+      font-size:12px;
+      letter-spacing:.02em;
+    }
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
-      .brand{font-size:36px}
+      .brand h1{font-size:34px}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div>
-        <div class="brand">MetApplication</div>
-        <div class="sub">Long Term Drought Odds</div>
+      <div class="brand">
+        <h1>MetApplication</h1>
+        <div class="sub">LONG TERM DROUGHT ODDS</div>
       </div>
-      <div class="topBtns">
-        <a class="btn" href="/">High Temp</a>
-        <button class="btn primary" id="btnEvalTop" type="button">Evaluate</button>
+      <div class="nav">
+        <a class="pill" href="/">High Temp</a>
       </div>
     </header>
 
     <div class="grid">
       <section class="card">
-        <div class="cardHdr"><div class="t">Inputs</div></div>
-        <div class="cardBody">
+        <div class="card-h">
+          <div>Inputs</div>
+          <div class="citytag" id="cityTag">—</div>
+        </div>
+        <div class="card-b">
           <label for="city">City</label>
           <select id="city">
             <option value="den">Denver</option>
             <option value="nyc">New York City</option>
             <option value="dal">Dallas</option>
-            <option value="chi" selected>Chicago</option>
+            <option value="chi">Chicago</option>
           </select>
 
-          <button class="bigBtn" id="btnEval" type="button">Evaluate Drought Odds</button>
+          <button class="btn" id="go">Evaluate Drought Odds</button>
 
-          <div class="pillRow">
-            <div class="pill"><span class="dot" id="dot"></span><span id="statusTxt">READY</span></div>
-            <div class="pill" id="httpTxt">—</div>
-            <div class="pill" id="verTxt">v2-click-debug</div>
+          <div class="status" id="status">
+            <span class="dot ok" id="dot"></span>
+            <span id="statusText">Ready</span>
           </div>
-
-          <div class="debug" id="debugBox">Debug will appear here…</div>
         </div>
       </section>
 
       <section class="card">
-        <div class="cardHdr">
-          <div class="t">Result</div>
-          <div class="t" id="cityName">—</div>
+        <div class="card-h">
+          <div>Result</div>
+          <div class="citytag" id="cityTop">—</div>
         </div>
-        <div class="cardBody">
-          <div class="kpi" id="kpi">—</div>
-          <div class="kpiSub">Expected drought through ~90 days</div>
+        <div class="card-b">
+          <div class="big" id="pctBig">—</div>
+          <div class="subtitle">Expected drought through ~90 days</div>
 
-          <div class="miniGrid">
+          <div class="row">
             <div class="mini">
-              <div class="h">Seasonal Drought Outlook</div>
-              <div id="sdo">—</div>
+              <h4>Seasonal Drought Outlook</h4>
+              <div class="val" id="sdoVal">—</div>
             </div>
             <div class="mini">
-              <div class="h">3-Month Precip Outlook</div>
-              <div id="precip">—</div>
+              <h4>3-Month Precip Outlook</h4>
+              <div class="val" id="prVal">—</div>
             </div>
           </div>
 
-          <div class="mini" style="margin-top:12px">
-            <div class="h">Precip Signal</div>
+          <div class="bars">
+            <h4>Precip Signal</h4>
 
-            <div style="display:grid;gap:10px;margin-top:10px">
-              <div>
-                <div class="barRow">
-                  <div class="barLabel">Drier bias</div>
-                  <div class="barVal" id="dryPct">—</div>
-                </div>
-                <div class="track"><div class="fill" id="dryFill"></div></div>
-              </div>
-
-              <div>
-                <div class="barRow">
-                  <div class="barLabel">Wetter bias</div>
-                  <div class="barVal" id="wetPct">—</div>
-                </div>
-                <div class="track"><div class="fill" id="wetFill"></div></div>
-              </div>
+            <div class="bar">
+              <div class="name">Drier bias</div>
+              <div class="pct" id="dryPct">0%</div>
+              <div class="track"><div class="fill" id="dryFill"></div></div>
             </div>
 
+            <div class="bar" style="margin-top:6px;">
+              <div class="name">Wetter bias</div>
+              <div class="pct" id="wetPct">0%</div>
+              <div class="track"><div class="fill" id="wetFill"></div></div>
+            </div>
+
+            <div class="note" id="note">—</div>
           </div>
         </div>
       </section>
@@ -222,140 +305,105 @@
   </div>
 
 <script>
-  const $ = (id) => document.getElementById(id);
+  const $ = (id)=>document.getElementById(id);
 
-  function setStatus(kind, msg, httpLine="—") {
+  const cityNames = {
+    den: "Denver",
+    nyc: "New York City",
+    dal: "Dallas",
+    chi: "Chicago",
+  };
+
+  function setStatus(kind, text){
     const dot = $("dot");
-    dot.classList.remove("ok","bad");
-    if (kind === "ok") dot.classList.add("ok");
-    if (kind === "bad") dot.classList.add("bad");
-    $("statusTxt").textContent = msg;
-    $("httpTxt").textContent = httpLine;
+    dot.className = "dot " + (kind || "ok");
+    $("statusText").textContent = text;
   }
 
-  function debug(msg) {
-    const box = $("debugBox");
-    box.textContent = msg;
+  function pct(x){
+    return Math.round(x*100);
   }
 
-  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-
-  async function tryFetch(method, url, bodyObj=null) {
-    const opts = { method, headers: {} };
-    if (method !== "GET") {
-      opts.headers["Content-Type"] = "application/json";
-      opts.body = JSON.stringify(bodyObj || {});
-    }
-    const res = await fetch(url, opts);
-    const text = await res.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch {}
-    return { ok: res.ok, status: res.status, text, json };
+  function fmtProbLine(pr){
+    const d = pct(pr.dry), n = pct(pr.normal), w = pct(pr.wet);
+    return `Dry ${d}% · Normal ${n}% · Wet ${w}%`;
   }
 
-  async function callDroughtAPI(city) {
-    const payload = { city };
+  function applyBars(pr){
+    // show "bias" relative to equal chances
+    const dryBias = Math.max(0, pr.dry - 1/3);
+    const wetBias = Math.max(0, pr.wet - 1/3);
 
-    const attempts = [
-      { method:"POST", url:"/api/drought", label:"POST /api/drought" },
-      { method:"GET",  url:`/api/drought?city=${encodeURIComponent(city)}`, label:"GET /api/drought?city=" },
-      { method:"POST", url:"/api/drought_odds", label:"POST /api/drought_odds" },
-      { method:"POST", url:"/api/drought/evaluate", label:"POST /api/drought/evaluate" },
-    ];
+    const dryP = Math.round(dryBias * 150); // scales into a nicer UI range
+    const wetP = Math.round(wetBias * 150);
 
-    let trail = [];
-    for (const a of attempts) {
-      try {
-        const r = await tryFetch(a.method, a.url, payload);
-        trail.push(`${a.label} -> ${r.status}`);
-        if (r.ok) return { ok:true, endpoint:a.label, status:r.status, data:(r.json ?? r.text), trail };
-      } catch (e) {
-        trail.push(`${a.label} -> NETWORK ERROR: ${String(e)}`);
-      }
-    }
-    return { ok:false, endpoint:"(none)", status:"—", data:null, trail };
+    $("dryPct").textContent = `${dryP}%`;
+    $("wetPct").textContent = `${wetP}%`;
+    $("dryFill").style.width = `${Math.min(100, dryP)}%`;
+    $("wetFill").style.width = `${Math.min(100, wetP)}%`;
   }
 
-  function renderResult(out) {
-    $("cityName").textContent = out.city_name || out.city || "—";
-
-    const p = out.expected_drought_90d;
-    if (typeof p === "number") $("kpi").textContent = (p*100).toFixed(1) + "%";
-    else $("kpi").textContent = "—";
-
-    const sdo = out.drought_outlook;
-    $("sdo").textContent = (sdo && typeof sdo === "object") ? (sdo.label || sdo.type || "—") : (sdo || "—");
-
-    const pr = out.precip_outlook_3mo;
-    if (pr && typeof pr === "object") {
-      const dry = pr.dry ?? pr.below ?? null;
-      const wet = pr.wet ?? pr.above ?? null;
-      const normal = pr.normal ?? pr.near ?? null;
-
-      const parts = [];
-      if (dry != null) parts.push(`Dry ${(dry*100).toFixed(0)}%`);
-      if (normal != null) parts.push(`Normal ${(normal*100).toFixed(0)}%`);
-      if (wet != null) parts.push(`Wet ${(wet*100).toFixed(0)}%`);
-      $("precip").textContent = parts.length ? parts.join("  ·  ") : "—";
-
-      const dry01 = clamp01(dry ?? 0);
-      const wet01 = clamp01(wet ?? 0);
-      $("dryPct").textContent = (dry01*100).toFixed(0) + "%";
-      $("wetPct").textContent = (wet01*100).toFixed(0) + "%";
-      $("dryFill").style.width = (dry01*100).toFixed(0) + "%";
-      $("wetFill").style.width = (wet01*100).toFixed(0) + "%";
-    } else {
-      $("precip").textContent = "—";
-      $("dryPct").textContent = "—";
-      $("wetPct").textContent = "—";
-      $("dryFill").style.width = "0%";
-      $("wetFill").style.width = "0%";
-    }
-  }
-
-  async function evaluate() {
+  async function evaluate(){
     const city = $("city").value;
+    $("cityTag").textContent = cityNames[city] || "—";
+    $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
 
-    // FORCE visible feedback immediately
-    setStatus("warn", "CLICKED", "starting…");
-    debug(`CLICKED\ncity=${city}\nlocation.origin=${location.origin}\npath=${location.pathname}\n`);
+    setStatus("busy", "Evaluating…");
 
-    const r = await callDroughtAPI(city);
+    try{
+      const res = await fetch("/api/drought", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({city})
+      });
 
-    debug(
-      `ATTEMPTS:\n${r.trail.join("\n")}\n\n` +
-      (r.ok
-        ? `SUCCESS:\n${r.endpoint} -> ${r.status}\n\nBODY:\n${typeof r.data === "string" ? r.data : JSON.stringify(r.data, null, 2)}`
-        : `FAILED:\nNo endpoint returned 200.\n`)
-    );
+      if(!res.ok){
+        const t = await res.text();
+        setStatus("err", `HTTP ${res.status}`);
+        $("pctBig").textContent = "—";
+        $("sdoVal").textContent = "—";
+        $("prVal").textContent = "—";
+        $("note").textContent = t.slice(0,160);
+        return;
+      }
 
-    if (!r.ok) {
-      setStatus("bad", "ERROR", "No route matched");
-      return;
+      const data = await res.json();
+
+      const expected = data.expected_drought_90d;
+      $("pctBig").textContent = `${(expected*100).toFixed(1)}%`;
+
+      const sdo = data.components?.sdo ?? "—";
+      const pr = data.components?.precip_probs ?? {dry:1/3, normal:1/3, wet:1/3};
+
+      $("sdoVal").textContent = sdo;
+      $("prVal").textContent = fmtProbLine(pr);
+      applyBars(pr);
+
+      const usdm = data.components?.usdm_category ?? "None";
+      $("note").textContent = `USDM: ${usdm} · SDO: ${sdo}`;
+
+      setStatus("ok", "OK");
+    }catch(e){
+      setStatus("err", "Network error");
+      $("note").textContent = String(e);
     }
-
-    setStatus("ok", "OK", `${r.endpoint} → ${r.status}`);
-
-    if (typeof r.data === "string") {
-      // got HTML or text instead of json
-      return;
-    }
-
-    renderResult(r.data);
   }
 
-  // Ensure the handlers attach even if this script runs early
-  window.addEventListener("load", () => {
-    const b1 = $("btnEval");
-    const b2 = $("btnEvalTop");
-
-    b1.addEventListener("click", (e) => { e.preventDefault(); evaluate(); });
-    b2.addEventListener("click", (e) => { e.preventDefault(); evaluate(); });
-
-    // prove scripts are loaded
-    setStatus("warn", "READY", "handlers attached");
-    debug("READY\nHandlers attached. Click Evaluate Drought Odds.\n");
+  $("city").addEventListener("change", ()=>{
+    const city = $("city").value;
+    $("cityTag").textContent = cityNames[city] || "—";
+    $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
   });
+
+  $("go").addEventListener("click", evaluate);
+
+  // init
+  (function init(){
+    const city = $("city").value;
+    $("cityTag").textContent = cityNames[city] || "—";
+    $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
+    $("note").textContent = "—";
+  })();
 </script>
 </body>
 </html>
