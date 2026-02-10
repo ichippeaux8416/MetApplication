@@ -3,731 +3,578 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>High Temperature Prediction Market Guidance</title>
+  <title>MetApplication</title>
   <style>
     :root{
-      --bg:#000000;
-      --panel:#14171c;
-      --panel2:#1b1f26;
-      --line:#2a2f3a;
-      --line2:#343b49;
+      --bg:#07090d;
+      --panel:#0e121a;
+      --panel2:#0b0f16;
+      --border:#1d2634;
+      --muted:#9aa7b8;
+      --text:#e8eef7;
+      --blue:#63a8ff;
+      --blue2:#7fc1ff;
+      --chip:#101827;
+      --good:#3ddc97;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
 
-      --text:#f2f4f7;
-      --muted:#a8b0bf;
-      --muted2:#7f8797;
-
-      --accent:#60a5fa;   /* light blue */
-      --accent2:#93c5fd;
-
-      --good:#34d399;
-      --bad:#fb7185;
-
-      --radius:8px;
-      --shadow: 0 10px 26px rgba(0,0,0,.55);
-
-      /* More “real product” typography */
-      --sans: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
-      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      --radius:10px;   /* less rounded */
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 30% -10%, rgba(99,168,255,.12), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(127,193,255,.08), transparent 55%),
+                  var(--bg);
       color:var(--text);
-      background:var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      letter-spacing:.1px;
     }
 
-    /* Header */
+    /* top header */
     .topbar{
-      border-bottom:1px solid var(--line);
-      background:var(--bg);
-    }
-    .topbar-inner{
-      max-width:1280px;
-      margin:0 auto;
-      padding:20px 18px 16px;
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
-      gap:16px;
+      padding:22px 26px 14px;
+      border-bottom:1px solid rgba(29,38,52,.9);
     }
-    .brandwrap{
+    .brand{
       display:flex;
       flex-direction:column;
       gap:6px;
     }
-    .brand{
-      font-weight:900;
-      letter-spacing:1.6px; /* increased */
-      font-size:30px;       /* larger */
-      line-height:1.05;
-      white-space:nowrap;
-    }
-    .subtitle{
-      font-size:12px;
+    .brand .title{
+      font-size:34px;
       font-weight:800;
-      letter-spacing:.16em;
+      letter-spacing:1.4px; /* requested spacing */
+      line-height:1;
+    }
+    .brand .sub{
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:1.8px;
       text-transform:uppercase;
-      color:var(--muted2);
+      color:rgba(154,167,184,.85);
     }
 
-    .status{
+    .nav{
       display:flex;
       align-items:center;
       gap:10px;
-      font-size:13px;
-      color:var(--muted);
+    }
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border:1px solid rgba(29,38,52,.95);
+      background: rgba(14,18,26,.75);
+      color:var(--text);
+      text-decoration:none;
+      border-radius:9px;
       font-weight:700;
-      padding-bottom:2px;
-      letter-spacing:.02em;
+      font-size:13px;
+    }
+    .nav a:hover{border-color:rgba(99,168,255,.55)}
+    .nav a.primary{
+      border-color:rgba(99,168,255,.55);
+      background: rgba(99,168,255,.10);
     }
     .dot{
-      width:9px;height:9px;border-radius:999px;
-      background:var(--muted2);
+      width:10px;height:10px;border-radius:2px;
+      background: var(--blue);
+      box-shadow: 0 0 0 3px rgba(99,168,255,.12);
     }
-    .status.ok .dot{background:var(--good)}
-    .status.warn .dot{background:#fbbf24}
-    .status.bad .dot{background:var(--bad)}
 
+    /* layout */
     .wrap{
       max-width:1280px;
       margin:0 auto;
-      padding:18px;
+      padding:18px 26px 34px;
     }
-
-    .layout{
+    .grid{
       display:grid;
-      grid-template-columns: 1.8fr 1fr;
-      gap:18px;
+      grid-template-columns: 1.35fr .95fr;
+      gap:16px;
       align-items:start;
-    }
-    @media (max-width: 980px){
-      .layout{grid-template-columns:1fr}
+      margin-top:18px;
     }
 
     .card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      background: linear-gradient(180deg, rgba(14,18,26,.92), rgba(10,14,20,.92));
+      border:1px solid rgba(29,38,52,.95);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .card-h{
-      padding:14px 14px 12px;
-      border-bottom:1px solid var(--line);
+    .card .hdr{
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .card-h .kicker{
-      font-size:12px;
+      padding:14px 16px;
+      background: rgba(7,9,13,.35);
+      border-bottom:1px solid rgba(29,38,52,.95);
       font-weight:800;
+      letter-spacing:1.2px;
       text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--muted);
-    }
-    .card-h .small{
       font-size:12px;
-      color:var(--muted2);
-      font-weight:600;
-      letter-spacing:.02em;
+      color: rgba(154,167,184,.9);
     }
-    .card-b{padding:14px}
+    .card .body{padding:16px}
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width: 720px){
-      .grid{grid-template-columns:1fr}
-    }
-
+    /* form */
     label{
       display:block;
       font-size:12px;
       font-weight:800;
-      letter-spacing:.12em;
+      letter-spacing:1.2px;
       text-transform:uppercase;
-      color:var(--muted2);
-      margin:0 0 6px;
+      color: rgba(154,167,184,.9);
+      margin:0 0 8px;
     }
-
-    input, select{
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    .row3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    select, input{
       width:100%;
-      padding:14px 12px;
-      border-radius:var(--radius);
-      border:1px solid var(--line2);
-      background:var(--panel2);
-      color:var(--text);
-      font:inherit;
-      font-size:15px;
+      padding:14px 14px;
+      border-radius:9px;
+      border:1px solid rgba(29,38,52,.95);
+      background: rgba(8,12,18,.7);
+      color: var(--text);
       outline:none;
-      letter-spacing:.01em;
-    }
-    input::placeholder{color:rgba(168,176,191,.55)}
-    input:focus, select:focus{
-      border-color: rgba(96,165,250,.85);
-      box-shadow: 0 0 0 4px rgba(96,165,250,.18);
-    }
-
-    button{
-      width:100%;
-      padding:14px 12px;
-      border-radius:var(--radius);
-      border:1px solid var(--line2);
-      background:var(--panel2);
-      color:var(--text);
-      font-weight:800;
-      letter-spacing:.06em;
-      cursor:pointer;
       font-size:15px;
-      text-transform:none;
     }
-    button:hover{border-color: rgba(96,165,250,.55)}
-    button.primary{
-      background:var(--accent);
-      border-color: rgba(96,165,250,.9);
-      color:#081018;
+    select:focus, input:focus{border-color:rgba(99,168,255,.6); box-shadow: 0 0 0 4px rgba(99,168,255,.12);}
+    .btn{
+      width:100%;
+      padding:14px 16px;
+      border-radius:10px;
+      border:1px solid rgba(99,168,255,.70);
+      background: rgba(99,168,255,.92);
+      color:#06101e;
+      font-weight:900;
+      font-size:16px;
+      letter-spacing:.4px;
+      cursor:pointer;
     }
-    button.primary:hover{filter:brightness(1.03)}
-    button:disabled{opacity:.55; cursor:not-allowed}
+    .btn:hover{filter:brightness(1.02)}
+    .btn:active{transform: translateY(1px)}
 
-    .err{
-      display:none;
-      margin-top:12px;
-      border:1px solid rgba(251,113,133,.45);
-      background: rgba(251,113,133,.10);
-      border-radius:var(--radius);
-      padding:10px 12px;
-      font-family:var(--mono);
-      font-size:13px;
-      white-space:pre-wrap;
-    }
-
-    .side{
-      position:sticky;
-      top:18px;
-    }
-    @media (max-width: 980px){
-      .side{position:static}
-    }
-
-    .pillrow{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .badge{
+    /* result column */
+    .pill{
       display:inline-flex;
       align-items:center;
-      gap:8px;
-      padding:9px 10px;
-      border-radius:999px;
-      border:1px solid var(--line2);
-      background:var(--panel2);
-      font-weight:800;
-      letter-spacing:.08em;
-      font-size:12px;
-      text-transform:uppercase;
-    }
-    .badge .b-dot{width:9px;height:9px;border-radius:999px;background:var(--muted2)}
-    .badge.buyyes{border-color: rgba(52,211,153,.35)}
-    .badge.buyyes .b-dot{background: var(--good)}
-    .badge.buyno{border-color: rgba(251,113,133,.35)}
-    .badge.buyno .b-dot{background: var(--bad)}
-    .badge.pass{border-color: rgba(96,165,250,.25)}
-    .badge.pass .b-dot{background: var(--accent)}
-
-    .contract{
-      margin-top:10px;
-      border:1px solid var(--line);
-      background:var(--panel2);
-      border-radius:var(--radius);
-      padding:10px 12px;
-      font-family:var(--mono);
-      font-size:12.5px;
-      color:rgba(242,244,247,.92);
-      word-break:break-word;
-    }
-
-    .kv{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:1fr;
       gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(29,38,52,.95);
+      background: rgba(16,24,39,.65);
+      font-weight:900;
+      letter-spacing:.4px;
+      font-size:13px;
     }
-    .kv .item{
-      border:1px solid var(--line);
-      background:var(--panel2);
-      border-radius:var(--radius);
-      padding:10px 12px;
+    .pill .led{
+      width:10px;height:10px;border-radius:999px;
+      background: rgba(154,167,184,.55);
+      box-shadow: 0 0 0 3px rgba(154,167,184,.10);
     }
-    .kv .k{
+    .pill.good .led{background: var(--good); box-shadow:0 0 0 3px rgba(61,220,151,.12)}
+    .pill.warn .led{background: var(--warn); box-shadow:0 0 0 3px rgba(255,209,102,.12)}
+    .pill.bad  .led{background: var(--bad);  box-shadow:0 0 0 3px rgba(255,92,122,.12)}
+
+    .mini{
+      background: rgba(14,18,26,.55);
+      border:1px solid rgba(29,38,52,.95);
+      border-radius:10px;
+      padding:12px 12px;
+      margin-top:12px;
+    }
+    .mini .k{
       font-size:12px;
-      font-weight:800;
-      letter-spacing:.14em;
+      font-weight:900;
+      letter-spacing:1.2px;
       text-transform:uppercase;
-      color:var(--muted2);
-      display:flex;
-      align-items:center;
-      gap:8px;
+      color: rgba(154,167,184,.9);
       margin-bottom:6px;
     }
-    .kv .k .bar{
-      width:10px;height:10px;border-radius:3px;background:var(--accent);
-    }
-    .kv .v{
-      font-family:var(--mono);
-      font-size:13px;
-      color:rgba(242,244,247,.92);
-      line-height:1.35;
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:14px;
+      color: rgba(232,238,247,.95);
+      letter-spacing:.2px;
     }
 
-    /* Chart */
-    .chart{
-      border:1px solid var(--line);
-      background:#0a0c10;
-      border-radius:var(--radius);
-      overflow:hidden;
-      position:relative;
-      height:180px;
-      margin-bottom:12px;
+    /* chart */
+    .chartBox{
+      background: rgba(8,12,18,.45);
+      border:1px solid rgba(29,38,52,.95);
+      border-radius:10px;
+      padding:10px;
     }
-    .chart canvas{
-      width:100%;
-      height:100%;
-      display:block;
-    }
-
-    /* Removed chart title entirely so nothing overlays the plot */
-    .chart-legend{
-      position:absolute;
-      right:12px;
-      top:10px;
+    .legend{
       display:flex;
-      gap:12px;
       align-items:center;
-      font-size:11.5px;
-      color:var(--muted2);
+      gap:14px;
+      justify-content:flex-end;
+      padding:4px 6px 10px;
       font-weight:800;
-      pointer-events:none;
+      letter-spacing:1.1px;
       text-transform:uppercase;
-      letter-spacing:.14em;
+      font-size:12px;
+      color: rgba(154,167,184,.95);
     }
-    .lg{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      white-space:nowrap;
-    }
-    .sw{
-      width:10px;height:10px;border-radius:3px;background:var(--accent);
-    }
-    .pt{
-      width:10px;height:10px;border-radius:999px;background:var(--accent2);
-      border:1px solid rgba(255,255,255,.35);
+    .lgItem{display:flex;align-items:center;gap:8px}
+    .sw{width:14px;height:14px;border-radius:4px;background:var(--blue)}
+    .sw2{width:14px;height:14px;border-radius:999px;background:rgba(200,225,255,.90); border:2px solid rgba(99,168,255,.30)}
+
+    canvas{width:100%; height:220px; display:block}
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      canvas{height:200px}
     }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brandwrap">
-        <div class="brand">MetApplication</div>
-        <div class="subtitle">High Temperature Prediction Market Guidance</div>
-      </div>
-
-      <div id="status" class="status">
-        <span class="dot"></span>
-        <span id="statusText">idle</span>
-      </div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="title">MetApplication</div>
+      <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
     </div>
-  </div>
 
-  <div class="wrap">
-    <div class="layout">
-      <!-- Left -->
-      <div class="card">
-        <div class="card-h">
-          <div class="kicker">Inputs</div>
-          <div class="small">Enter the contract and click Evaluate Market.</div>
+    <nav class="nav">
+      <a class="primary" href="index.html"><span class="dot"></span>Temperature</a>
+      <a href="drought.html"><span class="dot" style="background: rgba(127,193,255,.9)"></span>Drought Odds</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <!-- Inputs -->
+      <section class="card">
+        <div class="hdr">
+          <div>Inputs</div>
+          <div style="font-weight:800;color:rgba(154,167,184,.75);letter-spacing:.7px;text-transform:none;">Enter the contract and click Evaluate Market.</div>
         </div>
-        <div class="card-b">
-          <div class="grid">
+        <div class="body">
+          <div class="row">
             <div>
               <label for="city">City</label>
               <select id="city">
-                <option value="den">Denver</option>
-                <option value="nyc">New York City</option>
-                <option value="dal">Dallas</option>
-                <option value="chi">Chicago</option>
+                <option>Denver</option>
+                <option>New York City</option>
+                <option>Dallas</option>
+                <option>Chicago</option>
               </select>
             </div>
-
             <div>
               <label for="date">Date</label>
-              <input id="date" placeholder="mm/dd/yyyy" inputmode="numeric" />
+              <select id="date"></select>
             </div>
+          </div>
 
+          <div class="row3">
             <div>
               <label for="temp">Potential High Temp</label>
-              <input id="temp" placeholder="°F" inputmode="decimal" />
+              <select id="temp"></select>
             </div>
-
             <div>
               <label for="yes">Yes Cost</label>
-              <input id="yes" placeholder="cents" inputmode="decimal" />
+              <input id="yes" inputmode="numeric" placeholder="cents" value="30">
             </div>
-
             <div>
               <label for="no">No Cost</label>
-              <input id="no" placeholder="cents" inputmode="decimal" />
-            </div>
-
-            <div>
-              <label>&nbsp;</label>
-              <button id="btnEval" class="primary">Evaluate Market</button>
+              <input id="no" inputmode="numeric" placeholder="cents" value="70">
             </div>
           </div>
 
-          <div id="err" class="err"></div>
+          <button class="btn" id="go">Evaluate Market</button>
         </div>
-      </div>
+      </section>
 
-      <!-- Right -->
-      <div class="side">
-        <div class="card">
-          <div class="card-h">
-            <div class="kicker">Result</div>
-            <div class="small">BUY YES / BUY NO / PASS</div>
+      <!-- Result -->
+      <aside class="card">
+        <div class="hdr">
+          <div>Result</div>
+          <div id="headline" style="font-weight:900;color:rgba(232,238,247,.92);letter-spacing:.6px;">BUY YES / BUY NO / PASS</div>
+        </div>
+        <div class="body">
+          <div class="chartBox">
+            <div class="legend">
+              <div class="lgItem"><span class="sw"></span>Fair Price</div>
+              <div class="lgItem"><span class="sw2"></span>Your Price</div>
+            </div>
+            <canvas id="chart" width="900" height="360"></canvas>
           </div>
-          <div class="card-b">
-            <div class="chart" aria-label="Fair price chart">
-              <div class="chart-legend">
-                <div class="lg"><span class="sw"></span>Fair Price</div>
-                <div class="lg"><span class="pt"></span>Your Price</div>
-              </div>
-              <canvas id="chart"></canvas>
-            </div>
 
-            <div class="pillrow">
-              <div id="badge" class="badge pass">
-                <span class="b-dot"></span>
-                <span id="badgeText">PASS</span>
-              </div>
-            </div>
+          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:flex-start;">
+            <div id="pill" class="pill"><span class="led"></span><span id="pillText">—</span></div>
+          </div>
 
-            <div id="contractLine" class="contract">—</div>
+          <div class="mini">
+            <div class="k">Contract</div>
+            <div class="mono" id="line">—</div>
+          </div>
 
-            <div class="kv">
-              <div class="item">
-                <div class="k"><span class="bar"></span>Market</div>
-                <div class="v" id="vMarket">—</div>
-              </div>
-              <div class="item">
-                <div class="k"><span class="bar"></span>Model</div>
-                <div class="v" id="vModel">—</div>
-              </div>
-              <div class="item">
-                <div class="k"><span class="bar"></span>Fair</div>
-                <div class="v" id="vFair">—</div>
-              </div>
-              <div class="item">
-                <div class="k"><span class="bar"></span>Edge</div>
-                <div class="v" id="vEdge">—</div>
-              </div>
-            </div>
+          <div class="mini">
+            <div class="k">Market</div>
+            <div class="mono" id="mkt">—</div>
+          </div>
 
+          <div class="mini">
+            <div class="k">Model</div>
+            <div class="mono" id="mdl">—</div>
+          </div>
+
+          <div class="mini">
+            <div class="k">Fair</div>
+            <div class="mono" id="fair">—</div>
+          </div>
+
+          <div class="mini">
+            <div class="k">Edge</div>
+            <div class="mono" id="edge">—</div>
           </div>
         </div>
-      </div>
+      </aside>
     </div>
-  </div>
+  </main>
 
   <script>
-    const API_BASE = "";
+    // ---- UI helpers
+    const $ = (id) => document.getElementById(id);
 
-    const elStatus = document.getElementById("status");
-    const elStatusText = document.getElementById("statusText");
-
-    const city = document.getElementById("city");
-    const dateIn = document.getElementById("date");
-    const tempIn = document.getElementById("temp");
-    const yesIn = document.getElementById("yes");
-    const noIn = document.getElementById("no");
-    const btnEval = document.getElementById("btnEval");
-
-    const err = document.getElementById("err");
-
-    const badge = document.getElementById("badge");
-    const badgeText = document.getElementById("badgeText");
-    const contractLine = document.getElementById("contractLine");
-
-    const vMarket = document.getElementById("vMarket");
-    const vModel = document.getElementById("vModel");
-    const vFair = document.getElementById("vFair");
-    const vEdge = document.getElementById("vEdge");
-
-    const canvas = document.getElementById("chart");
-    const ctx = canvas.getContext("2d", { alpha: false });
-
-    function setStatus(text, state="idle"){
-      elStatusText.textContent = text;
-      elStatus.className = "status " + (state === "ok" ? "ok" : state === "warn" ? "warn" : state === "bad" ? "bad" : "");
+    // Populate next 14 days (client-side) as default.
+    // Your backend can still accept any mm/dd/yyyy you send.
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function mmddyyyy(d){
+      return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`;
     }
 
-    function showError(msg){
-      err.style.display = "block";
-      err.textContent = msg;
-      setStatus("error", "bad");
-    }
+    (function initDates(){
+      const sel = $("date");
+      const now = new Date();
+      for(let i=0;i<14;i++){
+        const d = new Date(now.getTime() + i*86400000);
+        const opt = document.createElement("option");
+        opt.value = mmddyyyy(d);
+        opt.textContent = mmddyyyy(d);
+        sel.appendChild(opt);
+      }
+    })();
 
-    function clearError(){
-      err.style.display = "none";
-      err.textContent = "";
-    }
+    // Populate temps (30..110)
+    (function initTemps(){
+      const sel = $("temp");
+      for(let t=30;t<=110;t++){
+        const opt = document.createElement("option");
+        opt.value = String(t);
+        opt.textContent = String(t);
+        if(t===42) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    })();
 
-    function num(v){
-      const x = String(v || "").trim();
-      if (!x) return null;
-      const n = Number(x);
-      return Number.isFinite(n) ? n : null;
-    }
+    function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
 
-    function sanitizeDate(mdy){
-      const m = String(mdy || "").trim();
-      if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(m)) return null;
-      return m;
-    }
+    // ---- chart rendering (fair curve + your point)
+    function drawChart({mu, sigma, yourTemp, fairAtYourTemp, yourYesPrice}){
+      const c = $("chart");
+      const ctx = c.getContext("2d");
 
-    function setBadge(sig){
-      const s = (sig || "").toUpperCase();
-      badge.className = "badge " + (s.includes("BUY YES") ? "buyyes" : s.includes("BUY NO") ? "buyno" : "pass");
-      badgeText.textContent = s.includes("BUY YES") ? "BUY YES" : s.includes("BUY NO") ? "BUY NO" : "PASS";
-    }
+      // Fit x-range around mu so curve looks meaningful
+      const xmin = Math.floor(mu - 4*sigma);
+      const xmax = Math.ceil(mu + 4*sigma);
 
-    function fmt4(x){
-      return (typeof x === "number" && isFinite(x)) ? x.toFixed(4) : "—";
-    }
+      // But also include yourTemp if it's outside
+      const XMIN = Math.min(xmin, yourTemp - 3);
+      const XMAX = Math.max(xmax, yourTemp + 3);
 
-    // ---- Normal CDF ----
-    function erf(x){
-      const sign = x >= 0 ? 1 : -1;
-      x = Math.abs(x);
-      const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429;
-      const p=0.3275911;
-      const t = 1.0/(1.0+p*x);
-      const y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-x*x);
-      return sign*y;
-    }
-    function normCdf(z){
-      return 0.5*(1 + erf(z/Math.SQRT2));
-    }
-    function fairYes(thresholdF, mu, sigma){
-      const z = (thresholdF - mu) / sigma;
-      return 1 - normCdf(z);
-    }
+      const W = c.width, H = c.height;
+      ctx.clearRect(0,0,W,H);
 
-    // ---- Chart drawing ----
-    function resizeCanvas(){
-      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      const rect = canvas.getBoundingClientRect();
-      const w = Math.max(320, Math.floor(rect.width));
-      const h = Math.max(140, Math.floor(rect.height));
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      return { w, h };
-    }
+      // Background
+      ctx.fillStyle = "rgba(8,12,18,.25)";
+      ctx.fillRect(0,0,W,H);
 
-    function drawGrid(w,h, pad){
-      ctx.fillStyle = "#0a0c10";
-      ctx.fillRect(0,0,w,h);
+      // Plot area
+      const padL = 52, padR = 20, padT = 18, padB = 46;
+      const PW = W - padL - padR;
+      const PH = H - padT - padB;
 
-      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      // Grid
+      ctx.strokeStyle = "rgba(255,255,255,.06)";
       ctx.lineWidth = 1;
 
-      const vx = 6, vy = 4;
-      for (let i=0;i<=vx;i++){
-        const x = pad.l + (w-pad.l-pad.r)*(i/vx);
-        ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,h-pad.b); ctx.stroke();
+      const vlines = 6, hlines = 4;
+      for(let i=0;i<=vlines;i++){
+        const x = padL + (PW*i/vlines);
+        ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,padT+PH); ctx.stroke();
       }
-      for (let j=0;j<=vy;j++){
-        const y = pad.t + (h-pad.t-pad.b)*(j/vy);
-        ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
-      }
-
-      ctx.strokeStyle = "rgba(255,255,255,0.10)";
-      ctx.strokeRect(pad.l, pad.t, w-pad.l-pad.r, h-pad.t-pad.b);
-    }
-
-    function drawChart({mu, sigma, userT, userYesPrice}){
-      const {w,h} = resizeCanvas();
-      const pad = { l:46, r:14, t:18, b:32 };
-
-      drawGrid(w,h,pad);
-
-      let xMin = mu - 4*sigma;
-      let xMax = mu + 4*sigma;
-      xMin = Math.min(xMin, userT - 6);
-      xMax = Math.max(xMax, userT + 6);
-
-      xMin = Math.max(-40, Math.floor(xMin));
-      xMax = Math.min(130, Math.ceil(xMax));
-      if (xMax - xMin < 10){ xMin -= 5; xMax += 5; }
-
-      function X(x){
-        return pad.l + (x - xMin) * (w - pad.l - pad.r) / (xMax - xMin);
-      }
-      function Y(y){
-        return pad.t + (1 - y) * (h - pad.t - pad.b);
+      for(let j=0;j<=hlines;j++){
+        const y = padT + (PH*j/hlines);
+        ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+PW,y); ctx.stroke();
       }
 
-      // fair curve
-      const N = 220;
-      ctx.strokeStyle = "rgba(96,165,250,0.95)";
-      ctx.lineWidth = 2;
+      // Axes labels
+      ctx.fillStyle = "rgba(154,167,184,.85)";
+      ctx.font = "700 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+
+      function xToPx(x){ return padL + ( (x - XMIN) / (XMAX - XMIN) ) * PW; }
+      function yToPx(p){ return padT + (1 - p) * PH; }
+
+      // y labels (0.0, 0.5, 1.0)
+      [0,0.5,1].forEach(p=>{
+        const y = yToPx(p);
+        ctx.fillText(p.toFixed(1), 12, y+5);
+      });
+
+      // x labels (min, your, max)
+      const xTicks = [XMIN, Math.round((XMIN+XMAX)/2), XMAX];
+      xTicks.forEach(x=>{
+        const xp = xToPx(x);
+        ctx.fillText(`${x}°F`, xp-16, padT+PH+32);
+      });
+
+      // Fair curve: use logistic-ish around mu (your backend is already doing normal CDF; this is just display)
+      // We draw a smooth S-curve centered at mu.
+      function fairProbAtTemp(temp){
+        // Sigmoid with slope tuned by sigma
+        const k = 1.15 / Math.max(1e-6, sigma);
+        const z = (temp - mu) * k;
+        return 1 / (1 + Math.exp(-z));
+      }
+
+      // Curve line
+      ctx.strokeStyle = "rgba(99,168,255,.95)";
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      for (let i=0;i<=N;i++){
-        const x = xMin + (xMax - xMin) * (i/N);
-        const y = fairYes(x, mu, sigma);
-        const px = X(x), py = Y(y);
-        if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      let started = false;
+      for(let x=XMIN; x<=XMAX; x+=0.25){
+        const p = fairProbAtTemp(x);
+        const xp = xToPx(x);
+        const yp = yToPx(p);
+        if(!started){ ctx.moveTo(xp,yp); started=true; }
+        else ctx.lineTo(xp,yp);
       }
       ctx.stroke();
 
-      // user point
-      const ux = X(userT);
-      const uy = Y(userYesPrice);
+      // Your point (temp, yourYesPrice)
+      const yp = yToPx(clamp(yourYesPrice, 0, 1));
+      const xp = xToPx(yourTemp);
 
-      ctx.fillStyle = "rgba(147,197,253,0.25)";
-      ctx.beginPath(); ctx.arc(ux, uy, 8, 0, Math.PI*2); ctx.fill();
+      // Outer glow
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(99,168,255,.18)";
+      ctx.arc(xp, yp, 18, 0, Math.PI*2);
+      ctx.fill();
 
-      ctx.fillStyle = "rgba(147,197,253,0.95)";
-      ctx.strokeStyle = "rgba(255,255,255,0.35)";
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(ux, uy, 4.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      // Point
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(200,225,255,.95)";
+      ctx.strokeStyle = "rgba(99,168,255,.35)";
+      ctx.lineWidth = 4;
+      ctx.arc(xp, yp, 9, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
 
-      // axes labels
-      ctx.fillStyle = "rgba(168,176,191,0.90)";
-      ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
-
-      [1.0, 0.5, 0.0].forEach(val=>{
-        const yy = Y(val);
-        ctx.fillText(val.toFixed(1), 10, yy+4);
-      });
-
-      const mid = Math.round((xMin+xMax)/2);
-      const xTicks = [xMin, mid, xMax];
-      ctx.fillStyle = "rgba(168,176,191,0.85)";
-      xTicks.forEach((val, idx)=>{
-        const xx = X(val);
-        const s = `${val}°F`;
-        const tw = ctx.measureText(s).width;
-        const y = h - 10;
-        let x = xx - tw/2;
-        if (idx===0) x = Math.max(6, pad.l);
-        if (idx===2) x = Math.min(w - tw - 6, w - pad.r - tw);
-        ctx.fillText(s, x, y);
-      });
+      // Thin line at fair point (optional small marker)
+      const fairY = yToPx(clamp(fairAtYourTemp, 0, 1));
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(127,193,255,.65)";
+      ctx.lineWidth = 2;
+      ctx.moveTo(xp-10, fairY);
+      ctx.lineTo(xp+10, fairY);
+      ctx.stroke();
     }
 
-    function drawEmptyChart(){
-      const {w,h} = resizeCanvas();
-      const pad = { l:46, r:14, t:18, b:32 };
-      drawGrid(w,h,pad);
-      ctx.fillStyle = "rgba(168,176,191,0.55)";
-      ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
-      const msg = "evaluate to plot";
-      const tw = ctx.measureText(msg).width;
-      ctx.fillText(msg, (w - tw)/2, (h)/2);
+    function setSignal(kind, text){
+      const pill = $("pill");
+      pill.classList.remove("good","warn","bad");
+      if(kind) pill.classList.add(kind);
+      $("pillText").textContent = text;
     }
 
-    window.addEventListener("resize", () => {
-      if (window.__lastChart) drawChart(window.__lastChart);
-      else drawEmptyChart();
-    });
+    // ---- main evaluate
+    $("go").addEventListener("click", async () => {
+      const city = $("city").value;
+      const date = $("date").value;          // mm/dd/yyyy
+      const temp = parseInt($("temp").value, 10);
+      const yesC = parseFloat($("yes").value);
+      const noC  = parseFloat($("no").value);
 
-    async function evaluate(){
-      clearError();
-      setStatus("running", "warn");
-      btnEval.disabled = true;
+      const yesPrice = clamp((yesC||0)/100, 0, 1);
+      const noPrice  = clamp((noC||0)/100, 0, 1);
 
-      const d = sanitizeDate(dateIn.value);
-      const t = num(tempIn.value);
-      const yesCents = num(yesIn.value);
-      const noCents = num(noIn.value);
+      // What we send to backend (your server.py already expects this in your current setup)
+      const payload = { city, date, t: temp, yes_cents: yesC, no_cents: noC };
 
-      if (!d) { showError("Bad date. Use mm/dd/yyyy."); btnEval.disabled = false; return; }
-      if (t === null) { showError("Bad Potential High Temp."); btnEval.disabled = false; return; }
-      if (yesCents === null) { showError("Bad Yes Cost."); btnEval.disabled = false; return; }
-      if (noCents === null) { showError("Bad No Cost."); btnEval.disabled = false; return; }
-
-      const line = `${d} - ${t} - yes:${yesCents} / no:${noCents}`;
-      contractLine.textContent = line;
+      $("line").textContent = `${date} — ${temp} — yes:${yesC} / no:${noC}`;
+      $("headline").textContent = "…";
+      setSignal(null, "…");
 
       try{
-        const r = await fetch(`${API_BASE}/api/evaluate`, {
+        const r = await fetch("/api/evaluate", {
           method:"POST",
           headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ city: city.value, lines: [line] })
+          body: JSON.stringify(payload)
         });
-
-        if (!r.ok){
-          const text = await r.text();
-          throw new Error(`HTTP ${r.status}\n${text}`);
-        }
-
         const data = await r.json();
-        const out = (data.results || [])[0];
 
-        if (!out){
-          showError("No response.");
-          btnEval.disabled = false;
-          return;
-        }
-        if (out.error){
-          showError(String(out.error));
-          btnEval.disabled = false;
-          return;
-        }
+        // Expecting backend to return:
+        // { action, mu, sigma, p_yes, p_no, mkt_yes, mkt_no, edge_yes, edge_no }
+        const action = (data.action || "PASS").toUpperCase();
 
-        setBadge(out.signal);
+        $("headline").textContent = action;
 
-        vMarket.textContent = `YES ${fmt4(out.market_yes)} | NO ${fmt4(out.market_no)}`;
-        vModel.textContent  = `μ ${fmt4(out.mu)} | σ ${fmt4(out.sigma)}`;
-        vFair.textContent   = `YES ${fmt4(out.fair_yes)} | NO ${fmt4(out.fair_no)}`;
-        vEdge.textContent   = `YES ${fmt4(out.edge_yes)} | NO ${fmt4(out.edge_no)}`;
+        const mu = Number(data.mu ?? temp);
+        const sigma = Number(data.sigma ?? 3.0);
 
-        const s = (out.signal || "").toUpperCase();
-        if (s.includes("BUY")) setStatus("signal", "ok");
-        else setStatus("pass", "idle");
+        $("mkt").textContent  = `YES ${Number(data.mkt_yes ?? yesPrice).toFixed(4)} | NO ${Number(data.mkt_no ?? noPrice).toFixed(4)}`;
+        $("mdl").textContent  = `μ ${mu.toFixed(4)} | σ ${sigma.toFixed(4)}`;
+        $("fair").textContent = `YES ${Number(data.p_yes ?? 0.5).toFixed(4)} | NO ${Number(data.p_no ?? 0.5).toFixed(4)}`;
+        $("edge").textContent = `YES ${Number(data.edge_yes ?? 0).toFixed(4)} | NO ${Number(data.edge_no ?? 0).toFixed(4)}`;
 
-        const userYesPrice = Math.max(0, Math.min(1, (yesCents/100)));
-        window.__lastChart = { mu: out.mu, sigma: out.sigma, userT: t, userYesPrice };
-        drawChart(window.__lastChart);
+        if(action.includes("BUY YES")) setSignal("good","BUY YES");
+        else if(action.includes("BUY NO")) setSignal("good","BUY NO");
+        else setSignal("warn","PASS");
 
-      } catch(e){
-        showError(String(e));
-      } finally{
-        btnEval.disabled = false;
+        drawChart({
+          mu, sigma,
+          yourTemp: temp,
+          fairAtYourTemp: Number(data.p_yes ?? 0.5),
+          yourYesPrice: Number(data.mkt_yes ?? yesPrice)
+        });
+      }catch(e){
+        $("headline").textContent = "ERROR";
+        setSignal("bad","ERROR");
       }
-    }
-
-    btnEval.addEventListener("click", evaluate);
-    [dateIn, tempIn, yesIn, noIn].forEach(el => {
-      el.addEventListener("keydown", (ev) => { if (ev.key === "Enter") evaluate(); });
     });
 
-    setStatus("idle","idle");
-    drawEmptyChart();
+    // Initial chart placeholder
+    drawChart({mu:42, sigma:2.5, yourTemp:42, fairAtYourTemp:0.5, yourYesPrice:0.3});
+    setSignal("warn","PASS");
+    $("headline").textContent = "BUY YES / BUY NO / PASS";
+    $("mkt").textContent  = "—";
+    $("mdl").textContent  = "—";
+    $("fair").textContent = "—";
+    $("edge").textContent = "—";
+    $("line").textContent = "—";
   </script>
 </body>
 </html>
