@@ -7,574 +7,487 @@
   <style>
     :root{
       --bg:#07090d;
-      --panel:#0e121a;
-      --panel2:#0b0f16;
-      --border:#1d2634;
-      --muted:#9aa7b8;
-      --text:#e8eef7;
-      --blue:#63a8ff;
-      --blue2:#7fc1ff;
-      --chip:#101827;
-      --good:#3ddc97;
-      --warn:#ffd166;
-      --bad:#ff5c7a;
-
-      --radius:10px;   /* less rounded */
-      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --panel:#0e141f;
+      --panel2:#0b1018;
+      --line:#1c2432;
+      --line2:#223047;
+      --text:#e7eefc;
+      --muted:#9aa7bf;
+      --blue:#60a5ff;
+      --blue2:#9cc7ff;
+      --warn:#f3c969;
+      --bad:#ff6b6b;
+      --ok:#3ddc97;
     }
-
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      background: radial-gradient(1200px 600px at 30% -10%, rgba(99,168,255,.12), transparent 60%),
-                  radial-gradient(900px 500px at 90% 0%, rgba(127,193,255,.08), transparent 55%),
+      background: radial-gradient(1200px 600px at 15% 10%, rgba(96,165,255,.10), transparent 60%),
+                  radial-gradient(900px 500px at 80% 20%, rgba(156,199,255,.08), transparent 55%),
                   var(--bg);
       color:var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
-      letter-spacing:.1px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      letter-spacing:.2px;
     }
-
-    /* top header */
     .topbar{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      padding:22px 26px 14px;
-      border-bottom:1px solid rgba(29,38,52,.9);
+      display:flex; align-items:flex-end; justify-content:space-between;
+      padding:28px 28px 18px;
+      border-bottom:1px solid rgba(255,255,255,.06);
     }
     .brand{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
+      display:flex; flex-direction:column; gap:6px;
     }
     .brand .title{
-      font-size:34px;
+      font-size:44px;
       font-weight:800;
-      letter-spacing:1.4px; /* requested spacing */
+      letter-spacing:6px;
       line-height:1;
     }
     .brand .sub{
+      margin-top:-2px;
+      color:rgba(231,238,252,.65);
       font-size:12px;
+      letter-spacing:2.2px;
       font-weight:700;
-      letter-spacing:1.8px;
-      text-transform:uppercase;
-      color:rgba(154,167,184,.85);
     }
-
-    .nav{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .nav a{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border:1px solid rgba(29,38,52,.95);
-      background: rgba(14,18,26,.75);
-      color:var(--text);
-      text-decoration:none;
-      border-radius:9px;
-      font-weight:700;
-      font-size:13px;
-    }
-    .nav a:hover{border-color:rgba(99,168,255,.55)}
-    .nav a.primary{
-      border-color:rgba(99,168,255,.55);
-      background: rgba(99,168,255,.10);
-    }
-    .dot{
-      width:10px;height:10px;border-radius:2px;
-      background: var(--blue);
-      box-shadow: 0 0 0 3px rgba(99,168,255,.12);
-    }
-
-    /* layout */
-    .wrap{
-      max-width:1280px;
-      margin:0 auto;
-      padding:18px 26px 34px;
-    }
+    .wrap{padding:22px 28px 36px; max-width:1200px; margin:0 auto;}
     .grid{
       display:grid;
-      grid-template-columns: 1.35fr .95fr;
-      gap:16px;
-      align-items:start;
+      grid-template-columns: 1.05fr .95fr;
+      gap:18px;
       margin-top:18px;
     }
-
     .card{
-      background: linear-gradient(180deg, rgba(14,18,26,.92), rgba(10,14,20,.92));
-      border:1px solid rgba(29,38,52,.95);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
       overflow:hidden;
     }
-    .card .hdr{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 16px;
-      background: rgba(7,9,13,.35);
-      border-bottom:1px solid rgba(29,38,52,.95);
+    .card .hd{
+      padding:16px 18px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      color:rgba(231,238,252,.7);
       font-weight:800;
-      letter-spacing:1.2px;
-      text-transform:uppercase;
+      letter-spacing:2px;
       font-size:12px;
-      color: rgba(154,167,184,.9);
+      text-transform:uppercase;
     }
-    .card .body{padding:16px}
-
-    /* form */
+    .card .bd{padding:18px;}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:14px;}
     label{
       display:block;
-      font-size:12px;
+      margin-bottom:8px;
+      color:rgba(231,238,252,.65);
       font-weight:800;
-      letter-spacing:1.2px;
+      font-size:12px;
+      letter-spacing:1.8px;
       text-transform:uppercase;
-      color: rgba(154,167,184,.9);
-      margin:0 0 8px;
     }
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:14px;
-      margin-bottom:14px;
-    }
-    .row3{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap:14px;
-      margin-bottom:14px;
-    }
-    select, input{
+    select,input{
       width:100%;
+      background: rgba(6,10,16,.65);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
       padding:14px 14px;
-      border-radius:9px;
-      border:1px solid rgba(29,38,52,.95);
-      background: rgba(8,12,18,.7);
-      color: var(--text);
+      border-radius:12px;
       outline:none;
-      font-size:15px;
+      font-size:18px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
     }
-    select:focus, input:focus{border-color:rgba(99,168,255,.6); box-shadow: 0 0 0 4px rgba(99,168,255,.12);}
+    input::placeholder{color:rgba(231,238,252,.25)}
     .btn{
+      margin-top:14px;
       width:100%;
-      padding:14px 16px;
-      border-radius:10px;
-      border:1px solid rgba(99,168,255,.70);
-      background: rgba(99,168,255,.92);
-      color:#06101e;
-      font-weight:900;
-      font-size:16px;
-      letter-spacing:.4px;
+      padding:16px 16px;
+      border-radius:12px;
+      border:1px solid rgba(96,165,255,.45);
+      background: rgba(96,165,255,.18);
+      color:var(--text);
+      font-weight:800;
+      letter-spacing:1px;
+      font-size:18px;
       cursor:pointer;
     }
-    .btn:hover{filter:brightness(1.02)}
-    .btn:active{transform: translateY(1px)}
-
-    /* result column */
+    .btn:hover{background: rgba(96,165,255,.26)}
     .pill{
       display:inline-flex;
       align-items:center;
       gap:10px;
-      padding:8px 12px;
+      padding:10px 14px;
       border-radius:999px;
-      border:1px solid rgba(29,38,52,.95);
-      background: rgba(16,24,39,.65);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(6,10,16,.55);
       font-weight:900;
-      letter-spacing:.4px;
-      font-size:13px;
+      letter-spacing:1px;
     }
-    .pill .led{
+    .dot{
       width:10px;height:10px;border-radius:999px;
-      background: rgba(154,167,184,.55);
-      box-shadow: 0 0 0 3px rgba(154,167,184,.10);
+      background: var(--warn);
+      box-shadow:0 0 0 4px rgba(243,201,105,.12);
     }
-    .pill.good .led{background: var(--good); box-shadow:0 0 0 3px rgba(61,220,151,.12)}
-    .pill.warn .led{background: var(--warn); box-shadow:0 0 0 3px rgba(255,209,102,.12)}
-    .pill.bad  .led{background: var(--bad);  box-shadow:0 0 0 3px rgba(255,92,122,.12)}
-
-    .mini{
-      background: rgba(14,18,26,.55);
-      border:1px solid rgba(29,38,52,.95);
-      border-radius:10px;
-      padding:12px 12px;
-      margin-top:12px;
-    }
-    .mini .k{
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:1.2px;
-      text-transform:uppercase;
-      color: rgba(154,167,184,.9);
-      margin-bottom:6px;
-    }
+    .dot.ok{background:var(--ok); box-shadow:0 0 0 4px rgba(61,220,151,.12);}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 4px rgba(255,107,107,.12);}
     .mono{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:14px;
-      color: rgba(232,238,247,.95);
-      letter-spacing:.2px;
     }
-
-    /* chart */
+    .kv{
+      padding:14px 16px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background: rgba(6,10,16,.50);
+      margin-top:12px;
+    }
+    .kv .k{
+      color:rgba(231,238,252,.55);
+      font-weight:900;
+      letter-spacing:2px;
+      font-size:12px;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+    .kv .v{
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+      font-size:22px;
+      font-weight:800;
+    }
+    .small{
+      color:rgba(231,238,252,.55);
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:1px;
+      margin-top:10px;
+    }
+    canvas{width:100%; height:240px; display:block;}
     .chartBox{
-      background: rgba(8,12,18,.45);
-      border:1px solid rgba(29,38,52,.95);
-      border-radius:10px;
-      padding:10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      overflow:hidden;
+      background: rgba(6,10,16,.45);
+      padding:12px 12px 6px;
     }
     .legend{
       display:flex;
-      align-items:center;
-      gap:14px;
       justify-content:flex-end;
-      padding:4px 6px 10px;
-      font-weight:800;
-      letter-spacing:1.1px;
-      text-transform:uppercase;
+      gap:22px;
+      padding:6px 6px 10px;
+      color:rgba(231,238,252,.75);
+      font-weight:900;
+      letter-spacing:2px;
       font-size:12px;
-      color: rgba(154,167,184,.95);
+      text-transform:uppercase;
     }
-    .lgItem{display:flex;align-items:center;gap:8px}
-    .sw{width:14px;height:14px;border-radius:4px;background:var(--blue)}
-    .sw2{width:14px;height:14px;border-radius:999px;background:rgba(200,225,255,.90); border:2px solid rgba(99,168,255,.30)}
-
-    canvas{width:100%; height:220px; display:block}
-
+    .legItem{display:flex; align-items:center; gap:10px;}
+    .swatch{width:14px;height:14px;border-radius:6px;background:var(--blue);}
+    .swatch2{background: rgba(156,199,255,.85); border:1px solid rgba(255,255,255,.18);}
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
-      canvas{height:200px}
+      .brand .title{font-size:38px; letter-spacing:5px;}
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
+  <div class="topbar">
     <div class="brand">
       <div class="title">MetApplication</div>
       <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
     </div>
+    <div></div>
+  </div>
 
-    <nav class="nav">
-      <a class="primary" href="index.html"><span class="dot"></span>Temperature</a>
-      <a href="drought.html"><span class="dot" style="background: rgba(127,193,255,.9)"></span>Drought Odds</a>
-    </nav>
-  </header>
-
-  <main class="wrap">
+  <div class="wrap">
     <div class="grid">
       <!-- Inputs -->
-      <section class="card">
-        <div class="hdr">
+      <div class="card">
+        <div class="hd">
           <div>Inputs</div>
-          <div style="font-weight:800;color:rgba(154,167,184,.75);letter-spacing:.7px;text-transform:none;">Enter the contract and click Evaluate Market.</div>
+          <div class="mono" style="opacity:.65">Evaluate Market</div>
         </div>
-        <div class="body">
+        <div class="bd">
           <div class="row">
             <div>
-              <label for="city">City</label>
+              <label>City</label>
               <select id="city">
-                <option>Denver</option>
-                <option>New York City</option>
-                <option>Dallas</option>
-                <option>Chicago</option>
+                <option value="den">Denver</option>
+                <option value="nyc">New York City</option>
+                <option value="dal">Dallas</option>
+                <option value="chi">Chicago</option>
               </select>
             </div>
             <div>
-              <label for="date">Date</label>
-              <select id="date"></select>
+              <label>Date</label>
+              <input id="date" placeholder="MM/DD/YYYY" />
             </div>
           </div>
 
-          <div class="row3">
+          <div class="row" style="margin-top:14px;">
             <div>
-              <label for="temp">Potential High Temp</label>
-              <select id="temp"></select>
+              <label>Potential High Temp</label>
+              <input id="temp" type="number" step="1" placeholder="e.g. 42" />
             </div>
             <div>
-              <label for="yes">Yes Cost</label>
-              <input id="yes" inputmode="numeric" placeholder="cents" value="30">
-            </div>
-            <div>
-              <label for="no">No Cost</label>
-              <input id="no" inputmode="numeric" placeholder="cents" value="70">
+              <label>Yes Cost</label>
+              <input id="yes" type="number" step="0.1" placeholder="cents (e.g. 30)" />
             </div>
           </div>
 
-          <button class="btn" id="go">Evaluate Market</button>
+          <div class="row" style="margin-top:14px;">
+            <div>
+              <label>No Cost</label>
+              <input id="no" type="number" step="0.1" placeholder="cents (e.g. 70)" />
+            </div>
+            <div>
+              <button class="btn" id="go">Evaluate Market</button>
+            </div>
+          </div>
+
+          <div class="small mono" id="status"></div>
         </div>
-      </section>
+      </div>
 
       <!-- Result -->
-      <aside class="card">
-        <div class="hdr">
+      <div class="card">
+        <div class="hd">
           <div>Result</div>
-          <div id="headline" style="font-weight:900;color:rgba(232,238,247,.92);letter-spacing:.6px;">BUY YES / BUY NO / PASS</div>
+          <div id="cityName" class="mono" style="opacity:.65">—</div>
         </div>
-        <div class="body">
+        <div class="bd">
           <div class="chartBox">
             <div class="legend">
-              <div class="lgItem"><span class="sw"></span>Fair Price</div>
-              <div class="lgItem"><span class="sw2"></span>Your Price</div>
+              <div class="legItem"><span class="swatch"></span><span>Fair Price</span></div>
+              <div class="legItem"><span class="swatch swatch2"></span><span>Your Price</span></div>
             </div>
-            <canvas id="chart" width="900" height="360"></canvas>
+            <canvas id="chart" width="900" height="300"></canvas>
           </div>
 
-          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:flex-start;">
-            <div id="pill" class="pill"><span class="led"></span><span id="pillText">—</span></div>
+          <div style="margin-top:14px;">
+            <span class="pill" id="signalPill">
+              <span class="dot" id="sigDot"></span>
+              <span id="signalTxt">PASS</span>
+            </span>
           </div>
 
-          <div class="mini">
+          <div class="kv">
             <div class="k">Contract</div>
-            <div class="mono" id="line">—</div>
+            <div class="v mono" id="contractLine">—</div>
           </div>
 
-          <div class="mini">
+          <div class="kv">
             <div class="k">Market</div>
-            <div class="mono" id="mkt">—</div>
+            <div class="v mono" id="marketLine">—</div>
           </div>
 
-          <div class="mini">
+          <div class="kv">
             <div class="k">Model</div>
-            <div class="mono" id="mdl">—</div>
+            <div class="v mono" id="modelLine">—</div>
           </div>
 
-          <div class="mini">
+          <div class="kv">
             <div class="k">Fair</div>
-            <div class="mono" id="fair">—</div>
+            <div class="v mono" id="fairLine">—</div>
           </div>
 
-          <div class="mini">
+          <div class="kv">
             <div class="k">Edge</div>
-            <div class="mono" id="edge">—</div>
+            <div class="v mono" id="edgeLine">—</div>
           </div>
         </div>
-      </aside>
+      </div>
     </div>
-  </main>
+  </div>
 
-  <script>
-    // ---- UI helpers
-    const $ = (id) => document.getElementById(id);
+<script>
+  const $ = (id)=>document.getElementById(id);
 
-    // Populate next 14 days (client-side) as default.
-    // Your backend can still accept any mm/dd/yyyy you send.
-    function pad(n){ return String(n).padStart(2,'0'); }
-    function mmddyyyy(d){
-      return `${pad(d.getMonth()+1)}/${pad(d.getDate())}/${d.getFullYear()}`;
+  const chart = $("chart");
+  const ctx = chart.getContext("2d");
+
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+  function drawChart(mu, sigma, t, fairAtT, yourYesPrice){
+    // Plot fair YES price as function of threshold temp (x)
+    // Using a smooth logistic-like curve purely for visualization, anchored to backend parameters:
+    // We approximate P(High >= x) with a logistic around mu and sigma.
+    // This is just the DISPLAY curve; the actual fairAtT comes from backend.
+    const w = chart.width, h = chart.height;
+    ctx.clearRect(0,0,w,h);
+
+    // paddings
+    const padL = 58, padR = 20, padT = 18, padB = 40;
+    const iw = w - padL - padR;
+    const ih = h - padT - padB;
+
+    // x-range around mu ± 4*sigma (reasonable view)
+    const xmin = Math.floor(mu - 4*sigma);
+    const xmax = Math.ceil(mu + 4*sigma);
+
+    function xToPx(x){ return padL + ( (x - xmin) / (xmax - xmin) ) * iw; }
+    function yToPx(y){ return padT + (1 - y) * ih; }
+
+    // background grid
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 1;
+    for(let i=0;i<=6;i++){
+      const gx = padL + (i/6)*iw;
+      ctx.beginPath(); ctx.moveTo(gx,padT); ctx.lineTo(gx,padT+ih); ctx.stroke();
+    }
+    for(let i=0;i<=4;i++){
+      const gy = padT + (i/4)*ih;
+      ctx.beginPath(); ctx.moveTo(padL,gy); ctx.lineTo(padL+iw,gy); ctx.stroke();
     }
 
-    (function initDates(){
-      const sel = $("date");
-      const now = new Date();
-      for(let i=0;i<14;i++){
-        const d = new Date(now.getTime() + i*86400000);
-        const opt = document.createElement("option");
-        opt.value = mmddyyyy(d);
-        opt.textContent = mmddyyyy(d);
-        sel.appendChild(opt);
-      }
-    })();
+    // axes labels
+    ctx.fillStyle = "rgba(231,238,252,0.65)";
+    ctx.font = "bold 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(`${xmin}°F`, xToPx(xmin), padT+ih+28);
+    ctx.fillText(`${Math.round(mu)}°F`, xToPx(mu), padT+ih+28);
+    ctx.fillText(`${xmax}°F`, xToPx(xmax), padT+ih+28);
 
-    // Populate temps (30..110)
-    (function initTemps(){
-      const sel = $("temp");
-      for(let t=30;t<=110;t++){
-        const opt = document.createElement("option");
-        opt.value = String(t);
-        opt.textContent = String(t);
-        if(t===42) opt.selected = true;
-        sel.appendChild(opt);
-      }
-    })();
+    ctx.textAlign = "right";
+    ctx.fillText("1.0", padL-10, yToPx(1.0)+4);
+    ctx.fillText("0.5", padL-10, yToPx(0.5)+4);
+    ctx.fillText("0.0", padL-10, yToPx(0.0)+4);
 
-    function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+    // Fair curve: P(High >= x) ≈ 1/(1+exp((x-mu)/(sigma*0.85)))
+    const k = sigma*0.85 || 1.0;
+    function fairCurve(x){
+      const z = (x - mu) / k;
+      return 1/(1+Math.exp(z));
+    }
 
-    // ---- chart rendering (fair curve + your point)
-    function drawChart({mu, sigma, yourTemp, fairAtYourTemp, yourYesPrice}){
-      const c = $("chart");
-      const ctx = c.getContext("2d");
+    // draw curve
+    ctx.strokeStyle = "rgba(96,165,255,0.95)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let i=0;i<=200;i++){
+      const x = xmin + (i/200)*(xmax-xmin);
+      const y = clamp(fairCurve(x),0,1);
+      const px = xToPx(x), py = yToPx(y);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
 
-      // Fit x-range around mu so curve looks meaningful
-      const xmin = Math.floor(mu - 4*sigma);
-      const xmax = Math.ceil(mu + 4*sigma);
+    // point = user's yes price at threshold t
+    const pxT = xToPx(t);
+    const pyYour = yToPx(clamp(yourYesPrice,0,1));
 
-      // But also include yourTemp if it's outside
-      const XMIN = Math.min(xmin, yourTemp - 3);
-      const XMAX = Math.max(xmax, yourTemp + 3);
+    // glow
+    ctx.fillStyle = "rgba(156,199,255,0.18)";
+    ctx.beginPath(); ctx.arc(pxT, pyYour, 14, 0, Math.PI*2); ctx.fill();
 
-      const W = c.width, H = c.height;
-      ctx.clearRect(0,0,W,H);
+    // dot
+    ctx.fillStyle = "rgba(156,199,255,0.90)";
+    ctx.strokeStyle = "rgba(255,255,255,0.20)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(pxT, pyYour, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-      // Background
-      ctx.fillStyle = "rgba(8,12,18,.25)";
-      ctx.fillRect(0,0,W,H);
+    // Optional: marker on curve at t using backend fairAtT (so display matches truth)
+    const pyFair = yToPx(clamp(fairAtT,0,1));
+    ctx.strokeStyle = "rgba(96,165,255,0.35)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pxT, pyFair);
+    ctx.lineTo(pxT, padT+ih);
+    ctx.stroke();
+  }
 
-      // Plot area
-      const padL = 52, padR = 20, padT = 18, padB = 46;
-      const PW = W - padL - padR;
-      const PH = H - padT - padB;
+  function setSignal(sig){
+    const dot = $("sigDot");
+    const txt = $("signalTxt");
+    txt.textContent = sig;
 
-      // Grid
-      ctx.strokeStyle = "rgba(255,255,255,.06)";
-      ctx.lineWidth = 1;
+    dot.classList.remove("ok","bad");
+    if(sig === "BUY YES" || sig === "BUY NO"){
+      dot.classList.add("ok");
+    } else if(sig === "PASS"){
+      // keep warn color
+    } else {
+      dot.classList.add("bad");
+    }
+  }
 
-      const vlines = 6, hlines = 4;
-      for(let i=0;i<=vlines;i++){
-        const x = padL + (PW*i/vlines);
-        ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,padT+PH); ctx.stroke();
-      }
-      for(let j=0;j<=hlines;j++){
-        const y = padT + (PH*j/hlines);
-        ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+PW,y); ctx.stroke();
-      }
+  function fmt4(x){
+    if(x === null || x === undefined || Number.isNaN(x)) return "—";
+    return (Math.round(x*10000)/10000).toFixed(4);
+  }
 
-      // Axes labels
-      ctx.fillStyle = "rgba(154,167,184,.85)";
-      ctx.font = "700 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+  async function evaluate(){
+    $("status").textContent = "";
 
-      function xToPx(x){ return padL + ( (x - XMIN) / (XMAX - XMIN) ) * PW; }
-      function yToPx(p){ return padT + (1 - p) * PH; }
+    const city = $("city").value;
+    const date = $("date").value.trim();
+    const t = parseFloat($("temp").value);
+    const yesC = parseFloat($("yes").value);
+    const noC = parseFloat($("no").value);
 
-      // y labels (0.0, 0.5, 1.0)
-      [0,0.5,1].forEach(p=>{
-        const y = yToPx(p);
-        ctx.fillText(p.toFixed(1), 12, y+5);
+    if(!date){ $("status").textContent = "Enter Date."; return; }
+    if(!Number.isFinite(t)){ $("status").textContent = "Enter Potential High Temp."; return; }
+    if(!Number.isFinite(yesC) || !Number.isFinite(noC)){ $("status").textContent = "Enter Yes/No Cost in cents."; return; }
+
+    // show contract line
+    $("contractLine").textContent = `${date} — ${t} — yes:${yesC} / no:${noC}`;
+    $("marketLine").textContent = `YES ${(yesC/100).toFixed(4)} | NO ${(noC/100).toFixed(4)}`;
+
+    // call backend (single explicit endpoint)
+    let resp, data;
+    try{
+      resp = await fetch("/api/evaluate_one", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          city,
+          date,
+          threshold_f: t,
+          yes_cents: yesC,
+          no_cents: noC
+        })
       });
-
-      // x labels (min, your, max)
-      const xTicks = [XMIN, Math.round((XMIN+XMAX)/2), XMAX];
-      xTicks.forEach(x=>{
-        const xp = xToPx(x);
-        ctx.fillText(`${x}°F`, xp-16, padT+PH+32);
-      });
-
-      // Fair curve: use logistic-ish around mu (your backend is already doing normal CDF; this is just display)
-      // We draw a smooth S-curve centered at mu.
-      function fairProbAtTemp(temp){
-        // Sigmoid with slope tuned by sigma
-        const k = 1.15 / Math.max(1e-6, sigma);
-        const z = (temp - mu) * k;
-        return 1 / (1 + Math.exp(-z));
-      }
-
-      // Curve line
-      ctx.strokeStyle = "rgba(99,168,255,.95)";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      let started = false;
-      for(let x=XMIN; x<=XMAX; x+=0.25){
-        const p = fairProbAtTemp(x);
-        const xp = xToPx(x);
-        const yp = yToPx(p);
-        if(!started){ ctx.moveTo(xp,yp); started=true; }
-        else ctx.lineTo(xp,yp);
-      }
-      ctx.stroke();
-
-      // Your point (temp, yourYesPrice)
-      const yp = yToPx(clamp(yourYesPrice, 0, 1));
-      const xp = xToPx(yourTemp);
-
-      // Outer glow
-      ctx.beginPath();
-      ctx.fillStyle = "rgba(99,168,255,.18)";
-      ctx.arc(xp, yp, 18, 0, Math.PI*2);
-      ctx.fill();
-
-      // Point
-      ctx.beginPath();
-      ctx.fillStyle = "rgba(200,225,255,.95)";
-      ctx.strokeStyle = "rgba(99,168,255,.35)";
-      ctx.lineWidth = 4;
-      ctx.arc(xp, yp, 9, 0, Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
-
-      // Thin line at fair point (optional small marker)
-      const fairY = yToPx(clamp(fairAtYourTemp, 0, 1));
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(127,193,255,.65)";
-      ctx.lineWidth = 2;
-      ctx.moveTo(xp-10, fairY);
-      ctx.lineTo(xp+10, fairY);
-      ctx.stroke();
+      data = await resp.json();
+    }catch(e){
+      $("status").textContent = "Network error.";
+      setSignal("ERROR");
+      return;
     }
 
-    function setSignal(kind, text){
-      const pill = $("pill");
-      pill.classList.remove("good","warn","bad");
-      if(kind) pill.classList.add(kind);
-      $("pillText").textContent = text;
+    if(!resp.ok || data.error){
+      $("status").textContent = `Error: ${data.error || "request_failed"}`;
+      setSignal("ERROR");
+      return;
     }
 
-    // ---- main evaluate
-    $("go").addEventListener("click", async () => {
-      const city = $("city").value;
-      const date = $("date").value;          // mm/dd/yyyy
-      const temp = parseInt($("temp").value, 10);
-      const yesC = parseFloat($("yes").value);
-      const noC  = parseFloat($("no").value);
+    $("cityName").textContent = data.city_name.toUpperCase();
 
-      const yesPrice = clamp((yesC||0)/100, 0, 1);
-      const noPrice  = clamp((noC||0)/100, 0, 1);
+    // IMPORTANT: Use backend truth (no local/fake math for signal)
+    setSignal(data.signal);
 
-      // What we send to backend (your server.py already expects this in your current setup)
-      const payload = { city, date, t: temp, yes_cents: yesC, no_cents: noC };
+    $("modelLine").textContent = `μ ${fmt4(data.mu)} | σ ${fmt4(data.sigma)}`;
+    $("fairLine").textContent = `YES ${fmt4(data.fair_yes)} | NO ${fmt4(data.fair_no)}`;
+    $("edgeLine").textContent = `YES ${fmt4(data.edge_yes)} | NO ${fmt4(data.edge_no)}`;
 
-      $("line").textContent = `${date} — ${temp} — yes:${yesC} / no:${noC}`;
-      $("headline").textContent = "…";
-      setSignal(null, "…");
+    // draw chart
+    drawChart(
+      data.mu,
+      data.sigma,
+      data.threshold_f,
+      data.fair_yes,
+      data.market_yes
+    );
 
-      try{
-        const r = await fetch("/api/evaluate", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
-        });
-        const data = await r.json();
+    // Debug status (quiet)
+    $("status").textContent = `OK — ${data.signal}`;
+  }
 
-        // Expecting backend to return:
-        // { action, mu, sigma, p_yes, p_no, mkt_yes, mkt_no, edge_yes, edge_no }
-        const action = (data.action || "PASS").toUpperCase();
+  $("go").addEventListener("click", (e)=>{ e.preventDefault(); evaluate(); });
 
-        $("headline").textContent = action;
-
-        const mu = Number(data.mu ?? temp);
-        const sigma = Number(data.sigma ?? 3.0);
-
-        $("mkt").textContent  = `YES ${Number(data.mkt_yes ?? yesPrice).toFixed(4)} | NO ${Number(data.mkt_no ?? noPrice).toFixed(4)}`;
-        $("mdl").textContent  = `μ ${mu.toFixed(4)} | σ ${sigma.toFixed(4)}`;
-        $("fair").textContent = `YES ${Number(data.p_yes ?? 0.5).toFixed(4)} | NO ${Number(data.p_no ?? 0.5).toFixed(4)}`;
-        $("edge").textContent = `YES ${Number(data.edge_yes ?? 0).toFixed(4)} | NO ${Number(data.edge_no ?? 0).toFixed(4)}`;
-
-        if(action.includes("BUY YES")) setSignal("good","BUY YES");
-        else if(action.includes("BUY NO")) setSignal("good","BUY NO");
-        else setSignal("warn","PASS");
-
-        drawChart({
-          mu, sigma,
-          yourTemp: temp,
-          fairAtYourTemp: Number(data.p_yes ?? 0.5),
-          yourYesPrice: Number(data.mkt_yes ?? yesPrice)
-        });
-      }catch(e){
-        $("headline").textContent = "ERROR";
-        setSignal("bad","ERROR");
-      }
-    });
-
-    // Initial chart placeholder
-    drawChart({mu:42, sigma:2.5, yourTemp:42, fairAtYourTemp:0.5, yourYesPrice:0.3});
-    setSignal("warn","PASS");
-    $("headline").textContent = "BUY YES / BUY NO / PASS";
-    $("mkt").textContent  = "—";
-    $("mdl").textContent  = "—";
-    $("fair").textContent = "—";
-    $("edge").textContent = "—";
-    $("line").textContent = "—";
-  </script>
+  // Draw an initial empty-looking chart
+  drawChart(50, 6, 50, 0.5, 0.5);
+  setSignal("PASS");
+</script>
 </body>
 </html>
