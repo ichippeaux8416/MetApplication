@@ -6,147 +6,233 @@
   <title>MetApplication</title>
   <style>
     :root{
-      --bg:#07090d;
-      --panel:#0e121a;
-      --border:#1d2634;
+      --bg:#0b0d10;
+      --panel:#12161c;
+      --panel2:#0f1318;
+      --stroke:#202734;
+      --stroke2:#2a3344;
+      --text:#e8eef6;
       --muted:#9aa7b8;
-      --text:#e8eef7;
-      --blue:#63a8ff;
-      --blue2:#7fc1ff;
-      --good:#3ddc97;
-      --warn:#ffd166;
-      --bad:#ff5c7a;
-      --radius:10px;
-      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --accent:#5fa8ff;     /* light blue */
+      --good:#2bd27c;
+      --bad:#ff5d5d;
+      --chip:#0c1016;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
       margin:0;
-      background: radial-gradient(1200px 600px at 30% -10%, rgba(99,168,255,.10), transparent 60%),
-                  radial-gradient(900px 500px at 90% 0%, rgba(127,193,255,.07), transparent 55%),
-                  var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
       color:var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
     }
-
     .topbar{
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:space-between;
-      padding:22px 26px 14px;
-      border-bottom:1px solid rgba(29,38,52,.9);
+      padding:22px 28px;
+      border-bottom:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.0));
     }
-    .brand{display:flex;flex-direction:column;gap:6px}
-    .brand .title{font-size:34px;font-weight:800;letter-spacing:1.4px;line-height:1}
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .brand .title{
+      font-size:34px;
+      font-weight:800;
+      letter-spacing:1.6px;
+      line-height:1.05;
+    }
     .brand .sub{
-      font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
-      color:rgba(154,167,184,.85)
+      font-size:12px;
+      letter-spacing:1.2px;
+      color:var(--muted);
+      text-transform:uppercase;
     }
-    .nav{display:flex;align-items:center;gap:10px}
+    .nav{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
     .nav a{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:10px 12px;border:1px solid rgba(29,38,52,.95);
-      background: rgba(14,18,26,.75);
-      color:var(--text);text-decoration:none;border-radius:9px;
-      font-weight:700;font-size:13px
+      text-decoration:none;
+      color:var(--text);
+      border:1px solid var(--stroke2);
+      background:var(--panel);
+      padding:10px 14px;
+      font-weight:700;
+      letter-spacing:0.2px;
+      border-radius:10px; /* less rounded */
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
-    .nav a:hover{border-color:rgba(99,168,255,.55)}
-    .nav a.primary{
-      border-color:rgba(99,168,255,.55);
-      background: rgba(99,168,255,.10);
+    .nav a:hover{
+      border-color:rgba(95,168,255,0.55);
+      box-shadow:0 0 0 3px rgba(95,168,255,0.12) inset;
     }
-    .dot{width:10px;height:10px;border-radius:2px;background:var(--blue);box-shadow:0 0 0 3px rgba(99,168,255,.12)}
-
-    .wrap{max-width:1280px;margin:0 auto;padding:18px 26px 34px}
-    .grid{display:grid;grid-template-columns:1.15fr 1.15fr;gap:16px;margin-top:18px;align-items:start}
+    .wrap{
+      padding:22px 22px 34px;
+      max-width:1240px;
+      margin:0 auto;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap:18px;
+      align-items:start;
+    }
     .card{
-      background: linear-gradient(180deg, rgba(14,18,26,.92), rgba(10,14,20,.92));
-      border:1px solid rgba(29,38,52,.95);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      border:1px solid var(--stroke2);
+      background:var(--panel);
+      border-radius:12px; /* less rounded */
       overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,0.35);
     }
-    .hdr{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 16px;background: rgba(7,9,13,.35);
-      border-bottom:1px solid rgba(29,38,52,.95);
-      font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
-      font-size:12px;color:rgba(154,167,184,.9)
+    .cardHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 16px;
+      background:var(--panel2);
+      border-bottom:1px solid var(--stroke);
     }
-    .body{padding:16px}
-
+    .cardHead .h{
+      font-weight:800;
+      letter-spacing:0.8px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .cardBody{padding:16px}
     label{
-      display:block;font-size:12px;font-weight:800;letter-spacing:1.2px;
-      text-transform:uppercase;color:rgba(154,167,184,.9);margin:0 0 8px
+      display:block;
+      font-size:12px;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:8px;
+      font-weight:800;
     }
-    select{
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .row3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    select,input{
       width:100%;
-      padding:14px 14px;border-radius:9px;
-      border:1px solid rgba(29,38,52,.95);
-      background: rgba(8,12,18,.7);
+      padding:14px 14px;
+      border-radius:10px; /* less rounded */
+      border:1px solid var(--stroke2);
+      background:#0c1016;
       color:var(--text);
       outline:none;
-      font-size:15px;
+      font-size:16px;
     }
-    select:focus{border-color:rgba(99,168,255,.6); box-shadow: 0 0 0 4px rgba(99,168,255,.12);}
-
+    input::placeholder{color:#6f7c8f}
+    select:focus,input:focus{
+      border-color:rgba(95,168,255,0.65);
+      box-shadow:0 0 0 3px rgba(95,168,255,0.15);
+    }
     .btn{
-      width:100%;margin-top:12px;
-      padding:14px 16px;border-radius:10px;
-      border:1px solid rgba(99,168,255,.70);
-      background: rgba(99,168,255,.92);
-      color:#06101e;
-      font-weight:900;font-size:16px;letter-spacing:.4px;
+      width:100%;
+      padding:14px 14px;
+      border-radius:10px;
+      border:1px solid rgba(95,168,255,0.6);
+      background:rgba(95,168,255,0.18);
+      color:var(--text);
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:0.4px;
       cursor:pointer;
     }
-
+    .btn:hover{
+      background:rgba(95,168,255,0.24);
+    }
     .pill{
-      display:inline-flex;align-items:center;gap:10px;
-      padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(29,38,52,.95);
-      background: rgba(16,24,39,.65);
-      font-weight:900;font-size:13px;letter-spacing:.4px;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--stroke2);
+      background:#0c1016;
+      font-weight:900;
+      letter-spacing:0.4px;
     }
-    .led{width:10px;height:10px;border-radius:999px;background:rgba(154,167,184,.55);box-shadow:0 0 0 3px rgba(154,167,184,.10)}
-    .pill.good .led{background:var(--good);box-shadow:0 0 0 3px rgba(61,220,151,.12)}
-    .pill.warn .led{background:var(--warn);box-shadow:0 0 0 3px rgba(255,209,102,.12)}
-    .pill.bad  .led{background:var(--bad); box-shadow:0 0 0 3px rgba(255,92,122,.12)}
-
-    .mini{
-      background: rgba(14,18,26,.55);
-      border:1px solid rgba(29,38,52,.95);
-      border-radius:10px;
-      padding:12px 12px;
+    .dot{
+      width:9px;height:9px;border-radius:50%;
+      background:var(--good);
+      box-shadow:0 0 0 4px rgba(43,210,124,0.12);
+    }
+    .resultTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:16px;
+    }
+    .action{
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:0.7px;
+      color:var(--muted);
+    }
+    .bigSignal{
       margin-top:12px;
+      display:flex;
+      justify-content:flex-start;
     }
-    .k{
-      font-size:12px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;
-      color:rgba(154,167,184,.9);margin-bottom:6px
+    .bigSignal .tag{
+      border-radius:999px;
+      border:1px solid var(--stroke2);
+      background:#0c1016;
+      padding:10px 14px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
     }
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:14px;color:rgba(232,238,247,.95);
+    .tag.buyyes{border-color:rgba(43,210,124,0.55)}
+    .tag.buyno{border-color:rgba(255,93,93,0.55)}
+    .tag.pass{border-color:rgba(154,167,184,0.35)}
+    .tag .badge{
+      width:10px;height:10px;border-radius:50%;
+      background:var(--muted);
     }
+    .tag.buyyes .badge{background:var(--good)}
+    .tag.buyno .badge{background:var(--bad)}
+    .tag.pass .badge{background:#7f8aa0}
 
-    /* probability bar */
-    .barWrap{
-      border:1px solid rgba(29,38,52,.95);
-      border-radius:10px;
-      padding:12px;
-      background: rgba(8,12,18,.45);
+    /* Chart frame placeholder area (your current JS probably draws here) */
+    .chartFrame{
+      border:1px solid var(--stroke2);
+      background:#0c1016;
+      border-radius:12px;
+      padding:10px;
+      height:220px;
+      position:relative;
+      overflow:hidden;
     }
-    .barRow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .barLabel{font-weight:900;letter-spacing:.4px}
-    .bar{
-      height:10px;border-radius:6px;background: rgba(255,255,255,.08);
-      overflow:hidden;border:1px solid rgba(29,38,52,.85);
+    .chartFrame canvas{
+      width:100%;
+      height:100%;
+      display:block;
     }
-    .fill{height:100%;background: rgba(99,168,255,.95);width:0%}
-    .small{color:rgba(154,167,184,.85);font-weight:800;font-size:12px;letter-spacing:1.1px;text-transform:uppercase}
 
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
+      .topbar{flex-direction:column; align-items:flex-start; gap:14px}
+      .nav{width:100%}
+      .nav a{flex:1; justify-content:center}
     }
   </style>
 </head>
@@ -154,144 +240,195 @@
   <header class="topbar">
     <div class="brand">
       <div class="title">MetApplication</div>
-      <div class="sub">LONG TERM DROUGHT ODDS</div>
+      <div class="sub">High Temperature Prediction Market Guidance</div>
     </div>
 
     <nav class="nav">
-      <a href="index.html"><span class="dot"></span>Temperature</a>
-      <a class="primary" href="drought.html"><span class="dot" style="background: rgba(127,193,255,.9)"></span>Drought Odds</a>
+      <!-- IMPORTANT: this must be /drought.html -->
+      <a href="/drought.html" id="goDrought" title="Long Term Drought Odds">Long Term Drought Odds</a>
     </nav>
   </header>
 
   <main class="wrap">
     <div class="grid">
       <section class="card">
-        <div class="hdr">
-          <div>Inputs</div>
-          <div style="font-weight:800;color:rgba(154,167,184,.75);letter-spacing:.7px;text-transform:none;">Pick a city and evaluate.</div>
+        <div class="cardHead">
+          <div class="h">Inputs</div>
+          <div class="h">Evaluate Market</div>
         </div>
-        <div class="body">
-          <label for="city">City</label>
-          <select id="city">
-            <option>Denver</option>
-            <option>New York City</option>
-            <option>Dallas</option>
-            <option>Chicago</option>
-          </select>
+        <div class="cardBody">
+          <div class="row">
+            <div>
+              <label>City</label>
+              <select id="city">
+                <option>Denver</option>
+                <option>New York City</option>
+                <option>Dallas</option>
+                <option>Chicago</option>
+              </select>
+            </div>
+            <div>
+              <label>Date</label>
+              <input id="date" placeholder="MM/DD/YYYY" value="02/10/2026" />
+            </div>
+          </div>
 
-          <button class="btn" id="go">Evaluate</button>
+          <div class="row3">
+            <div>
+              <label>Potential High Temp</label>
+              <input id="t" type="number" step="1" value="42" />
+            </div>
+            <div>
+              <label>Yes Cost</label>
+              <input id="yes" type="number" step="1" value="30" />
+            </div>
+            <div>
+              <label>No Cost</label>
+              <input id="no" type="number" step="1" value="70" />
+            </div>
+          </div>
+
+          <button class="btn" id="evalBtn">Evaluate Market</button>
         </div>
       </section>
 
       <aside class="card">
-        <div class="hdr">
-          <div>Result</div>
-          <div id="headline" style="font-weight:900;color:rgba(232,238,247,.92);letter-spacing:.6px;">—</div>
+        <div class="cardHead">
+          <div class="h">Result</div>
+          <div class="h" id="headline">—</div>
         </div>
-        <div class="body">
-          <div style="display:flex;gap:10px;align-items:center;justify-content:flex-start;">
-            <div id="pill" class="pill"><span class="led"></span><span id="pillText">—</span></div>
+        <div class="cardBody">
+          <div class="chartFrame">
+            <!-- if you already draw a chart, keep your canvas id -->
+            <canvas id="chart"></canvas>
           </div>
 
-          <div class="mini">
-            <div class="k">Expected Drought Through ~90 Days</div>
-            <div class="mono" id="odds">—</div>
-          </div>
-
-          <div class="mini">
-            <div class="k">Seasonal Drought Outlook</div>
-            <div class="mono" id="outlook">—</div>
-          </div>
-
-          <div class="mini">
-            <div class="k">3-Month Precip Outlook</div>
-            <div class="mono" id="precip">—</div>
-          </div>
-
-          <div class="mini">
-            <div class="k">Precip Signal</div>
-            <div class="barWrap">
-              <div class="barRow">
-                <div class="barLabel">Drier bias</div>
-                <div class="small" id="dryPct">—</div>
-              </div>
-              <div class="bar"><div class="fill" id="dryFill"></div></div>
-
-              <div style="height:12px"></div>
-
-              <div class="barRow">
-                <div class="barLabel">Wetter bias</div>
-                <div class="small" id="wetPct">—</div>
-              </div>
-              <div class="bar"><div class="fill" id="wetFill" style="background: rgba(127,193,255,.95)"></div></div>
+          <div class="bigSignal">
+            <div class="tag pass" id="signalTag">
+              <span class="badge"></span>
+              <span id="signalText">PASS</span>
             </div>
           </div>
+
+          <div style="margin-top:14px; color:var(--muted); font-weight:700;" id="details"></div>
         </div>
       </aside>
     </div>
   </main>
 
   <script>
-    const $ = (id) => document.getElementById(id);
-    function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+    // Your backend is same-origin on Render, so this works on Render + local.
+    const API_BASE = "";
 
-    function setSignal(kind, text){
-      const pill = $("pill");
-      pill.classList.remove("good","warn","bad");
-      if(kind) pill.classList.add(kind);
-      $("pillText").textContent = text;
+    function cityToCode(name){
+      const v = (name || "").toLowerCase().trim();
+      if (v.startsWith("den")) return "den";
+      if (v.startsWith("new york")) return "nyc";
+      if (v.startsWith("dal")) return "dal";
+      if (v.startsWith("chi")) return "chi";
+      return "den";
     }
 
-    function fmtPct(x){
-      if(x===null || x===undefined || Number.isNaN(x)) return "—";
-      return `${(x*100).toFixed(0)}%`;
+    function setSignal(signal){
+      const tag = document.getElementById("signalTag");
+      const text = document.getElementById("signalText");
+      const head = document.getElementById("headline");
+      text.textContent = signal;
+      head.textContent = signal;
+
+      tag.classList.remove("buyyes","buyno","pass");
+      if (signal === "BUY YES") tag.classList.add("buyyes");
+      else if (signal === "BUY NO") tag.classList.add("buyno");
+      else tag.classList.add("pass");
     }
 
-    $("go").addEventListener("click", async () => {
-      const city = $("city").value;
-      $("headline").textContent = "…";
-      setSignal(null, "…");
-      $("odds").textContent = "—";
-      $("outlook").textContent = "—";
-      $("precip").textContent = "—";
-      $("dryPct").textContent = "—";
-      $("wetPct").textContent = "—";
-      $("dryFill").style.width = "0%";
-      $("wetFill").style.width = "0%";
+    async function evaluate(){
+      const cityName = document.getElementById("city").value;
+      const payload = {
+        city: cityName,
+        date: document.getElementById("date").value,
+        t: Number(document.getElementById("t").value),
+        yes_cents: Number(document.getElementById("yes").value),
+        no_cents: Number(document.getElementById("no").value),
+      };
 
-      try{
-        const r = await fetch(`/api/drought_odds?city=${encodeURIComponent(city)}`);
-        const data = await r.json();
+      const res = await fetch(API_BASE + "/api/evaluate", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
 
-        const p = Number(data.p_drought ?? 0.5);
-        $("headline").textContent = city;
-        $("odds").textContent = `${(p*100).toFixed(1)}%`;
-        $("outlook").textContent = data.drought_outlook ?? "—";
+      const data = await res.json();
 
-        const seas = data.precip?.valid_seas ?? "—";
-        const cat  = data.precip?.cat ?? "—";
-        const prob = data.precip?.prob ?? null;
-        $("precip").textContent = `${seas} | ${cat}${prob!==null?(" "+String(prob)+"%"):""}`;
-
-        const dry = clamp(Number(data.precip?.below_prob ?? 0),0,1);
-        const wet = clamp(Number(data.precip?.above_prob ?? 0),0,1);
-        $("dryPct").textContent = fmtPct(dry);
-        $("wetPct").textContent = fmtPct(wet);
-        $("dryFill").style.width = `${(dry*100).toFixed(0)}%`;
-        $("wetFill").style.width = `${(wet*100).toFixed(0)}%`;
-
-        if(p >= 0.65){ setSignal("bad","HIGH"); }
-        else if(p >= 0.45){ setSignal("warn","MED"); }
-        else { setSignal("good","LOW"); }
-      }catch(e){
-        $("headline").textContent = "ERROR";
-        setSignal("bad","ERROR");
+      if (data.error){
+        setSignal("PASS");
+        document.getElementById("details").textContent = "Error: " + data.error;
+        return;
       }
+
+      setSignal(data.action || "PASS");
+
+      const yes = Number(data.mkt_yes || 0).toFixed(3);
+      const no  = Number(data.mkt_no  || 0).toFixed(3);
+      const pyes= Number(data.p_yes   || 0).toFixed(4);
+      const pno = Number(data.p_no    || 0).toFixed(4);
+      const mu  = Number(data.mu      || 0).toFixed(2);
+      const sg  = Number(data.sigma   || 0).toFixed(2);
+
+      document.getElementById("details").textContent =
+        `${cityName} • μ ${mu} • σ ${sg} • Fair YES ${pyes} / NO ${pno} • Market YES ${yes} / NO ${no}`;
+
+      // If your existing chart code was elsewhere, keep it.
+      // Minimal placeholder draw so the canvas isn't blank:
+      drawPlaceholderChart();
+    }
+
+    function drawPlaceholderChart(){
+      const c = document.getElementById("chart");
+      const ctx = c.getContext("2d");
+      const w = c.width = c.clientWidth;
+      const h = c.height = c.clientHeight;
+
+      ctx.clearRect(0,0,w,h);
+
+      // grid
+      ctx.globalAlpha = 0.25;
+      ctx.strokeStyle = "#2a3344";
+      for(let i=1;i<6;i++){
+        const x = (w/6)*i;
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+      }
+      for(let i=1;i<4;i++){
+        const y = (h/4)*i;
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+      }
+      ctx.globalAlpha = 1.0;
+
+      // "fair price" line placeholder
+      ctx.strokeStyle = "#5fa8ff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, h*0.25);
+      ctx.bezierCurveTo(w*0.35, h*0.25, w*0.45, h*0.25, w*0.6, h*0.6);
+      ctx.bezierCurveTo(w*0.75, h*0.9, w*0.9, h*0.95, w, h*0.95);
+      ctx.stroke();
+    }
+
+    document.getElementById("evalBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      evaluate().catch(err=>{
+        setSignal("PASS");
+        document.getElementById("details").textContent = "Error: " + err;
+      });
     });
 
-    // default
-    $("headline").textContent = "—";
-    setSignal("warn","MED");
+    // Make sure drought link always works even if something tries to prevent default elsewhere.
+    document.getElementById("goDrought").addEventListener("click", (e) => {
+      // no preventDefault here; we WANT navigation
+    });
+
+    // initial placeholder
+    drawPlaceholderChart();
   </script>
 </body>
 </html>
