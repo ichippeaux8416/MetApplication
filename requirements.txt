@@ -1,5 +1,5 @@
-fastapi
-uvicorn[standard]
-pydantic
-python-dateutil
-requests
+fastapi==0.115.6
+uvicorn==0.32.1
+requests==2.32.3
+python-dateutil==2.9.0.post0
+pyshp==2.3.1
