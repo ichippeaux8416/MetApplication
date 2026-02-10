@@ -4,14 +4,12 @@ from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from datetime import datetime, timedelta, date
+from pathlib import Path
 
 import requests
 from dateutil import parser as dtparser
 import math
 import re
-import os
-
-import drought_long  # NEW
 
 # ---------------- CONFIG ----------------
 USER_AGENT = "rh-temp-paper-backend/0.1 (contact: you@example.com)"
@@ -34,9 +32,13 @@ DEFAULT_SIGMA = 7.5
 MAX_DAYS_AHEAD = 14
 # --------------------------------------
 
+BASE_DIR = Path(__file__).resolve().parent
+INDEX_HTML = BASE_DIR / "index.html"
+DROUGHT_HTML = BASE_DIR / "drought.html"
 
 app = FastAPI(title="MetApplication Backend")
 
+# Allow your HTML to call the API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -83,6 +85,7 @@ def norm_cdf(x: float) -> float:
 
 
 def prob_ge(mu: float, sigma: float, threshold: float) -> float:
+    # Continuity correction for integer-ish threshold markets
     z = (threshold - 0.5 - mu) / sigma
     return max(0.0, min(1.0, 1.0 - norm_cdf(z)))
 
@@ -95,6 +98,7 @@ def sigma_for(target_date: date) -> float:
     return SIGMA_BY_LEAD_DAYS.get(lead, DEFAULT_SIGMA)
 
 
+# Parse: mm/dd/yyyy - t - yes:$$/no:$$
 LINE_RE = re.compile(
     r"""^\s*
     (?P<d>\d{1,2}/\d{1,2}/\d{4})\s*-\s*
@@ -139,28 +143,31 @@ class EvalRequest(BaseModel):
     lines: List[str]
 
 
-def _safe_file(path: str) -> str:
-    here = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(here, path)
-
+# ---------------- PAGES ----------------
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    # Serve index.html
-    p = _safe_file("index.html")
-    if os.path.exists(p):
-        return FileResponse(p, media_type="text/html")
-    return HTMLResponse("<h3>index.html not found.</h3>")
+    if INDEX_HTML.exists():
+        return HTMLResponse(INDEX_HTML.read_text(encoding="utf-8"))
+    return HTMLResponse("<h3>index.html not found next to server.py</h3>")
 
 
 @app.get("/drought", response_class=HTMLResponse)
 def drought_page():
-    # Serve drought.html at a stable route (works on Render)
-    p = _safe_file("drought.html")
-    if os.path.exists(p):
-        return FileResponse(p, media_type="text/html")
-    return HTMLResponse("<h3>drought.html not found.</h3>")
+    if DROUGHT_HTML.exists():
+        return HTMLResponse(DROUGHT_HTML.read_text(encoding="utf-8"))
+    return HTMLResponse("<h3>drought.html not found next to server.py</h3>")
 
+
+# Optional: allow direct /drought.html too (nice for debugging)
+@app.get("/drought.html")
+def drought_html_file():
+    if DROUGHT_HTML.exists():
+        return FileResponse(str(DROUGHT_HTML), media_type="text/html")
+    return HTMLResponse("<h3>drought.html not found next to server.py</h3>")
+
+
+# ---------------- APIs ----------------
 
 @app.get("/api/highs")
 def api_highs(city: str = Query(...)):
@@ -229,17 +236,3 @@ def api_evaluate(req: EvalRequest) -> Dict[str, Any]:
         })
 
     return {"city": code, "city_name": info["name"], "results": results}
-
-
-@app.get("/api/drought")
-def api_drought(city: str = Query(...)) -> Dict[str, Any]:
-    code = city.strip().lower()
-    if code not in CITIES:
-        return {"error": "unknown city", "allowed": list(CITIES.keys())}
-
-    info = CITIES[code]
-    data = drought_long.evaluate_city(info["lat"], info["lon"])
-    # attach city info
-    data["city"] = code
-    data["city_name"] = info["name"]
-    return data
