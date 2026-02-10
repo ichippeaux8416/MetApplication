@@ -16,8 +16,7 @@
       --muted:#a8b0bf;
       --muted2:#7f8797;
 
-      /* Accent = light blue */
-      --accent:#60a5fa;
+      --accent:#60a5fa;   /* light blue */
       --accent2:#93c5fd;
 
       --good:#34d399;
@@ -38,6 +37,7 @@
       background:var(--bg);
     }
 
+    /* Header */
     .topbar{
       border-bottom:1px solid var(--line);
       background:var(--bg);
@@ -45,18 +45,30 @@
     .topbar-inner{
       max-width:1280px;
       margin:0 auto;
-      padding:14px 18px;
+      padding:18px 18px 16px;
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       justify-content:space-between;
       gap:16px;
     }
-
+    .brandwrap{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
     .brand{
-      font-weight:900;
+      font-weight:1000;
       letter-spacing:.2px;
-      font-size:16px;
+      font-size:22px;           /* larger header */
+      line-height:1.05;
       white-space:nowrap;
+    }
+    .subtitle{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.12px;
+      text-transform:uppercase;
+      color:var(--muted2);
     }
 
     .status{
@@ -66,6 +78,7 @@
       font-size:13px;
       color:var(--muted);
       font-weight:800;
+      padding-bottom:2px;
     }
     .dot{
       width:9px;height:9px;border-radius:999px;
@@ -298,9 +311,9 @@
       position:absolute;
       left:12px;
       top:10px;
-      font-size:12px;
-      color:var(--muted2);
-      font-weight:900;
+      font-size:14px;            /* slightly larger */
+      color:rgba(242,244,247,.85);
+      font-weight:1000;
       letter-spacing:.10px;
       text-transform:uppercase;
       pointer-events:none;
@@ -310,12 +323,14 @@
       right:12px;
       top:10px;
       display:flex;
-      gap:10px;
+      gap:12px;
       align-items:center;
       font-size:12px;
       color:var(--muted2);
-      font-weight:800;
+      font-weight:900;
       pointer-events:none;
+      text-transform:uppercase;
+      letter-spacing:.10px;
     }
     .lg{
       display:flex;
@@ -335,7 +350,11 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="brand">High Temperature Prediction Market Guidance</div>
+      <div class="brandwrap">
+        <div class="brand">MetApplication</div>
+        <div class="subtitle">High Temperature Prediction Market Guidance</div>
+      </div>
+
       <div id="status" class="status">
         <span class="dot"></span>
         <span id="statusText">idle</span>
@@ -345,7 +364,7 @@
 
   <div class="wrap">
     <div class="layout">
-      <!-- Left: Inputs -->
+      <!-- Left -->
       <div class="card">
         <div class="card-h">
           <div class="kicker">Inputs</div>
@@ -395,7 +414,7 @@
         </div>
       </div>
 
-      <!-- Right: Result panel -->
+      <!-- Right -->
       <div class="side">
         <div class="card">
           <div class="card-h">
@@ -403,11 +422,11 @@
             <div class="small">BUY YES / BUY NO / PASS</div>
           </div>
           <div class="card-b">
-            <div class="chart" id="chartBox" aria-label="Fair price chart">
+            <div class="chart" aria-label="Fair price chart">
               <div class="chart-title">Market</div>
               <div class="chart-legend">
-                <div class="lg"><span class="sw"></span>Fair YES</div>
-                <div class="lg"><span class="pt"></span>Your Yes</div>
+                <div class="lg"><span class="sw"></span>Fair Price</div>
+                <div class="lg"><span class="pt"></span>Your Price</div>
               </div>
               <canvas id="chart"></canvas>
             </div>
@@ -448,7 +467,6 @@
   </div>
 
   <script>
-    // Served by same backend on Render, so use relative URLs.
     const API_BASE = "";
 
     const elStatus = document.getElementById("status");
@@ -514,26 +532,20 @@
       return (typeof x === "number" && isFinite(x)) ? x.toFixed(4) : "—";
     }
 
-    // ---- Math helpers for Normal CDF ----
+    // ---- Normal CDF ----
     function erf(x){
-      // Abramowitz & Stegun approximation
       const sign = x >= 0 ? 1 : -1;
       x = Math.abs(x);
-
       const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429;
       const p=0.3275911;
-
       const t = 1.0/(1.0+p*x);
       const y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-x*x);
       return sign*y;
     }
-
     function normCdf(z){
       return 0.5*(1 + erf(z/Math.SQRT2));
     }
-
     function fairYes(thresholdF, mu, sigma){
-      // P(High >= threshold) = 1 - Φ((T - μ)/σ)
       const z = (thresholdF - mu) / sigma;
       return 1 - normCdf(z);
     }
@@ -554,13 +566,10 @@
       ctx.fillStyle = "#0a0c10";
       ctx.fillRect(0,0,w,h);
 
-      // subtle grid
       ctx.strokeStyle = "rgba(255,255,255,0.06)";
       ctx.lineWidth = 1;
 
-      const vx = 6;
-      const vy = 4;
-
+      const vx = 6, vy = 4;
       for (let i=0;i<=vx;i++){
         const x = pad.l + (w-pad.l-pad.r)*(i/vx);
         ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,h-pad.b); ctx.stroke();
@@ -570,7 +579,6 @@
         ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
       }
 
-      // axes border
       ctx.strokeStyle = "rgba(255,255,255,0.10)";
       ctx.strokeRect(pad.l, pad.t, w-pad.l-pad.r, h-pad.t-pad.b);
     }
@@ -581,26 +589,19 @@
 
       drawGrid(w,h,pad);
 
-      // domain around mu ± 4σ, but keep reasonable Fahrenheit bounds
       let xMin = mu - 4*sigma;
       let xMax = mu + 4*sigma;
-
-      // ensure userT is visible
       xMin = Math.min(xMin, userT - 6);
       xMax = Math.max(xMax, userT + 6);
 
-      // clamp to typical Fahrenheit-ish display bounds
       xMin = Math.max(-40, Math.floor(xMin));
       xMax = Math.min(130, Math.ceil(xMax));
-      if (xMax - xMin < 10){
-        xMin -= 5; xMax += 5;
-      }
+      if (xMax - xMin < 10){ xMin -= 5; xMax += 5; }
 
       function X(x){
         return pad.l + (x - xMin) * (w - pad.l - pad.r) / (xMax - xMin);
       }
       function Y(y){
-        // y in [0,1]
         return pad.t + (1 - y) * (h - pad.t - pad.b);
       }
 
@@ -617,32 +618,27 @@
       }
       ctx.stroke();
 
-      // user point (T, yesPrice)
+      // user point
       const ux = X(userT);
       const uy = Y(userYesPrice);
 
-      // point glow
       ctx.fillStyle = "rgba(147,197,253,0.25)";
       ctx.beginPath(); ctx.arc(ux, uy, 8, 0, Math.PI*2); ctx.fill();
 
-      // point
       ctx.fillStyle = "rgba(147,197,253,0.95)";
       ctx.strokeStyle = "rgba(255,255,255,0.35)";
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(ux, uy, 4.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-      // labels (axes)
-      ctx.fillStyle = "rgba(168,176,191,0.95)";
+      // axes labels
+      ctx.fillStyle = "rgba(168,176,191,0.90)";
       ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
 
-      // y labels (0, .5, 1)
-      const yTicks = [1.0, 0.5, 0.0];
-      yTicks.forEach(val=>{
+      [1.0, 0.5, 0.0].forEach(val=>{
         const yy = Y(val);
         ctx.fillText(val.toFixed(1), 10, yy+4);
       });
 
-      // x labels (min, mid, max)
       const mid = Math.round((xMin+xMax)/2);
       const xTicks = [xMin, mid, xMax];
       ctx.fillStyle = "rgba(168,176,191,0.85)";
@@ -657,11 +653,7 @@
         ctx.fillText(s, x, y);
       });
 
-      // annotate fair at userT (small)
-      const fairAtUserT = fairYes(userT, mu, sigma);
-      const note = `fair=${fairAtUserT.toFixed(3)}  your=${userYesPrice.toFixed(3)}`;
-      ctx.fillStyle = "rgba(242,244,247,0.85)";
-      ctx.fillText(note, Math.min(w - 14 - ctx.measureText(note).width, pad.l + 6), pad.t + 14);
+      // IMPORTANT: we intentionally do NOT draw the "fair=... your=..." text anymore.
     }
 
     function drawEmptyChart(){
@@ -670,13 +662,12 @@
       drawGrid(w,h,pad);
       ctx.fillStyle = "rgba(168,176,191,0.55)";
       ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
-      const msg = "evaluate to plot fair price";
+      const msg = "evaluate to plot";
       const tw = ctx.measureText(msg).width;
       ctx.fillText(msg, (w - tw)/2, (h)/2);
     }
 
     window.addEventListener("resize", () => {
-      // redraw last chart if we have it
       if (window.__lastChart) drawChart(window.__lastChart);
       else drawEmptyChart();
     });
@@ -736,15 +727,8 @@
         if (s.includes("BUY")) setStatus("signal", "ok");
         else setStatus("pass", "idle");
 
-        // Plot:
-        // x-axis: threshold temperature (°F)
-        // y-axis: fair YES probability (0..1)
-        // point: (user threshold, user yes price)
         const userYesPrice = Math.max(0, Math.min(1, (yesCents/100)));
-        const mu = out.mu;
-        const sigma = out.sigma;
-
-        window.__lastChart = { mu, sigma, userT: t, userYesPrice };
+        window.__lastChart = { mu: out.mu, sigma: out.sigma, userT: t, userYesPrice };
         drawChart(window.__lastChart);
 
       } catch(e){
