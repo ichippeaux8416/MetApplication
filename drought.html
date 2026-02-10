@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MetApplication</title>
+  <style>
+    :root{
+      --bg:#07090d;
+      --panel:#0e121a;
+      --border:#1d2634;
+      --muted:#9aa7b8;
+      --text:#e8eef7;
+      --blue:#63a8ff;
+      --blue2:#7fc1ff;
+      --good:#3ddc97;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
+      --radius:10px;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 30% -10%, rgba(99,168,255,.10), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(127,193,255,.07), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:22px 26px 14px;
+      border-bottom:1px solid rgba(29,38,52,.9);
+    }
+    .brand{display:flex;flex-direction:column;gap:6px}
+    .brand .title{font-size:34px;font-weight:800;letter-spacing:1.4px;line-height:1}
+    .brand .sub{
+      font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+      color:rgba(154,167,184,.85)
+    }
+    .nav{display:flex;align-items:center;gap:10px}
+    .nav a{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border:1px solid rgba(29,38,52,.95);
+      background: rgba(14,18,26,.75);
+      color:var(--text);text-decoration:none;border-radius:9px;
+      font-weight:700;font-size:13px
+    }
+    .nav a:hover{border-color:rgba(99,168,255,.55)}
+    .nav a.primary{
+      border-color:rgba(99,168,255,.55);
+      background: rgba(99,168,255,.10);
+    }
+    .dot{width:10px;height:10px;border-radius:2px;background:var(--blue);box-shadow:0 0 0 3px rgba(99,168,255,.12)}
+
+    .wrap{max-width:1280px;margin:0 auto;padding:18px 26px 34px}
+    .grid{display:grid;grid-template-columns:1.15fr 1.15fr;gap:16px;margin-top:18px;align-items:start}
+    .card{
+      background: linear-gradient(180deg, rgba(14,18,26,.92), rgba(10,14,20,.92));
+      border:1px solid rgba(29,38,52,.95);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .hdr{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;background: rgba(7,9,13,.35);
+      border-bottom:1px solid rgba(29,38,52,.95);
+      font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+      font-size:12px;color:rgba(154,167,184,.9)
+    }
+    .body{padding:16px}
+
+    label{
+      display:block;font-size:12px;font-weight:800;letter-spacing:1.2px;
+      text-transform:uppercase;color:rgba(154,167,184,.9);margin:0 0 8px
+    }
+    select{
+      width:100%;
+      padding:14px 14px;border-radius:9px;
+      border:1px solid rgba(29,38,52,.95);
+      background: rgba(8,12,18,.7);
+      color:var(--text);
+      outline:none;
+      font-size:15px;
+    }
+    select:focus{border-color:rgba(99,168,255,.6); box-shadow: 0 0 0 4px rgba(99,168,255,.12);}
+
+    .btn{
+      width:100%;margin-top:12px;
+      padding:14px 16px;border-radius:10px;
+      border:1px solid rgba(99,168,255,.70);
+      background: rgba(99,168,255,.92);
+      color:#06101e;
+      font-weight:900;font-size:16px;letter-spacing:.4px;
+      cursor:pointer;
+    }
+
+    .pill{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(29,38,52,.95);
+      background: rgba(16,24,39,.65);
+      font-weight:900;font-size:13px;letter-spacing:.4px;
+    }
+    .led{width:10px;height:10px;border-radius:999px;background:rgba(154,167,184,.55);box-shadow:0 0 0 3px rgba(154,167,184,.10)}
+    .pill.good .led{background:var(--good);box-shadow:0 0 0 3px rgba(61,220,151,.12)}
+    .pill.warn .led{background:var(--warn);box-shadow:0 0 0 3px rgba(255,209,102,.12)}
+    .pill.bad  .led{background:var(--bad); box-shadow:0 0 0 3px rgba(255,92,122,.12)}
+
+    .mini{
+      background: rgba(14,18,26,.55);
+      border:1px solid rgba(29,38,52,.95);
+      border-radius:10px;
+      padding:12px 12px;
+      margin-top:12px;
+    }
+    .k{
+      font-size:12px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;
+      color:rgba(154,167,184,.9);margin-bottom:6px
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:14px;color:rgba(232,238,247,.95);
+    }
+
+    /* probability bar */
+    .barWrap{
+      border:1px solid rgba(29,38,52,.95);
+      border-radius:10px;
+      padding:12px;
+      background: rgba(8,12,18,.45);
+    }
+    .barRow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .barLabel{font-weight:900;letter-spacing:.4px}
+    .bar{
+      height:10px;border-radius:6px;background: rgba(255,255,255,.08);
+      overflow:hidden;border:1px solid rgba(29,38,52,.85);
+    }
+    .fill{height:100%;background: rgba(99,168,255,.95);width:0%}
+    .small{color:rgba(154,167,184,.85);font-weight:800;font-size:12px;letter-spacing:1.1px;text-transform:uppercase}
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="title">MetApplication</div>
+      <div class="sub">LONG TERM DROUGHT ODDS</div>
+    </div>
+
+    <nav class="nav">
+      <a href="index.html"><span class="dot"></span>Temperature</a>
+      <a class="primary" href="drought.html"><span class="dot" style="background: rgba(127,193,255,.9)"></span>Drought Odds</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <section class="card">
+        <div class="hdr">
+          <div>Inputs</div>
+          <div style="font-weight:800;color:rgba(154,167,184,.75);letter-spacing:.7px;text-transform:none;">Pick a city and evaluate.</div>
+        </div>
+        <div class="body">
+          <label for="city">City</label>
+          <select id="city">
+            <option>Denver</option>
+            <option>New York City</option>
+            <option>Dallas</option>
+            <option>Chicago</option>
+          </select>
+
+          <button class="btn" id="go">Evaluate</button>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="hdr">
+          <div>Result</div>
+          <div id="headline" style="font-weight:900;color:rgba(232,238,247,.92);letter-spacing:.6px;">—</div>
+        </div>
+        <div class="body">
+          <div style="display:flex;gap:10px;align-items:center;justify-content:flex-start;">
+            <div id="pill" class="pill"><span class="led"></span><span id="pillText">—</span></div>
+          </div>
+
+          <div class="mini">
+            <div class="k">Expected Drought Through ~90 Days</div>
+            <div class="mono" id="odds">—</div>
+          </div>
+
+          <div class="mini">
+            <div class="k">Seasonal Drought Outlook</div>
+            <div class="mono" id="outlook">—</div>
+          </div>
+
+          <div class="mini">
+            <div class="k">3-Month Precip Outlook</div>
+            <div class="mono" id="precip">—</div>
+          </div>
+
+          <div class="mini">
+            <div class="k">Precip Signal</div>
+            <div class="barWrap">
+              <div class="barRow">
+                <div class="barLabel">Drier bias</div>
+                <div class="small" id="dryPct">—</div>
+              </div>
+              <div class="bar"><div class="fill" id="dryFill"></div></div>
+
+              <div style="height:12px"></div>
+
+              <div class="barRow">
+                <div class="barLabel">Wetter bias</div>
+                <div class="small" id="wetPct">—</div>
+              </div>
+              <div class="bar"><div class="fill" id="wetFill" style="background: rgba(127,193,255,.95)"></div></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+    function setSignal(kind, text){
+      const pill = $("pill");
+      pill.classList.remove("good","warn","bad");
+      if(kind) pill.classList.add(kind);
+      $("pillText").textContent = text;
+    }
+
+    function fmtPct(x){
+      if(x===null || x===undefined || Number.isNaN(x)) return "—";
+      return `${(x*100).toFixed(0)}%`;
+    }
+
+    $("go").addEventListener("click", async () => {
+      const city = $("city").value;
+      $("headline").textContent = "…";
+      setSignal(null, "…");
+      $("odds").textContent = "—";
+      $("outlook").textContent = "—";
+      $("precip").textContent = "—";
+      $("dryPct").textContent = "—";
+      $("wetPct").textContent = "—";
+      $("dryFill").style.width = "0%";
+      $("wetFill").style.width = "0%";
+
+      try{
+        const r = await fetch(`/api/drought_odds?city=${encodeURIComponent(city)}`);
+        const data = await r.json();
+
+        const p = Number(data.p_drought ?? 0.5);
+        $("headline").textContent = city;
+        $("odds").textContent = `${(p*100).toFixed(1)}%`;
+        $("outlook").textContent = data.drought_outlook ?? "—";
+
+        const seas = data.precip?.valid_seas ?? "—";
+        const cat  = data.precip?.cat ?? "—";
+        const prob = data.precip?.prob ?? null;
+        $("precip").textContent = `${seas} | ${cat}${prob!==null?(" "+String(prob)+"%"):""}`;
+
+        const dry = clamp(Number(data.precip?.below_prob ?? 0),0,1);
+        const wet = clamp(Number(data.precip?.above_prob ?? 0),0,1);
+        $("dryPct").textContent = fmtPct(dry);
+        $("wetPct").textContent = fmtPct(wet);
+        $("dryFill").style.width = `${(dry*100).toFixed(0)}%`;
+        $("wetFill").style.width = `${(wet*100).toFixed(0)}%`;
+
+        if(p >= 0.65){ setSignal("bad","HIGH"); }
+        else if(p >= 0.45){ setSignal("warn","MED"); }
+        else { setSignal("good","LOW"); }
+      }catch(e){
+        $("headline").textContent = "ERROR";
+        setSignal("bad","ERROR");
+      }
+    });
+
+    // default
+    $("headline").textContent = "—";
+    setSignal("warn","MED");
+  </script>
+</body>
+</html>
