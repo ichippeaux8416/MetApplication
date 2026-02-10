@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>High Temperature Prediction Market Guidance</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:0; background:#fff; color:#111; }
+    header { padding:16px 20px; border-bottom:1px solid #e6e6e6; }
+    header h1 { margin:0; font-size:18px; font-weight:800; letter-spacing:.2px; }
+
+    .wrap { max-width:1100px; margin:0 auto; padding:18px 20px 40px; }
+    .grid { display:grid; grid-template-columns: 1.1fr 1fr; gap:16px; }
+    @media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
+
+    .card { border:1px solid #e6e6e6; border-radius:10px; padding:14px; background:#fff; }
+    .card h2 { margin:0 0 10px; font-size:13px; font-weight:800; letter-spacing:.2px; }
+
+    .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+    label { font-size:12px; color:#333; }
+
+    select, button, textarea, input {
+      font: inherit;
+      border: 1px solid #d8d8d8;
+      border-radius: 8px;
+      padding: 10px 10px;
+      background: #fff;
+      color:#111;
+      outline: none;
+    }
+    select { min-width:220px; }
+    input { width:140px; }
+    textarea { width:100%; min-height:140px; line-height:1.35; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; }
+
+    button { cursor:pointer; font-weight:800; }
+    button.primary { background:#111; color:#fff; border-color:#111; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+
+    .mono { font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th, td { padding:8px 8px; border-bottom:1px solid #eee; text-align:left; vertical-align:top; }
+    th { color:#333; font-weight:900; background:#fafafa; }
+    tr:hover td { background:#fcfcfc; }
+
+    .status { font-size:12px; margin-top:8px; color:#444; }
+    .error { color:#b00; white-space:pre-wrap; }
+    .ok { color:#0a6; }
+
+    .signal { font-weight:900; }
+    .buyyes { color:#0b6; }
+    .buyno  { color:#c20; }
+    .pass   { color:#555; }
+
+    .box { border:1px solid #eee; border-radius:10px; padding:10px; background:#fcfcfc; }
+    .controls-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 980px) { .controls-grid { grid-template-columns:1fr; } }
+    .mini-btn { padding: 8px 10px; border-radius: 8px; }
+    .danger { border-color:#f2c6c6; background:#fff5f5; color:#900; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>High Temperature Prediction Market Guidance</h1>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <h2>Inputs</h2>
+
+        <div class="row" style="margin-bottom:10px;">
+          <div>
+            <label for="city">City</label><br/>
+            <select id="city">
+              <option value="den">den</option>
+              <option value="nyc">nyc</option>
+              <option value="dal">dal</option>
+              <option value="chi">chi</option>
+            </select>
+          </div>
+
+          <button id="btnHighs">Load</button>
+
+          <div style="flex:1"></div>
+
+          <button id="btnEval" class="primary">Run</button>
+        </div>
+
+        <div class="box">
+          <div class="controls-grid">
+            <div>
+              <label for="dateSel">Date</label><br/>
+              <select id="dateSel" disabled>
+                <option value="">—</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="tempSel">Temp</label><br/>
+              <select id="tempSel" disabled>
+                <option value="">—</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="yesCents">Yes</label><br/>
+              <input id="yesCents" inputmode="decimal" placeholder="cents" />
+            </div>
+
+            <div>
+              <label for="noCents">No</label><br/>
+              <input id="noCents" inputmode="decimal" placeholder="cents" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button id="btnAdd" class="primary" disabled>Add</button>
+            <button id="btnClear" class="danger mini-btn" disabled>Clear</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <div style="flex:1;">
+            <label for="builtLines">Queue</label>
+            <textarea id="builtLines" class="mono" spellcheck="false" readonly></textarea>
+          </div>
+        </div>
+
+        <div id="status" class="status"></div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <h2>Highs</h2>
+
+        <div style="overflow:auto; max-height: 470px;">
+          <table id="highsTable" style="display:none;">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>High</th>
+              </tr>
+            </thead>
+            <tbody id="highsBody"></tbody>
+          </table>
+        </div>
+
+        <div id="rawError" class="status error" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card" style="margin-top:16px;">
+      <h2>Results</h2>
+
+      <div style="overflow:auto; margin-top:10px;">
+        <table id="resultsTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>Contract</th>
+              <th>Market</th>
+              <th>Model</th>
+              <th>Fair</th>
+              <th>Edge</th>
+              <th>Signal</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+
+    const elCity = document.getElementById("city");
+    const btnHighs = document.getElementById("btnHighs");
+    const btnEval = document.getElementById("btnEval");
+
+    const elDateSel = document.getElementById("dateSel");
+    const elTempSel = document.getElementById("tempSel");
+    const elYes = document.getElementById("yesCents");
+    const elNo = document.getElementById("noCents");
+    const btnAdd = document.getElementById("btnAdd");
+    const btnClear = document.getElementById("btnClear");
+    const elBuilt = document.getElementById("builtLines");
+
+    const elStatus = document.getElementById("status");
+    const elRawError = document.getElementById("rawError");
+
+    const elHighsTable = document.getElementById("highsTable");
+    const elHighsBody = document.getElementById("highsBody");
+
+    const elResultsTable = document.getElementById("resultsTable");
+    const elResultsBody = document.getElementById("resultsBody");
+
+    let highs = {};       // dateISO -> highF
+    let builtLines = [];  // exact lines for backend
+
+    function setStatus(msg, cls="") {
+      elStatus.className = "status " + cls;
+      elStatus.textContent = msg || "";
+    }
+    function showError(msg) {
+      elRawError.style.display = "block";
+      elRawError.textContent = msg;
+    }
+    function clearError() {
+      elRawError.style.display = "none";
+      elRawError.textContent = "";
+    }
+
+    function isoToMDY(iso) {
+      const [y,m,d] = iso.split("-");
+      return `${m}/${d}/${y}`;
+    }
+
+    function parseNum(s) {
+      const x = String(s || "").trim();
+      if (!x) return null;
+      const v = Number(x);
+      if (!Number.isFinite(v)) return null;
+      return v;
+    }
+
+    function updateAddEnabled() {
+      const hasDate = !!elDateSel.value;
+      const hasTemp = !!elTempSel.value;
+      const yes = parseNum(elYes.value);
+      const no = parseNum(elNo.value);
+      btnAdd.disabled = !(hasDate && hasTemp && yes !== null && no !== null);
+    }
+
+    function rebuildQueue() {
+      elBuilt.value = builtLines.join("\n");
+      btnClear.disabled = builtLines.length === 0;
+    }
+
+    function populateDateDropdown() {
+      elDateSel.innerHTML = "";
+      const keys = Object.keys(highs).sort();
+      if (!keys.length) {
+        elDateSel.innerHTML = `<option value="">—</option>`;
+        elDateSel.disabled = true;
+        return;
+      }
+      for (const iso of keys) {
+        const opt = document.createElement("option");
+        opt.value = iso;
+        opt.textContent = iso;
+        elDateSel.appendChild(opt);
+      }
+      elDateSel.disabled = false;
+      elDateSel.value = keys[0];
+    }
+
+    function populateTempDropdownForDate() {
+      elTempSel.innerHTML = "";
+      const iso = elDateSel.value;
+      if (!iso || highs[iso] === undefined) {
+        elTempSel.innerHTML = `<option value="">—</option>`;
+        elTempSel.disabled = true;
+        return;
+      }
+
+      const mu = highs[iso];
+      const lo = Math.max(-50, mu - 20);
+      const hi = Math.min(140, mu + 20);
+
+      for (let t = lo; t <= hi; t += 1) {
+        const opt = document.createElement("option");
+        opt.value = String(t);
+        opt.textContent = String(t);
+        elTempSel.appendChild(opt);
+      }
+
+      elTempSel.disabled = false;
+      elTempSel.value = String(Math.round(mu));
+      updateAddEnabled();
+    }
+
+    async function loadHighs() {
+      clearError();
+      setStatus("Loading…");
+      btnHighs.disabled = true;
+      btnAdd.disabled = true;
+
+      highs = {};
+      elHighsBody.innerHTML = "";
+      elHighsTable.style.display = "none";
+      elResultsBody.innerHTML = "";
+      elResultsTable.style.display = "none";
+
+      elDateSel.disabled = true;
+      elTempSel.disabled = true;
+      elDateSel.innerHTML = `<option value="">—</option>`;
+      elTempSel.innerHTML = `<option value="">—</option>`;
+
+      try {
+        const code = elCity.value;
+        const r = await fetch(`${API_BASE}/api/highs?city=${encodeURIComponent(code)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        const list = data.highs || [];
+
+        for (const row of list) highs[row.date] = row.high_f;
+
+        for (const iso of Object.keys(highs).sort()) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td class="mono">${iso}</td><td>${highs[iso]}</td>`;
+          elHighsBody.appendChild(tr);
+        }
+        elHighsTable.style.display = list.length ? "table" : "none";
+
+        populateDateDropdown();
+        populateTempDropdownForDate();
+        setStatus("Ready", "ok");
+      } catch (e) {
+        showError(`Load failed:\n\n${e}`);
+        setStatus("", "");
+      } finally {
+        btnHighs.disabled = false;
+      }
+    }
+
+    function addLine() {
+      const iso = elDateSel.value;
+      const t = Number(elTempSel.value);
+      const yes = parseNum(elYes.value);
+      const no = parseNum(elNo.value);
+      if (!iso || !Number.isFinite(t) || yes === null || no === null) return;
+
+      const mdy = isoToMDY(iso);
+      const line = `${mdy} - ${t} - yes:${yes} / no:${no}`;
+
+      if (!builtLines.includes(line)) builtLines.push(line);
+      rebuildQueue();
+
+      elYes.value = "";
+      elNo.value = "";
+      updateAddEnabled();
+      setStatus("Added", "ok");
+    }
+
+    function clearAll() {
+      builtLines = [];
+      rebuildQueue();
+      elResultsBody.innerHTML = "";
+      elResultsTable.style.display = "none";
+      setStatus("", "");
+    }
+
+    function signalClass(sig) {
+      const x = (sig || "").toUpperCase();
+      if (x.includes("BUY YES")) return "signal buyyes";
+      if (x.includes("BUY NO"))  return "signal buyno";
+      return "signal pass";
+    }
+
+    async function evaluate() {
+      clearError();
+      elResultsBody.innerHTML = "";
+      elResultsTable.style.display = "none";
+
+      if (!builtLines.length) {
+        setStatus("Add first", "error");
+        return;
+      }
+
+      setStatus("Running…");
+      btnEval.disabled = true;
+
+      try {
+        const code = elCity.value;
+        const r = await fetch(`${API_BASE}/api/evaluate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ city: code, lines: builtLines })
+        });
+        if (!r.ok) {
+          const text = await r.text();
+          throw new Error(`HTTP ${r.status}\n${text}`);
+        }
+        const data = await r.json();
+        const results = data.results || [];
+
+        for (const x of results) {
+          if (x.error) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="mono">${(x.raw || "").replace(/</g,"&lt;")}</td>
+              <td colspan="5" class="mono" style="color:#b00;">${(x.error || "").replace(/</g,"&lt;")}</td>
+            `;
+            elResultsBody.appendChild(tr);
+            continue;
+          }
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="mono">${x.date} ≥ ${x.t}F</td>
+            <td class="mono">Y ${x.market_yes.toFixed(4)}<br/>N ${x.market_no.toFixed(4)}</td>
+            <td class="mono">μ ${x.mu.toFixed(1)}<br/>σ ${x.sigma.toFixed(1)}</td>
+            <td class="mono">${x.fair_yes.toFixed(4)}</td>
+            <td class="mono">${x.edge_yes.toFixed(4)}<br/>${x.edge_no.toFixed(4)}</td>
+            <td class="${signalClass(x.signal)}">${x.signal}</td>
+          `;
+          elResultsBody.appendChild(tr);
+        }
+
+        elResultsTable.style.display = results.length ? "table" : "none";
+        setStatus("Done", "ok");
+      } catch (e) {
+        showError(`Run failed:\n\n${e}`);
+        setStatus("", "");
+      } finally {
+        btnEval.disabled = false;
+      }
+    }
+
+    // Events
+    btnHighs.addEventListener("click", loadHighs);
+    btnAdd.addEventListener("click", addLine);
+    btnClear.addEventListener("click", clearAll);
+    btnEval.addEventListener("click", evaluate);
+
+    elDateSel.addEventListener("change", () => {
+      populateTempDropdownForDate();
+      updateAddEnabled();
+    });
+    elTempSel.addEventListener("change", updateAddEnabled);
+    elYes.addEventListener("input", updateAddEnabled);
+    elNo.addEventListener("input", updateAddEnabled);
+
+    window.addEventListener("load", () => {
+      setStatus("", "");
+      rebuildQueue();
+    });
+  </script>
+</body>
+</html>
