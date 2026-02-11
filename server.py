@@ -9,7 +9,6 @@ from dateutil import parser as dtparser
 import math
 import os
 import requests
-from io import BytesIO
 
 # --- drought helper (used by /api/drought) ---
 # Make sure drought_long.py is in the same folder as server.py
@@ -232,7 +231,6 @@ def api_now(city: str):
     info = CITIES[code]
     temp_f, tz_name, obs_time = nws_latest_obs(info["lat"], info["lon"])
 
-    # Return server time too (useful if obs unavailable)
     now_utc = datetime.now(timezone.utc).isoformat()
 
     return {
@@ -277,7 +275,6 @@ def api_evaluate_one(req: EvalOneRequest):
 
     info = CITIES[code]
 
-    # Forecast high (NWS)
     periods = nws_forecast_periods(info["lat"], info["lon"])
     highs = daily_daytime_highs(periods)
     if d not in highs:
@@ -287,14 +284,12 @@ def api_evaluate_one(req: EvalOneRequest):
     sigma = sigma_for(d)
     t = float(req.threshold_f)
 
-    # Nowcast floor: today's realized temp is a hard lower bound for today's high.
     temp_now, tz_name, obs_time = nws_latest_obs(info["lat"], info["lon"])
 
     mu_used = mu_forecast
     nowcast_note = "nowcast: none"
 
     if d == today and isinstance(temp_now, float):
-        # Hard bound: if current temp already >= threshold, probability is 1.
         if temp_now >= t:
             fair_yes = 1.0
             signal, edge_yes, edge_no, fair_no = decide(fair_yes, yes_price, no_price)
@@ -321,12 +316,10 @@ def api_evaluate_one(req: EvalOneRequest):
                 "notes": "nowcast: current temp already >= threshold → P=1",
             }
 
-        # Soft adjustment: if current temp is already above forecast-high, lift mu toward now.
         if temp_now > mu_forecast:
             mu_used = mu_forecast + 0.65 * (temp_now - mu_forecast)
             nowcast_note = f"nowcast: lifted μ toward current temp ({temp_now:.1f}F)"
         else:
-            # Even if current <= forecast, the high can't be below current.
             mu_used = max(mu_forecast, temp_now)
             nowcast_note = "nowcast: applied hard floor at current temp"
 
@@ -357,122 +350,209 @@ def api_evaluate_one(req: EvalOneRequest):
     }
 
 
-# ---------------- HRRR 2m temp (next 18 hours) via THREDDS NCSS ----------------
-HRRR_CATALOG = "http://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/catalog.xml"
+# ---------------- HRRR 2m temp (hourly series) via THREDDS NCSS ----------------
+HRRR_CATALOG = "https://thredds.ucar.edu/thredds/catalog/grib/NCEP/HRRR/CONUS_2p5km/catalog.xml"
 HRRR_VAR = "Temperature_height_above_ground"
 HRRR_CACHE = {"ts": 0.0, "ncss_url": None}
 
 
 def _get_hrrr_latest_ncss_url() -> str:
-    # Cache the resolved NCSS URL to avoid hammering THREDDS
-    now = datetime.utcnow().timestamp()
-    if HRRR_CACHE["ncss_url"] and (now - HRRR_CACHE["ts"] < 600):
-        return HRRR_CACHE["ncss_url"]
+    """
+    Resolve the latest HRRR CONUS 2.5km dataset NetcdfSubset (NCSS) endpoint.
+    Cached for 10 minutes.
+    """
+    now_ts = datetime.utcnow().timestamp()
+    if HRRR_CACHE["ncss_url"] and (now_ts - float(HRRR_CACHE["ts"]) < 600):
+        return str(HRRR_CACHE["ncss_url"])
 
-    from siphon.catalog import get_latest_access_url  # local import
-    latest = get_latest_access_url(HRRR_CATALOG, "NetcdfSubset")
-    HRRR_CACHE["ncss_url"] = latest
-    HRRR_CACHE["ts"] = now
-    return latest
+    from siphon.catalog import TDSCatalog  # local import to avoid startup issues on Render
+
+    cat = TDSCatalog(HRRR_CATALOG)
+    if not cat.datasets:
+        raise RuntimeError("HRRR catalog returned no datasets")
+
+    ds = cat.datasets[0]  # latest
+    if "NetcdfSubset" in ds.access_urls:
+        url = ds.access_urls["NetcdfSubset"]
+    else:
+        # fallback: find any access url that looks like ncss/netcdfsubset
+        url = None
+        for v in ds.access_urls.values():
+            lv = str(v).lower()
+            if "netcdfsubset" in lv or "ncss" in lv:
+                url = v
+                break
+        if not url:
+            raise RuntimeError("Could not find NetcdfSubset/NCSS access URL for latest HRRR dataset")
+
+    HRRR_CACHE["ncss_url"] = url
+    HRRR_CACHE["ts"] = now_ts
+    return str(url)
+
+
+def _open_ncss_bytes_as_dataset(raw_bytes: bytes):
+    from netCDF4 import Dataset  # local import
+    return Dataset("inmemory.nc", mode="r", memory=raw_bytes)  # type: ignore
+
+
+def _pick_time_var(ds) -> str:
+    # Prefer a variable literally named "time", else first var containing "time"
+    if "time" in ds.variables:
+        return "time"
+    for name in ds.variables.keys():
+        if "time" in name.lower():
+            return name
+    raise RuntimeError("No time variable found in HRRR response")
+
+
+def _extract_series_k(ds) -> list:
+    """
+    Return 1D list of temperature in Kelvin for the point request.
+    Handles (time,), (time, height), (height, time), etc.
+    """
+    if HRRR_VAR not in ds.variables:
+        raise RuntimeError(f"{HRRR_VAR} missing. Vars: {list(ds.variables.keys())[:60]}")
+
+    v = ds.variables[HRRR_VAR]
+    arr = v[:]
+    # netCDF4 returns masked arrays sometimes; treat like numpy-ish
+    ndim = getattr(arr, "ndim", 0)
+
+    if ndim == 1:
+        return [float(x) for x in arr]
+
+    if ndim == 2:
+        # decide which axis is time by looking at dimensions
+        dims = list(getattr(v, "dimensions", []))
+        time_axis = None
+        height_axis = None
+        for i, dname in enumerate(dims):
+            dl = dname.lower()
+            if "time" in dl:
+                time_axis = i
+            if "height" in dl:
+                height_axis = i
+
+        # If we can't find, assume axis0=time
+        if time_axis is None:
+            time_axis = 0
+        if height_axis is None:
+            height_axis = 1 if time_axis == 0 else 0
+
+        # choose height closest to 2m if we have a height coordinate var
+        h_idx = 0
+        h_dim_name = dims[height_axis] if height_axis < len(dims) else None
+        if h_dim_name and h_dim_name in ds.variables:
+            try:
+                heights = ds.variables[h_dim_name][:]
+                h_idx = int(min(range(len(heights)), key=lambda j: abs(float(heights[j]) - 2.0)))
+            except Exception:
+                h_idx = 0
+
+        # slice out along height, keep time
+        if time_axis == 0:
+            series = arr[:, h_idx]
+        else:
+            series = arr[h_idx, :]
+
+        return [float(x) for x in series]
+
+    # fallback: flatten best-effort
+    flat = []
+    try:
+        for x in arr.reshape(-1):
+            flat.append(float(x))
+    except Exception:
+        pass
+    return flat
 
 
 @app.get("/api/hrrr_2m")
-def api_hrrr_2m(city: str, hours: int = 18):
+def api_hrrr_2m(city: str, hours: int = 10):
+    """
+    Returns an hourly HRRR 2m temperature series for the next N hours (default 10).
+    """
     code = (city or "").strip().lower()
     if code not in CITIES:
         return {"error": "unknown_city", "allowed": list(CITIES.keys())}
 
-    hours = int(hours)
+    try:
+        hours = int(hours)
+    except Exception:
+        hours = 10
     if hours < 1:
         hours = 1
-    if hours > 36:
-        hours = 36
+    if hours > 18:
+        hours = 18
 
     info = CITIES[code]
     lat = info["lat"]
     lon = info["lon"]
 
-    # Resolve latest NCSS access
-    ncss_url = _get_hrrr_latest_ncss_url()
-
-    from siphon.ncss import NCSS  # local import
-    ncss = NCSS(ncss_url)
-    q = ncss.query()
-
-    start = datetime.utcnow()
-    end = start + timedelta(hours=hours)
-
-    q.lonlat_point(lon, lat).time_range(start, end).accept("netcdf4").variables(HRRR_VAR)
-    raw = ncss.get_data_raw(q)
-
-    # Read NetCDF from memory
     try:
-        from netCDF4 import Dataset, num2date
-    except Exception as e:
-        return {"error": "missing_netCDF4", "detail": str(e)}
+        ncss_url = _get_hrrr_latest_ncss_url()
+        from siphon.ncss import NCSS  # local import
 
-    ds = Dataset("inmemory.nc", mode="r", memory=raw)  # type: ignore
+        ncss = NCSS(ncss_url)
+        q = ncss.query()
 
-    # time var name can vary; find it
-    time_name = None
-    for name in ds.variables.keys():
-        if "time" == name.lower() or "time" in name.lower():
-            time_name = name
-            break
-    if not time_name or time_name not in ds.variables:
-        return {"error": "hrrr_time_missing"}
+        start = datetime.utcnow()
+        end = start + timedelta(hours=hours)
 
-    tvar = ds.variables[time_name]
-    times = num2date(tvar[:], units=tvar.units)  # type: ignore
+        q.lonlat_point(lon, lat)
+        q.time_range(start, end)
+        q.variables(HRRR_VAR)
+        q.accept("netcdf")  # returns netcdf bytes reliably
 
-    if HRRR_VAR not in ds.variables:
-        return {"error": "hrrr_var_missing", "var": HRRR_VAR}
+        raw = ncss.get_data_raw(q)
+        # Siphon returns raw bytes for get_data_raw when accept("netcdf")
+        if not isinstance(raw, (bytes, bytearray, memoryview)):
+            # try to coerce if it returned a file-like object
+            if hasattr(raw, "read"):
+                raw = raw.read()
+            else:
+                raise RuntimeError(f"Unexpected NCSS raw type: {type(raw)}")
 
-    v = ds.variables[HRRR_VAR]
+        from netCDF4 import num2date  # local import
 
-    # Variable dims typically include time + height + y + x for grids,
-    # but point query returns time x height (or just time).
-    arr = v[:]
-
-    # If height dimension exists, pick the first level.
-    # Prefer the level that corresponds to 2m if present; for height_above_ground, 2m is common.
-    # Point returns can be (time, height) or (time,).
-    if getattr(arr, "ndim", 0) == 2:
-        # choose the level closest to 2
-        hdim = None
-        for dn in v.dimensions:
-            if "height" in dn.lower():
-                hdim = dn
-                break
-        if hdim and hdim in ds.variables:
-            heights = ds.variables[hdim][:]
-            # find index closest to 2
-            idx = int(min(range(len(heights)), key=lambda i: abs(float(heights[i]) - 2.0)))
-            series_k = arr[:, idx]
-        else:
-            series_k = arr[:, 0]
-    else:
-        series_k = arr
-
-    out = []
-    for tdt, kval in zip(times, series_k):
+        ds = _open_ncss_bytes_as_dataset(bytes(raw))
         try:
-            k = float(kval)
-            f = (k - 273.15) * 9 / 5 + 32
-            out.append({"valid_utc": tdt.replace(tzinfo=timezone.utc).isoformat(), "temp_f": float(f)})
-        except Exception:
-            continue
+            tname = _pick_time_var(ds)
+            tvar = ds.variables[tname]
+            times = num2date(tvar[:], units=tvar.units)  # type: ignore
 
-    # Keep first N
-    out = out[:hours]
+            series_k = _extract_series_k(ds)
 
-    return {
-        "city": code,
-        "city_name": info["name"],
-        "ncss": ncss_url,
-        "hours": hours,
-        "series": out,
-    }
+            out = []
+            for tdt, kval in zip(times, series_k):
+                k = float(kval)
+                f = (k - 273.15) * 9 / 5 + 32
+                # num2date may return naive datetime; treat as UTC
+                if getattr(tdt, "tzinfo", None) is None:
+                    tdt = tdt.replace(tzinfo=timezone.utc)
+                else:
+                    tdt = tdt.astimezone(timezone.utc)
+                out.append({"valid_utc": tdt.isoformat(), "temp_f": float(f)})
+
+            # ensure only N items
+            out = out[:hours]
+
+        finally:
+            try:
+                ds.close()
+            except Exception:
+                pass
+
+        return {
+            "city": code,
+            "city_name": info["name"],
+            "ncss": ncss_url,
+            "hours": hours,
+            "series": out,
+        }
+
+    except Exception as e:
+        return {"error": "hrrr_unavailable", "detail": str(e)}
 
 
 # ---------------- DROUGHT API ----------------
