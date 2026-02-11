@@ -7,13 +7,9 @@
   <style>
     :root{
       --bg:#0a0c10;
-      --panel:#0f131a;
-      --panel2:#0c1016;
-      --line:#1b2330;
       --text:#e9eef7;
       --muted:#a0aec2;
       --blue:#7fb4ff;
-      --blue2:#a6ccff;
       --good:#2cc38a;
       --warn:#f3c969;
       --bad:#ff6b6b;
@@ -51,27 +47,6 @@
     .mini{border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
     .mini h4{margin:0 0 8px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
     .mini .val{font-size:14px;font-weight:900;color: var(--text);line-height:1.35;word-break: break-word;}
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(10,14,20,.55);
-      font-weight:900;
-      letter-spacing:.10em;
-      text-transform:uppercase;
-      font-size:11px;
-      color:#c2cde0;
-    }
-    .badge .bDot{width:9px;height:9px;border-radius:999px;background:#667;}
-    .badge.low .bDot{background: var(--good)}
-    .badge.vlow .bDot{background: var(--blue)}
-    .badge.med .bDot{background: var(--warn)}
-    .badge.high .bDot{background: var(--bad)}
-
     .chartWrap{margin-top:14px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;position:relative;}
     .legend{position:absolute;top:10px;right:12px;display:flex;gap:12px;align-items:center;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c2cde0;background: rgba(10,14,20,.65);border:1px solid rgba(255,255,255,.10);padding:8px 10px;border-radius: 10px;}
     .sw{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px;}
@@ -80,26 +55,42 @@
     canvas{width:100%;height:280px;display:block}
 
     .hrrrList{margin-top:12px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
-    .hrrrListTop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
-    .hrrrList h4{margin:0;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
-    .hrrrMeta{color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.06em}
+    .hrrrList h4{margin:0 0 10px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
     .hrrrRow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);}
     .hrrrRow:last-child{border-bottom:none;}
-    .hrrrT{color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.04em;}
-    .hrrrV{font-weight:900;}
-    .markHigh{
-      padding:2px 8px;
-      border-radius: 999px;
-      border:1px solid rgba(243,201,105,.35);
-      background: rgba(243,201,105,.10);
-      color: var(--warn);
+    .hrrrT{color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
+    .hrrrV{font-weight:900;display:flex;gap:10px;align-items:center;}
+    .badge{
+      font-size:11px;
       font-weight:900;
       letter-spacing:.10em;
       text-transform:uppercase;
-      font-size:10px;
-      margin-left:10px;
+      border:1px solid rgba(255,255,255,.14);
+      padding:3px 8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      color:#cfe2ff;
       white-space:nowrap;
     }
+
+    .riskBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-size:11px;
+    }
+    .riskDot{width:10px;height:10px;border-radius:999px;background:#667}
+    .riskDot.vlow{background: var(--good)}
+    .riskDot.low{background: rgba(44,195,138,.65)}
+    .riskDot.med{background: var(--warn)}
+    .riskDot.high{background: var(--bad)}
 
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
@@ -176,12 +167,12 @@
           </div>
 
           <div class="hrrrList">
-            <div class="hrrrListTop">
-              <h4>HRRR 2m temperature — next 12 hours</h4>
-              <div class="hrrrMeta" id="hrrrMeta">—</div>
+            <h4>HRRR 2m temperature — next 12 hours</h4>
+            <div id="hrrrMeta" class="hrrrRow" style="border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:10px;margin-bottom:6px;">
+              <div class="hrrrT">Status</div><div class="hrrrV" id="hrrrStatus">—</div>
             </div>
             <div id="hrrrBody">
-              <div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">—</div></div>
+              <div class="hrrrRow"><div class="hrrrT">—</div><div class="hrrrV">—</div></div>
             </div>
           </div>
 
@@ -220,14 +211,14 @@
             </div>
           </div>
 
-          <div class="miniGrid">
+          <div class="miniGrid" style="margin-top:12px;">
             <div class="mini">
-              <h4>HRRR High (Selected Date)</h4>
-              <div class="val" id="hrrrHigh">—</div>
+              <h4>HRRR vs NWS Risk</h4>
+              <div class="val" id="riskBox">—</div>
             </div>
             <div class="mini">
-              <h4>Risk (HRRR vs NWS)</h4>
-              <div class="val" id="riskBox">—</div>
+              <h4>HRRR High (12h)</h4>
+              <div class="val" id="hrrrHighBox">—</div>
             </div>
           </div>
 
@@ -251,11 +242,10 @@
   let latestMu = null;
   let latestSigma = null;
 
-  // For HRRR panel + risk calc
-  let latestTz = null;
-  let latestHrrrSeries = []; // [{valid_utc, temp_f}]
-  let latestHrrrHighForDate = null; // number
-  let latestNwsHighForDate = null;  // number (for selected date)
+  // HRRR cache (from /api/hrrr_four)
+  let hrrrFour = null;     // full payload
+  let hrrrTz = null;       // tz string from /api/now for selected city
+  let hrrrHigh12 = null;   // numeric max temp in displayed series (selected city)
 
   function setStatus(kind, text){
     const dot = $("dot");
@@ -293,15 +283,6 @@
       o.textContent = h.date;
       sel.appendChild(o);
     }
-    // set an initial NWS high for selected date
-    refreshNwsHighForSelectedDate();
-  }
-
-  function refreshNwsHighForSelectedDate(){
-    const d = $("date").value;
-    if(!d){ latestNwsHighForDate = null; return; }
-    const found = (latestHighs || []).find(x => x.date === d);
-    latestNwsHighForDate = found && typeof found.high_f === "number" ? found.high_f : null;
   }
 
   async function loadHighs(){
@@ -325,7 +306,23 @@
     }
   }
 
-  // ---- Local time + current temp (server gives tz + obs_time) ----
+  function formatLocal(dtIsoUtc, tz){
+    try{
+      const d = new Date(dtIsoUtc);
+      const fmt = new Intl.DateTimeFormat(undefined, {
+        timeZone: tz,
+        weekday:"short",
+        hour:"numeric",
+        minute:"2-digit",
+        month:"short",
+        day:"numeric"
+      });
+      return fmt.format(d);
+    }catch(e){
+      return (dtIsoUtc || "—").replace("T"," ").replace("Z"," UTC");
+    }
+  }
+
   async function refreshNowPanel(){
     const city = $("city").value;
     try{
@@ -334,26 +331,19 @@
       if(data.error){
         $("localTime").textContent = "—";
         $("currentTemp").textContent = "—";
-        latestTz = null;
+        hrrrTz = null;
         return;
       }
 
-      latestTz = data.tz || null;
+      hrrrTz = data.tz || null;
 
-      if(latestTz){
-        const fmt = new Intl.DateTimeFormat(undefined, {
-          timeZone: latestTz,
-          weekday:"short",
-          hour:"numeric",
-          minute:"2-digit",
-          month:"short",
-          day:"numeric"
-        });
-        $("localTime").textContent = fmt.format(new Date());
+      // Show nice local time if tz exists, else fallback to obs timestamp
+      if(hrrrTz){
+        $("localTime").textContent = formatLocal(new Date().toISOString(), hrrrTz);
       }else{
-        // fallback: show obs/server stamp
+        const tz = data.tz || "—";
         const obs = data.obs_time || data.server_utc || "—";
-        $("localTime").textContent = obs;
+        $("localTime").textContent = `${obs} (${tz})`;
       }
 
       if(typeof data.temp_f === "number"){
@@ -364,173 +354,84 @@
     }catch(e){
       $("localTime").textContent = "—";
       $("currentTemp").textContent = "—";
-      latestTz = null;
+      hrrrTz = null;
     }
   }
 
-  function fmtLocalFromUtc(isoUtc){
+  async function loadHrrrFour(hours=12){
+    $("hrrrStatus").textContent = "Loading…";
     try{
-      if(!latestTz) return isoUtc.replace("T"," ").replace("Z"," UTC");
-      const d = new Date(isoUtc);
-      const fmt = new Intl.DateTimeFormat(undefined, {
-        timeZone: latestTz,
-        weekday:"short",
-        hour:"numeric",
-        minute:"2-digit",
-        month:"short",
-        day:"numeric"
-      });
-      return fmt.format(d);
-    }catch(e){
-      return String(isoUtc);
-    }
-  }
-
-  function localDateFromUtc(isoUtc){
-    try{
-      if(!latestTz) return null;
-      const d = new Date(isoUtc);
-      // format YYYY-MM-DD in the target tz
-      const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: latestTz,
-        year:"numeric", month:"2-digit", day:"2-digit"
-      }).formatToParts(d);
-      const y = parts.find(p=>p.type==="year")?.value;
-      const m = parts.find(p=>p.type==="month")?.value;
-      const da = parts.find(p=>p.type==="day")?.value;
-      if(y && m && da) return `${y}-${m}-${da}`;
-      return null;
-    }catch(e){
-      return null;
-    }
-  }
-
-  // ---- HRRR next 12 hours, plus HRRR high for selected date ----
-  async function refreshHrrr(){
-    const city = $("city").value;
-    const body = $("hrrrBody");
-    const meta = $("hrrrMeta");
-    body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">Loading…</div></div>`;
-    meta.textContent = "—";
-    latestHrrrSeries = [];
-    latestHrrrHighForDate = null;
-    $("hrrrHigh").textContent = "—";
-
-    try{
-      // Pull 30 hours so we can compute a “selected-date” high reliably
-      const res = await fetch(`/api/hrrr_2m?city=${encodeURIComponent(city)}&hours=30`);
+      const res = await fetch(`/api/hrrr_four?hours=${encodeURIComponent(hours)}`);
       const data = await res.json();
       if(data.error){
-        body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">${data.error}</div></div>`;
-        meta.textContent = "hrrr_unavailable";
+        hrrrFour = null;
+        $("hrrrStatus").textContent = data.error;
         return;
       }
-
-      const series = data.series || [];
-      latestHrrrSeries = series;
-
-      meta.textContent = `source: HRRR · horizon: 30h`;
-
-      if(!series.length){
-        body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">No data</div></div>`;
-        return;
-      }
-
-      // Determine selected date (YYYY-MM-DD)
-      const selectedDate = $("date").value || null;
-
-      // Compute HRRR high for selected date using local date conversion
-      let best = null;
-      for(const row of series){
-        if(typeof row.temp_f !== "number") continue;
-        const ld = localDateFromUtc(row.valid_utc);
-        if(selectedDate && ld && ld !== selectedDate) continue;
-        best = (best === null) ? row.temp_f : Math.max(best, row.temp_f);
-      }
-      latestHrrrHighForDate = (typeof best === "number") ? best : null;
-
-      if(latestHrrrHighForDate !== null){
-        $("hrrrHigh").textContent = `${latestHrrrHighForDate.toFixed(1)}°F`;
-      }else{
-        $("hrrrHigh").textContent = "—";
-      }
-
-      // Render NEXT 12 HOURS list (always)
-      const next12 = series.slice(0, 12);
-      // Find the max within those 12 (for label in list)
-      let max12 = null;
-      for(const row of next12){
-        if(typeof row.temp_f !== "number") continue;
-        max12 = (max12 === null) ? row.temp_f : Math.max(max12, row.temp_f);
-      }
-
-      body.innerHTML = "";
-      for(const row of next12){
-        const local = fmtLocalFromUtc(row.valid_utc || "—");
-        const v = (typeof row.temp_f === "number") ? row.temp_f.toFixed(1)+"°F" : "—";
-        const isHigh12 = (max12 !== null && typeof row.temp_f === "number" && Math.abs(row.temp_f - max12) < 0.05);
-
-        const el = document.createElement("div");
-        el.className = "hrrrRow";
-        el.innerHTML = `
-          <div class="hrrrT">${local}${isHigh12 ? `<span class="markHigh">high (next 12h)</span>` : ""}</div>
-          <div class="hrrrV">${v}</div>
-        `;
-        body.appendChild(el);
-      }
-
+      hrrrFour = data;
+      const asof = data.asof_utc ? data.asof_utc.replace("T"," ").replace("Z"," UTC") : "—";
+      $("hrrrStatus").textContent = `OK · asof ${asof}`;
     }catch(e){
-      body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">Network error</div></div>`;
-      meta.textContent = "hrrr_unavailable";
+      hrrrFour = null;
+      $("hrrrStatus").textContent = "Network error";
     }
   }
 
-  // ---- Risk (HRRR vs NWS forecast high) ----
-  function riskBadgeHtml(level, text){
-    const cls = level; // vlow/low/med/high
-    return `<span class="badge ${cls}"><span class="bDot"></span>${text}</span>`;
-  }
+  function renderHrrrSelectedCity(){
+    const city = $("city").value;
+    const body = $("hrrrBody");
+    body.innerHTML = "";
 
-  function computeRisk(signal){
-    // Need both highs
-    const hrrrHigh = latestHrrrHighForDate;
-    const nwsHigh = latestNwsHighForDate;
+    hrrrHigh12 = null;
+    $("hrrrHighBox").textContent = "—";
 
-    if(!(typeof hrrrHigh === "number") || !(typeof nwsHigh === "number")){
-      return {html: "—", detail: null};
+    if(!hrrrFour || !hrrrFour.cities || !hrrrFour.cities[city]){
+      const el = document.createElement("div");
+      el.className = "hrrrRow";
+      el.innerHTML = `<div class="hrrrT">HRRR</div><div class="hrrrV">hrrr_unavailable</div>`;
+      body.appendChild(el);
+      return;
     }
 
-    const diff = hrrrHigh - nwsHigh; // + means HRRR warmer than NWS
-
-    // Rules you gave:
-    // BUY YES: HRRR 2 lower => high risk; 1 lower => medium; same => low; 1 above+ => very low
-    // BUY NO: same but opposite direction (HRRR warmer makes NO riskier)
-    let level = "low";
-    let label = "LOW RISK";
-
-    const isBuyYes = (signal || "").toUpperCase().includes("BUY YES");
-    const isBuyNo  = (signal || "").toUpperCase().includes("BUY NO");
-
-    if(isBuyYes){
-      if(diff <= -2) { level="high"; label="HIGH RISK"; }
-      else if(diff === -1) { level="med"; label="MEDIUM RISK"; }
-      else if(diff === 0) { level="low"; label="LOW RISK"; }
-      else { level="vlow"; label="VERY LOW RISK"; }
-    } else if(isBuyNo){
-      // reverse direction
-      if(diff >= 2) { level="high"; label="HIGH RISK"; }
-      else if(diff === 1) { level="med"; label="MEDIUM RISK"; }
-      else if(diff === 0) { level="low"; label="LOW RISK"; }
-      else { level="vlow"; label="VERY LOW RISK"; }
-    } else {
-      return {html: "—", detail: null};
+    const series = hrrrFour.cities[city].series || [];
+    if(!series.length){
+      const el = document.createElement("div");
+      el.className = "hrrrRow";
+      el.innerHTML = `<div class="hrrrT">HRRR</div><div class="hrrrV">No data</div>`;
+      body.appendChild(el);
+      return;
     }
 
-    const detail = `HRRR high ${hrrrHigh.toFixed(1)}°F vs NWS high ${nwsHigh.toFixed(0)}°F (Δ ${diff.toFixed(1)}°F)`;
-    return {html: `${riskBadgeHtml(level,label)}<div style="margin-top:8px;color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.04em;">${detail}</div>`, detail};
+    // Determine max temp in list (forecast high over next 12h)
+    let maxT = -1e9;
+    for(const r of series){
+      if(typeof r.temp_f === "number") maxT = Math.max(maxT, r.temp_f);
+    }
+    if(isFinite(maxT)) hrrrHigh12 = maxT;
+
+    if(typeof hrrrHigh12 === "number"){
+      $("hrrrHighBox").textContent = `${hrrrHigh12.toFixed(1)}°F`;
+    }
+
+    // Render rows; mark the max value with a badge
+    for(const r of series){
+      const tLocal = (hrrrTz && r.valid_utc) ? formatLocal(r.valid_utc, hrrrTz) : (r.valid_utc || "—");
+      const v = (typeof r.temp_f === "number") ? r.temp_f.toFixed(1)+"°F" : "—";
+      const isHigh = (typeof r.temp_f === "number" && typeof hrrrHigh12 === "number" && Math.abs(r.temp_f - hrrrHigh12) < 0.05);
+
+      const el = document.createElement("div");
+      el.className = "hrrrRow";
+      el.innerHTML = `
+        <div class="hrrrT">${tLocal}</div>
+        <div class="hrrrV">
+          <span>${v}</span>
+          ${isHigh ? `<span class="badge">Forecast high</span>` : ``}
+        </div>`;
+      body.appendChild(el);
+    }
   }
 
-  // ---- Chart (same prob math as backend) ----
+  // ---- Chart (same math as backend) ----
   function erf(x){
     const sign = x >= 0 ? 1 : -1;
     x = Math.abs(x);
@@ -612,6 +513,76 @@
     return fairAtT;
   }
 
+  function riskFromDelta(signal, delta){
+    // delta = HRRR_high - NWS_high
+    if(!isFinite(delta)) return null;
+
+    const s = (signal || "").toUpperCase();
+    let level = null;
+
+    if(s === "BUY YES"){
+      // HRRR lower than NWS => worse for YES
+      if(delta <= -2) level = "high";
+      else if(delta === -1) level = "med";
+      else if(delta === 0) level = "low";
+      else if(delta >= 1) level = "vlow";
+      else level = "med";
+    } else if(s === "BUY NO"){
+      // HRRR higher than NWS => worse for NO
+      if(delta >= 2) level = "high";
+      else if(delta === 1) level = "med";
+      else if(delta === 0) level = "low";
+      else if(delta <= -1) level = "vlow";
+      else level = "med";
+    } else {
+      return null;
+    }
+    return level;
+  }
+
+  function riskLabel(level){
+    if(level === "vlow") return "Very low risk";
+    if(level === "low") return "Low risk";
+    if(level === "med") return "Medium risk";
+    if(level === "high") return "High risk";
+    return "—";
+  }
+
+  function renderRisk(signal, nwsHigh){
+    const box = $("riskBox");
+    if(typeof hrrrHigh12 !== "number" || typeof nwsHigh !== "number"){
+      box.textContent = "—";
+      return;
+    }
+
+    const delta = Math.round((hrrrHigh12 - nwsHigh) * 10) / 10;
+    const level = riskFromDelta(signal, delta);
+
+    if(!level){
+      box.textContent = "—";
+      return;
+    }
+
+    box.innerHTML = `
+      <span class="riskBadge">
+        <span class="riskDot ${level}"></span>
+        ${riskLabel(level)}
+      </span>
+      <span style="margin-left:10px;color:rgba(255,255,255,.55);font-weight:900;">
+        Δ(HRRR−NWS) ${delta > 0 ? "+" : ""}${delta.toFixed(1)}°F
+      </span>
+    `;
+  }
+
+  async function refreshHrrrUI(){
+    // ensure we have tz first for local formatting, then ensure HRRR loaded
+    await refreshNowPanel();
+    if(!hrrrFour){
+      await loadHrrrFour(12);
+    }
+    renderHrrrSelectedCity();
+  }
+
   async function evaluate(){
     const city = $("city").value;
     const date = $("date").value;
@@ -655,13 +626,11 @@
       latestMu = (typeof data.mu === "number") ? data.mu : null;
       latestSigma = (typeof data.sigma === "number") ? data.sigma : null;
 
-      // Keep NWS forecast high from response (this is the comparison baseline)
-      latestNwsHighForDate = (typeof data.mu_forecast_high === "number") ? data.mu_forecast_high : latestNwsHighForDate;
-
       $("signal").textContent = data.signal;
+
       const muTxt = (typeof data.mu === "number") ? `${data.mu.toFixed(1)}°F` : "—";
       const muF = (typeof data.mu_forecast_high === "number") ? `${data.mu_forecast_high.toFixed(1)}°F` : "—";
-      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ(nowcast) ${muTxt} · μ(forecast) ${muF}`;
+      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ(nowcast) ${muTxt} · μ(NWS high) ${muF}`;
 
       $("fairYes").textContent = pct(fairYes);
       $("fairNo").textContent = pct(fairNo);
@@ -672,9 +641,11 @@
       const sgForChart = (latestSigma ?? 7.5);
       drawChart(muForChart, sgForChart, yourYes, t);
 
-      // Risk box (needs HRRR high too)
-      const r = computeRisk(data.signal);
-      $("riskBox").innerHTML = r.html;
+      // Ensure HRRR UI is up-to-date before risk calc
+      await refreshHrrrUI();
+
+      const nwsHigh = (typeof data.mu_forecast_high === "number") ? data.mu_forecast_high : null;
+      renderRisk(data.signal, nwsHigh);
 
       setStatus("ok", "OK");
     }catch(e){
@@ -684,19 +655,7 @@
 
   $("city").addEventListener("change", async ()=>{
     await loadHighs();
-    refreshNwsHighForSelectedDate();
-    await refreshNowPanel();
-    await refreshHrrr();
-    // Update risk in case last eval exists
-    const r = computeRisk($("signal").textContent || "");
-    $("riskBox").innerHTML = r.html || "—";
-  });
-
-  $("date").addEventListener("change", async ()=>{
-    refreshNwsHighForSelectedDate();
-    await refreshHrrr(); // recompute HRRR high for selected date
-    const r = computeRisk($("signal").textContent || "");
-    $("riskBox").innerHTML = r.html || "—";
+    await refreshHrrrUI();
   });
 
   $("go").addEventListener("click", evaluate);
@@ -706,11 +665,9 @@
     loadHighs().then(async ()=>{
       $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
       $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
-      refreshNwsHighForSelectedDate();
-      await refreshNowPanel();
-      await refreshHrrr();
+      await loadHrrrFour(12);
+      await refreshHrrrUI();
       $("riskBox").textContent = "—";
-      $("hrrrHigh").textContent = "—";
       drawChart(70, 7.5, 0.5, 73);
     });
   })();
