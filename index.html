@@ -139,7 +139,7 @@
           </div>
 
           <div class="hrrrList">
-            <h4>HRRR 2m temperature — next 18 hours</h4>
+            <h4>HRRR 2m temperature — next 10 hours</h4>
             <div id="hrrrBody">
               <div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">—</div></div>
             </div>
@@ -199,6 +199,8 @@
   let latestHighs = [];
   let latestMu = null;
   let latestSigma = null;
+  let latestTz = null;
+  let nowTick = null;
 
   function setStatus(kind, text){
     const dot = $("dot");
@@ -259,38 +261,63 @@
     }
   }
 
+  function startLocalTimeTicker(){
+    if(nowTick) clearInterval(nowTick);
+    const tick = ()=>{
+      if(!latestTz){
+        $("localTime").textContent = "—";
+        return;
+      }
+      try{
+        const fmt = new Intl.DateTimeFormat(undefined, {
+          timeZone: latestTz,
+          weekday: "short",
+          hour: "numeric",
+          minute: "2-digit",
+          month: "short",
+          day: "numeric"
+        });
+        $("localTime").textContent = fmt.format(new Date());
+      }catch(e){
+        $("localTime").textContent = "—";
+      }
+    };
+    tick();
+    nowTick = setInterval(tick, 1000 * 30);
+  }
+
   async function refreshNowPanel(){
     const city = $("city").value;
     try{
       const res = await fetch(`/api/now?city=${encodeURIComponent(city)}`);
       const data = await res.json();
       if(data.error){
+        latestTz = null;
         $("localTime").textContent = "—";
         $("currentTemp").textContent = "—";
         return;
       }
-      // We can't reliably convert tz->localized string without a tz database in browser,
-      // so we show station timestamp + tz label if present.
-      const tz = data.tz || "—";
-      const obs = data.obs_time || data.server_utc || "—";
-      $("localTime").textContent = `${obs} (${tz})`;
+      latestTz = data.tz || null;
+      startLocalTimeTicker();
+
       if(typeof data.temp_f === "number"){
         $("currentTemp").textContent = `${data.temp_f.toFixed(1)}°F`;
       }else{
         $("currentTemp").textContent = "—";
       }
     }catch(e){
+      latestTz = null;
       $("localTime").textContent = "—";
       $("currentTemp").textContent = "—";
     }
   }
 
-  async function refreshHrrr18(){
+  async function refreshHrrr10(){
     const city = $("city").value;
     const body = $("hrrrBody");
     body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">Loading…</div></div>`;
     try{
-      const res = await fetch(`/api/hrrr_2m?city=${encodeURIComponent(city)}&hours=18`);
+      const res = await fetch(`/api/hrrr_2m?city=${encodeURIComponent(city)}&hours=10`);
       const data = await res.json();
       if(data.error){
         body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">${data.error}</div></div>`;
@@ -317,7 +344,6 @@
 
   // ---- Chart (uses the SAME probability math as backend) ----
   function erf(x){
-    // Abramowitz & Stegun approximation
     const sign = x >= 0 ? 1 : -1;
     x = Math.abs(x);
     const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
@@ -372,7 +398,6 @@
     ctx.lineTo(padL+plotW, padT+plotH);
     ctx.stroke();
 
-    // Fair curve: P(high >= threshold) across threshold range
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
@@ -451,7 +476,6 @@
       $("yourYes").textContent = money(yourYes);
       $("yourNo").textContent = money(yourNo);
 
-      // chart uses mu/sigma, so it stays consistent across thresholds
       const muForChart = (latestMu ?? 70);
       const sgForChart = (latestSigma ?? 7.5);
       drawChart(muForChart, sgForChart, yourYes, t);
@@ -465,7 +489,7 @@
   $("city").addEventListener("change", async ()=>{
     await loadHighs();
     await refreshNowPanel();
-    await refreshHrrr18();
+    await refreshHrrr10();
   });
 
   $("go").addEventListener("click", evaluate);
@@ -476,7 +500,7 @@
       $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
       $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
       await refreshNowPanel();
-      await refreshHrrr18();
+      await refreshHrrr10();
       drawChart(70, 7.5, 0.5, 73);
     });
   })();
