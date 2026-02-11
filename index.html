@@ -27,7 +27,7 @@
     .brand{display:flex;flex-direction:column;gap:8px}
     .brand h1{margin:0;font-size:48px;font-weight:900;letter-spacing:.18em;line-height:1;color:var(--text);}
     .sub{color:var(--muted);font-weight:800;letter-spacing:.08em;font-size:13px;}
-    .nav{display:flex;gap:10px;justify-content:flex-end;padding-top:6px;}
+    .nav{display:flex;gap:10px;justify-content:flex-end; padding-top:6px;}
     .nav a{color:var(--text);text-decoration:none;font-weight:900;padding:10px 12px;border:1px solid rgba(255,255,255,.10);background: rgba(255,255,255,.03);border-radius: 12px;}
     .nav a:hover{border-color: rgba(127,180,255,.35)}
     .grid{display:grid;grid-template-columns: 1.1fr 1fr;gap:18px;margin-top:22px;}
@@ -57,17 +57,15 @@
     .sw.fair{background: var(--blue)}
     .sw.you{background: var(--warn)}
     canvas{width:100%;height:280px;display:block}
-
-    .thin{color:var(--muted);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
-    .hrrrList{margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
-    .hrrrGrid{display:grid;grid-template-columns: 1fr 1fr 1fr;gap:10px}
-    .hrrrItem{border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 10px;padding:10px}
-    .hrrrItem .t{font-weight:900}
-    .hrrrItem .s{color:var(--muted);font-weight:800;font-size:12px;margin-top:4px}
+    .hrrrList{margin-top:12px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
+    .hrrrList h4{margin:0 0 10px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
+    .hrrrRow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+    .hrrrRow:last-child{border-bottom:none;}
+    .hrrrT{color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
+    .hrrrV{font-weight:900;}
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
       .brand h1{font-size:36px}
-      .hrrrGrid{grid-template-columns: 1fr 1fr}
     }
   </style>
 </head>
@@ -79,6 +77,7 @@
         <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
       </div>
       <div class="nav">
+        <!-- EXACTLY ONE BUTTON that leads to drought.html -->
         <a href="/drought.html">Drought Odds</a>
       </div>
     </header>
@@ -128,7 +127,6 @@
             </div>
           </div>
 
-          <!-- Current conditions moved OFF the header -->
           <div class="miniGrid" style="margin-top:14px;">
             <div class="mini">
               <h4>Local Time</h4>
@@ -140,11 +138,11 @@
             </div>
           </div>
 
-          <!-- HRRR 18h -->
           <div class="hrrrList">
-            <div class="thin">HRRR 2m Temperature — Next 18 Hours</div>
-            <div class="note" id="hrrrNote" style="margin-top:6px;">—</div>
-            <div class="hrrrGrid" id="hrrrGrid" style="margin-top:10px;"></div>
+            <h4>HRRR 2m temperature — next 18 hours</h4>
+            <div id="hrrrBody">
+              <div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">—</div></div>
+            </div>
           </div>
 
           <div class="status" id="status">
@@ -197,24 +195,25 @@
 <script>
   const $ = (id)=>document.getElementById(id);
   const cityNames = { den:"Denver", nyc:"New York City", dal:"Dallas", chi:"Chicago" };
-  const cityGeo = {
-    den: {lat:39.7392, lon:-104.9903},
-    nyc: {lat:40.7128, lon:-74.0060},
-    dal: {lat:32.7767, lon:-96.7970},
-    chi: {lat:41.8781, lon:-87.6298},
-  };
 
   let latestHighs = [];
-  let latestTz = null;
-  let timer = null;
+  let latestMu = null;
+  let latestSigma = null;
 
   function setStatus(kind, text){
     const dot = $("dot");
     dot.className = "dot " + (kind || "ok");
     $("statusText").textContent = text;
   }
-  function pct(x){ return (x===null||x===undefined||Number.isNaN(x)) ? "—" : (x*100).toFixed(1)+"%"; }
-  function money(x){ return (x===null||x===undefined||Number.isNaN(x)) ? "—" : (x*100).toFixed(1)+"¢"; }
+
+  function pct(x){
+    if (x === null || x === undefined || Number.isNaN(x)) return "—";
+    return (x*100).toFixed(1) + "%";
+  }
+  function money(x){
+    if (x === null || x === undefined || Number.isNaN(x)) return "—";
+    return (x*100).toFixed(1) + "¢";
+  }
 
   function populateTemps(){
     const sel = $("t");
@@ -227,6 +226,7 @@
     }
     sel.value = "73";
   }
+
   function populateDates(){
     const sel = $("date");
     sel.innerHTML = "";
@@ -244,114 +244,95 @@
     $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
 
     setStatus("busy", "Loading…");
-    const res = await fetch(`/api/highs?city=${encodeURIComponent(city)}`);
-    const data = await res.json();
-    if(data.error){
-      setStatus("err", data.error);
-      return;
+    try{
+      const res = await fetch(`/api/highs?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      if(data.error){
+        setStatus("err", data.error);
+        return;
+      }
+      latestHighs = data.highs || [];
+      populateDates();
+      setStatus("ok", "Ready");
+    }catch(e){
+      setStatus("err", "Network error");
     }
-    latestHighs = data.highs || [];
-    populateDates();
-    setStatus("ok", "Ready");
-  }
-
-  // ---- Current Temp + Local Time (client-side NWS) ----
-  async function fetchNwsNow(city){
-    const {lat, lon} = cityGeo[city];
-    const points = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
-    const tzName = points?.properties?.timeZone || null;
-    latestTz = tzName;
-
-    const stationsUrl = points?.properties?.observationStations;
-    if(!stationsUrl) return {tempF:null, tz:tzName};
-
-    const stations = await fetch(stationsUrl, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
-    const feats = stations?.features || [];
-    if(!feats.length) return {tempF:null, tz:tzName};
-
-    const stationId = feats[0]?.properties?.stationIdentifier;
-    if(!stationId) return {tempF:null, tz:tzName};
-
-    const obs = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
-    const tC = obs?.properties?.temperature?.value;
-    const tempF = (typeof tC === "number") ? (tC*9/5 + 32) : null;
-    return {tempF, tz:tzName};
-  }
-
-  function updateLocalTimeDisplay(){
-    if(!latestTz){ $("localTime").textContent = "—"; return; }
-    const fmt = new Intl.DateTimeFormat(undefined, {
-      timeZone: latestTz,
-      weekday: "short",
-      hour: "numeric",
-      minute: "2-digit",
-      month: "short",
-      day: "numeric"
-    });
-    $("localTime").textContent = fmt.format(new Date());
   }
 
   async function refreshNowPanel(){
     const city = $("city").value;
     try{
-      const {tempF, tz} = await fetchNwsNow(city);
-      latestTz = tz || latestTz;
-      updateLocalTimeDisplay();
-      $("currentTemp").textContent = (tempF==null || Number.isNaN(tempF)) ? "—" : `${tempF.toFixed(1)}°F`;
-    }catch{
-      updateLocalTimeDisplay();
+      const res = await fetch(`/api/now?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      if(data.error){
+        $("localTime").textContent = "—";
+        $("currentTemp").textContent = "—";
+        return;
+      }
+      // We can't reliably convert tz->localized string without a tz database in browser,
+      // so we show station timestamp + tz label if present.
+      const tz = data.tz || "—";
+      const obs = data.obs_time || data.server_utc || "—";
+      $("localTime").textContent = `${obs} (${tz})`;
+      if(typeof data.temp_f === "number"){
+        $("currentTemp").textContent = `${data.temp_f.toFixed(1)}°F`;
+      }else{
+        $("currentTemp").textContent = "—";
+      }
+    }catch(e){
+      $("localTime").textContent = "—";
       $("currentTemp").textContent = "—";
     }
   }
 
-  function startNowTicker(){
-    if(timer) clearInterval(timer);
-    refreshNowPanel();
-    timer = setInterval(()=>{ refreshNowPanel(); }, 60000);
-  }
-
-  // ---- HRRR panel ----
-  function renderHrrr(series, runUtc){
-    const grid = $("hrrrGrid");
-    grid.innerHTML = "";
-    const fmt = new Intl.DateTimeFormat(undefined, {
-      timeZone: latestTz || undefined,
-      hour: "numeric",
-      minute: "2-digit"
-    });
-
-    for(const p of series){
-      const d = new Date(p.valid_utc);
-      const item = document.createElement("div");
-      item.className = "hrrrItem";
-      item.innerHTML = `
-        <div class="t">${fmt.format(d)} — ${p.t2m_f}°F</div>
-        <div class="s">${p.valid_utc.replace(".000","")}</div>
-      `;
-      grid.appendChild(item);
-    }
-    $("hrrrNote").textContent = `Run: ${runUtc} (UTC)`;
-  }
-
-  async function loadHrrr(){
+  async function refreshHrrr18(){
     const city = $("city").value;
-    $("hrrrNote").textContent = "Loading HRRR…";
-    $("hrrrGrid").innerHTML = "";
+    const body = $("hrrrBody");
+    body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">Loading…</div></div>`;
     try{
-      const res = await fetch(`/api/hrrr_t2m?city=${encodeURIComponent(city)}&hours=18`);
+      const res = await fetch(`/api/hrrr_2m?city=${encodeURIComponent(city)}&hours=18`);
       const data = await res.json();
       if(data.error){
-        $("hrrrNote").textContent = `HRRR unavailable: ${data.detail || data.error}`;
+        body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">${data.error}</div></div>`;
         return;
       }
-      renderHrrr(data.series || [], data.run_utc || "—");
+      const series = data.series || [];
+      if(!series.length){
+        body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">No data</div></div>`;
+        return;
+      }
+      body.innerHTML = "";
+      for(const row of series){
+        const t = (row.valid_utc || "—").replace("T"," ").replace("+00:00","Z");
+        const v = (typeof row.temp_f === "number") ? row.temp_f.toFixed(1)+"°F" : "—";
+        const el = document.createElement("div");
+        el.className = "hrrrRow";
+        el.innerHTML = `<div class="hrrrT">${t}</div><div class="hrrrV">${v}</div>`;
+        body.appendChild(el);
+      }
     }catch(e){
-      $("hrrrNote").textContent = "HRRR network error";
+      body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">Network error</div></div>`;
     }
   }
 
-  // ---- Chart (uses backend curve points) ----
-  function drawChartFromCurve(curve, yourP, tVal){
+  // ---- Chart (uses the SAME probability math as backend) ----
+  function erf(x){
+    // Abramowitz & Stegun approximation
+    const sign = x >= 0 ? 1 : -1;
+    x = Math.abs(x);
+    const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    const t = 1/(1+p*x);
+    const y = 1 - (((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+    return sign*y;
+  }
+  function normCdf(x){ return 0.5*(1+erf(x/Math.sqrt(2))); }
+  function probGE(mu,sigma,thr){
+    if(!(sigma>0)) return mu>=thr ? 1 : 0;
+    const z = (thr - 0.5 - mu)/sigma;
+    return Math.max(0, Math.min(1, 1 - normCdf(z)));
+  }
+
+  function drawChart(mu, sigma, yourP, tVal){
     const c = $("chart");
     const ctx = c.getContext("2d");
     const w = c.width, h = c.height;
@@ -369,17 +350,13 @@
     ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
     for(let i=0;i<=4;i++){
       const y = padT + (plotH * (i/4));
-      ctx.beginPath();
-      ctx.moveTo(padL, y);
-      ctx.lineTo(padL+plotW, y);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+plotW, y); ctx.stroke();
       const p = (1 - i/4);
       ctx.fillText(Math.round(p*100)+"%", 10, y+4);
     }
 
-    // x range from curve thresholds
-    const t0 = Math.min(...curve.map(p=>p.threshold_f));
-    const t1 = Math.max(...curve.map(p=>p.threshold_f));
+    const t0 = Math.max(30, tVal - 10);
+    const t1 = Math.min(120, tVal + 10);
 
     ctx.fillStyle = "rgba(255,255,255,.35)";
     for(let i=0;i<=4;i++){
@@ -395,32 +372,31 @@
     ctx.lineTo(padL+plotW, padT+plotH);
     ctx.stroke();
 
-    // fair line from actual curve
+    // Fair curve: P(high >= threshold) across threshold range
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
-    curve.forEach((p, i)=>{
-      const tv = p.threshold_f;
-      const prob = Math.max(0, Math.min(1, p.fair_yes));
-      const x = padL + (plotW * ((tv - t0)/(t1-t0)));
-      const y = padT + (plotH * (1 - prob));
+    for(let i=0;i<=160;i++){
+      const thr = t0 + (t1-t0)*(i/160);
+      const p = probGE(mu, sigma, thr);
+      const x = padL + (plotW * ((thr - t0)/(t1-t0)));
+      const y = padT + (plotH * (1 - p));
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
+    }
     ctx.stroke();
 
-    // points at selected threshold (tVal)
+    const fairAtT = probGE(mu, sigma, tVal);
+
     const xP = padL + (plotW * ((tVal - t0)/(t1-t0)));
-
-    const fairAt = curve.find(p=>p.threshold_f === Math.round(tVal))?.fair_yes;
-    const fairP = (typeof fairAt === "number") ? fairAt : 0.5;
-
-    const yF = padT + (plotH * (1 - Math.max(0, Math.min(1, fairP))));
+    const yF = padT + (plotH * (1 - fairAtT));
     ctx.fillStyle = "rgba(127,180,255,.95)";
     ctx.beginPath(); ctx.arc(xP, yF, 5, 0, Math.PI*2); ctx.fill();
 
-    const yY = padT + (plotH * (1 - Math.max(0, Math.min(1, yourP))));
+    const yP = padT + (plotH * (1 - Math.max(0, Math.min(1, yourP))));
     ctx.fillStyle = "rgba(243,201,105,.95)";
-    ctx.beginPath(); ctx.arc(xP, yY, 6, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(xP, yP, 6, 0, Math.PI*2); ctx.fill();
+
+    return fairAtT;
   }
 
   async function evaluate(){
@@ -453,7 +429,7 @@
         $("fairNo").textContent = "—";
         $("yourYes").textContent = "—";
         $("yourNo").textContent = "—";
-        drawChartFromCurve([{threshold_f: t-10, fair_yes:0.5},{threshold_f:t, fair_yes:0.5},{threshold_f:t+10, fair_yes:0.5}], 0.5, t);
+        drawChart(70, 7.5, 0.5, t);
         return;
       }
 
@@ -462,24 +438,23 @@
       const yourYes = data.market_yes;
       const yourNo = data.market_no;
 
-      $("signal").textContent = data.signal;
+      latestMu = (typeof data.mu === "number") ? data.mu : null;
+      latestSigma = (typeof data.sigma === "number") ? data.sigma : null;
 
-      const muF = data.mu_forecast_high;
-      const muN = data.mu_nowcast_high;
-      const nowT = (typeof data.now_temp_f === "number") ? `${data.now_temp_f.toFixed(1)}°F` : "—";
-      $("subline").textContent = `Fair YES ${pct(fairYes)} · forecast μ ${muF}°F · nowcast μ ${muN}°F · now ${nowT}`;
+      $("signal").textContent = data.signal;
+      const muTxt = (typeof data.mu === "number") ? `${data.mu.toFixed(1)}°F` : "—";
+      const muF = (typeof data.mu_forecast_high === "number") ? `${data.mu_forecast_high.toFixed(1)}°F` : "—";
+      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ(nowcast) ${muTxt} · μ(forecast) ${muF}`;
 
       $("fairYes").textContent = pct(fairYes);
       $("fairNo").textContent = pct(fairNo);
       $("yourYes").textContent = money(yourYes);
       $("yourNo").textContent = money(yourNo);
 
-      const curve = Array.isArray(data.curve) ? data.curve : [];
-      if(curve.length >= 2){
-        drawChartFromCurve(curve, yourYes, t);
-      }else{
-        drawChartFromCurve([{threshold_f: t-10, fair_yes:0.5},{threshold_f:t, fair_yes:fairYes},{threshold_f:t+10, fair_yes:0.5}], yourYes, t);
-      }
+      // chart uses mu/sigma, so it stays consistent across thresholds
+      const muForChart = (latestMu ?? 70);
+      const sgForChart = (latestSigma ?? 7.5);
+      drawChart(muForChart, sgForChart, yourYes, t);
 
       setStatus("ok", "OK");
     }catch(e){
@@ -489,21 +464,21 @@
 
   $("city").addEventListener("change", async ()=>{
     await loadHighs();
-    startNowTicker();
-    loadHrrr();
+    await refreshNowPanel();
+    await refreshHrrr18();
   });
 
   $("go").addEventListener("click", evaluate);
 
   (function init(){
     populateTemps();
-    loadHighs().then(()=>{
-      startNowTicker();
-      loadHrrr();
+    loadHighs().then(async ()=>{
+      $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
+      $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
+      await refreshNowPanel();
+      await refreshHrrr18();
+      drawChart(70, 7.5, 0.5, 73);
     });
-    drawChartFromCurve([{threshold_f:63, fair_yes:0.5},{threshold_f:73, fair_yes:0.5},{threshold_f:83, fair_yes:0.5}], 0.5, 73);
-    $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
-    $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
   })();
 </script>
 </body>
