@@ -47,53 +47,7 @@
       letter-spacing:.08em;
       font-size:13px;
     }
-    .topRight{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      align-items:flex-end;
-      padding-top:6px;
-    }
-    .pill{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      min-width: 280px;
-      justify-content:space-between;
-    }
-    .pill .k{
-      color:var(--muted);
-      font-weight:900;
-      letter-spacing:.10em;
-      text-transform:uppercase;
-      font-size:11px;
-    }
-    .pill .v{
-      font-weight:900;
-      font-size:14px;
-      letter-spacing:.02em;
-      color:var(--text);
-    }
-    .nav{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-    }
-    .nav a{
-      color:var(--text);
-      text-decoration:none;
-      font-weight:900;
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      border-radius: 12px;
-    }
-    .nav a:hover{border-color: rgba(127,180,255,.35)}
+
     .grid{
       display:grid;
       grid-template-columns: 1.1fr 1fr;
@@ -159,6 +113,26 @@
       cursor:pointer;
     }
     .btn:hover{filter:brightness(1.05)}
+
+    .btnSecondary{
+      width:100%;
+      margin-top:12px;
+      padding:14px 16px;
+      border-radius: 10px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      font-weight:900;
+      font-size:16px;
+      letter-spacing:.04em;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .btnSecondary:hover{border-color: rgba(127,180,255,.35)}
+
     .status{
       display:flex;align-items:center;gap:10px;margin-top:14px;
       color: var(--muted);
@@ -240,11 +214,43 @@
     .sw.fair{background: var(--blue)}
     .sw.you{background: var(--warn)}
     canvas{width:100%;height:280px;display:block}
+
+    .pillRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+    .pill{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      justify-content:space-between;
+    }
+    .pill .k{
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      font-size:11px;
+    }
+    .pill .v{
+      font-weight:900;
+      font-size:14px;
+      letter-spacing:.02em;
+      color:var(--text);
+      text-align:right;
+    }
+
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
       .brand h1{font-size:36px}
-      .pill{min-width: unset; width: 100%}
-      .topRight{align-items:stretch}
+      .pillRow{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -254,20 +260,6 @@
       <div class="brand">
         <h1>MetApplication</h1>
         <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
-      </div>
-
-      <div class="topRight">
-        <div class="pill">
-          <div class="k">Local Time</div>
-          <div class="v" id="localTime">—</div>
-        </div>
-        <div class="pill">
-          <div class="k">Current Temp</div>
-          <div class="v" id="currentTemp">—</div>
-        </div>
-        <div class="nav">
-          <a href="/drought.html">Drought Odds</a>
-        </div>
       </div>
     </header>
 
@@ -316,6 +308,9 @@
             </div>
           </div>
 
+          <!-- ONLY ONE BUTTON that goes to drought.html -->
+          <a class="btnSecondary" href="/drought.html">Open Drought Odds</a>
+
           <div class="status" id="status">
             <span class="dot ok" id="dot"></span>
             <span id="statusText">Ready</span>
@@ -329,6 +324,19 @@
           <div id="cityTop" style="font-weight:900;letter-spacing:.14em;color:#c2cde0;text-transform:uppercase;">—</div>
         </div>
         <div class="card-b">
+
+          <!-- current time/temp NOT in header -->
+          <div class="pillRow">
+            <div class="pill">
+              <div class="k">Local Time</div>
+              <div class="v" id="localTime">—</div>
+            </div>
+            <div class="pill">
+              <div class="k">Current Temp</div>
+              <div class="v" id="currentTemp">—</div>
+            </div>
+          </div>
+
           <div class="big" id="signal">—</div>
           <div class="subtitle" id="subline">—</div>
 
@@ -368,17 +376,7 @@
 
   const cityNames = { den:"Denver", nyc:"New York City", dal:"Dallas", chi:"Chicago" };
 
-  // lat/lon only used for NWS client-side fetch (current temp + time zone)
-  const cityGeo = {
-    den: {lat:39.7392, lon:-104.9903},
-    nyc: {lat:40.7128, lon:-74.0060},
-    dal: {lat:32.7767, lon:-96.7970},
-    chi: {lat:41.8781, lon:-87.6298},
-  };
-
   let latestHighs = []; // [{date:"YYYY-MM-DD", high_f:..}]
-  let latestCity = "den";
-  let latestTz = null;
   let timer = null;
 
   function setStatus(kind, text){
@@ -400,7 +398,6 @@
   function populateTemps(){
     const sel = $("t");
     sel.innerHTML = "";
-    // reasonable range
     for(let f=40; f<=110; f+=1){
       const o = document.createElement("option");
       o.value = String(f);
@@ -423,7 +420,6 @@
 
   async function loadHighs(){
     const city = $("city").value;
-    latestCity = city;
     $("cityTag").textContent = (cityNames[city] || "—").toUpperCase();
     $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
 
@@ -443,101 +439,71 @@
     }
   }
 
-  // ---- Current Temp + Local Time (client-side NWS) ----
-  async function fetchNwsNow(city){
-    const {lat, lon} = cityGeo[city];
-    // points -> timezone + stations
-    const points = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
-      headers: {"Accept":"application/geo+json"}
-    }).then(r=>r.json());
-
-    const tzName = points?.properties?.timeZone || null;
-    latestTz = tzName;
-
-    // stations -> first station -> latest obs
-    const stationsUrl = points?.properties?.observationStations;
-    if(!stationsUrl) return {tempF:null, tz:tzName};
-
-    const stations = await fetch(stationsUrl, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
-    const feats = stations?.features || [];
-    if(!feats.length) return {tempF:null, tz:tzName};
-
-    const stationId = feats[0]?.properties?.stationIdentifier;
-    if(!stationId) return {tempF:null, tz:tzName};
-
-    const obs = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`, {
-      headers: {"Accept":"application/geo+json"}
-    }).then(r=>r.json());
-
-    const tC = obs?.properties?.temperature?.value;
-    const tempF = (typeof tC === "number") ? (tC*9/5 + 32) : null;
-    return {tempF, tz:tzName};
-  }
-
-  function updateLocalTimeDisplay(){
-    if(!latestTz){
-      $("localTime").textContent = "—";
-      return;
+  // ---- Current Temp + Local Time (server-side /api/now) ----
+  function fmtLocal(iso){
+    try{
+      const d = new Date(iso);
+      // nice short format
+      return new Intl.DateTimeFormat(undefined, {
+        weekday:"short",
+        month:"short",
+        day:"numeric",
+        hour:"numeric",
+        minute:"2-digit"
+      }).format(d);
+    }catch(e){
+      return "—";
     }
-    const fmt = new Intl.DateTimeFormat(undefined, {
-      timeZone: latestTz,
-      weekday: "short",
-      hour: "numeric",
-      minute: "2-digit",
-      month: "short",
-      day: "numeric"
-    });
-    $("localTime").textContent = fmt.format(new Date());
   }
 
   async function refreshNowPanel(){
     const city = $("city").value;
     try{
-      const {tempF, tz} = await fetchNwsNow(city);
-      latestTz = tz || latestTz;
-      updateLocalTimeDisplay();
-      if(tempF === null || Number.isNaN(tempF)){
+      const res = await fetch(`/api/now?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      if(data.error){
+        $("localTime").textContent = "—";
         $("currentTemp").textContent = "—";
+        return;
+      }
+
+      // prefer obs time if available; else server local time
+      const lt = data.obs_local_time || data.server_local_time;
+      $("localTime").textContent = lt ? fmtLocal(lt) : "—";
+
+      const tf = data.temp_f;
+      if(typeof tf === "number" && !Number.isNaN(tf)){
+        $("currentTemp").textContent = `${tf.toFixed(1)}°F`;
       }else{
-        $("currentTemp").textContent = `${tempF.toFixed(1)}°F`;
+        $("currentTemp").textContent = "—";
       }
     }catch(e){
-      // don't hard-fail UI; just show dashes
-      updateLocalTimeDisplay();
+      $("localTime").textContent = "—";
       $("currentTemp").textContent = "—";
     }
   }
 
   function startNowTicker(){
     if(timer) clearInterval(timer);
-    // refresh temp/time immediately, then every 60s
     refreshNowPanel();
-    timer = setInterval(()=>{
-      updateLocalTimeDisplay();
-      // refresh obs every 60s too (simple)
-      refreshNowPanel();
-    }, 60000);
+    timer = setInterval(refreshNowPanel, 60000);
   }
 
-  // ---- Chart ----
-  function drawChart(fairP, yourP, tVal){
+  // ---- Chart: backend curve (/api/curve) ----
+  function drawChartFromPoints(points, tVal, fairAtT, yourAtT){
     const c = $("chart");
     const ctx = c.getContext("2d");
     const w = c.width, h = c.height;
 
-    // clear
     ctx.clearRect(0,0,w,h);
 
-    // padding
     const padL = 54, padR = 22, padT = 18, padB = 36;
     const plotW = w - padL - padR;
     const plotH = h - padT - padB;
 
-    // axes style
+    // grid + y labels
     ctx.strokeStyle = "rgba(255,255,255,.10)";
     ctx.lineWidth = 1;
-
-    // grid + y labels
     ctx.fillStyle = "rgba(255,255,255,.35)";
     ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
     for(let i=0;i<=4;i++){
@@ -550,9 +516,9 @@
       ctx.fillText(Math.round(p*100)+"%", 10, y+4);
     }
 
-    // x range: around threshold for display
-    const t0 = Math.max(30, tVal - 10);
-    const t1 = Math.min(120, tVal + 10);
+    // x domain from returned points
+    const t0 = points.length ? points[0].t : (tVal - 10);
+    const t1 = points.length ? points[points.length-1].t : (tVal + 10);
 
     // x labels
     ctx.fillStyle = "rgba(255,255,255,.35)";
@@ -570,43 +536,55 @@
     ctx.lineTo(padL+plotW, padT+plotH);
     ctx.stroke();
 
-    // draw fair price "function" as a smooth step around tVal
-    // This is just a UI curve centered on the chosen threshold, anchored at fairP at tVal.
-    // (Backend fairP is the real value used.)
-    function sigmoid(x){ return 1/(1+Math.exp(-x)); }
-    const k = 0.55;
-    const xAt = (tv)=> (tv - tVal);
-    const baseAt = sigmoid(0); // 0.5
-    // scale curve so it passes through (tVal, fairP)
-    const offset = fairP - baseAt;
-
+    // fair curve
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
-    for(let i=0;i<=160;i++){
-      const tv = t0 + (t1-t0)*(i/160);
-      let p = sigmoid(-k * xAt(tv)) + offset;
-      p = Math.max(0, Math.min(1, p));
+    for(let i=0;i<points.length;i++){
+      const tv = points[i].t;
+      const p = Math.max(0, Math.min(1, points[i].p_yes));
       const x = padL + (plotW * ((tv - t0)/(t1-t0)));
       const y = padT + (plotH * (1 - p));
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
     ctx.stroke();
 
-    // point: your price at tVal
+    // x position for chosen threshold
     const xP = padL + (plotW * ((tVal - t0)/(t1-t0)));
-    const yP = padT + (plotH * (1 - Math.max(0, Math.min(1, yourP))));
+
+    // your point (YES price)
+    const yY = padT + (plotH * (1 - Math.max(0, Math.min(1, yourAtT))));
     ctx.fillStyle = "rgba(243,201,105,.95)";
     ctx.beginPath();
-    ctx.arc(xP, yP, 6, 0, Math.PI*2);
+    ctx.arc(xP, yY, 6, 0, Math.PI*2);
     ctx.fill();
 
-    // point: fair price at tVal
-    const yF = padT + (plotH * (1 - Math.max(0, Math.min(1, fairP))));
+    // fair point at tVal
+    const yF = padT + (plotH * (1 - Math.max(0, Math.min(1, fairAtT))));
     ctx.fillStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
     ctx.arc(xP, yF, 5, 0, Math.PI*2);
     ctx.fill();
+  }
+
+  async function drawChartBackend(city, date, tVal, fairYes, yourYes){
+    // show a window around threshold
+    const minF = Math.max(30, tVal - 10);
+    const maxF = Math.min(120, tVal + 10);
+    const url = `/api/curve?city=${encodeURIComponent(city)}&date_str=${encodeURIComponent(date)}&min_f=${encodeURIComponent(minF)}&max_f=${encodeURIComponent(maxF)}&steps=61`;
+
+    try{
+      const res = await fetch(url);
+      const data = await res.json();
+      if(data.error || !Array.isArray(data.points)){
+        // fallback simple flat chart
+        drawChartFromPoints([{t:minF,p_yes:0.5},{t:maxF,p_yes:0.5}], tVal, fairYes, yourYes);
+        return;
+      }
+      drawChartFromPoints(data.points, tVal, fairYes, yourYes);
+    }catch(e){
+      drawChartFromPoints([{t:minF,p_yes:0.5},{t:maxF,p_yes:0.5}], tVal, fairYes, yourYes);
+    }
   }
 
   async function evaluate(){
@@ -645,7 +623,7 @@
         $("fairNo").textContent = "—";
         $("yourYes").textContent = "—";
         $("yourNo").textContent = "—";
-        drawChart(0.5, 0.5, t);
+        await drawChartBackend(city, date, t, 0.5, 0.5);
         return;
       }
 
@@ -655,15 +633,18 @@
       const yourNo = data.market_no;
 
       $("signal").textContent = data.signal;
-      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ ${data.mu_forecast_high ?? data.mu}°F`;
+
+      // show nowcast in subline (mu is nowcast-adjusted in server.py)
+      const mu = (typeof data.mu === "number") ? data.mu : null;
+      const sig = (typeof data.sigma === "number") ? data.sigma : null;
+      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ ${mu !== null ? mu.toFixed(1) : "—"}°F · σ ${sig !== null ? sig.toFixed(1) : "—"}°F`;
 
       $("fairYes").textContent = pct(fairYes);
       $("fairNo").textContent = pct(fairNo);
       $("yourYes").textContent = money(yourYes);
       $("yourNo").textContent = money(yourNo);
 
-      // plot fair curve and user point (using YES side)
-      drawChart(fairYes, yourYes, t);
+      await drawChartBackend(city, date, t, fairYes, yourYes);
 
       setStatus("ok", "OK");
     }catch(e){
@@ -681,7 +662,9 @@
   (function init(){
     populateTemps();
     loadHighs().then(()=>startNowTicker());
-    drawChart(0.5, 0.5, 73);
+    // initial chart placeholder
+    drawChartFromPoints([{t:63,p_yes:0.5},{t:83,p_yes:0.5}], 73, 0.5, 0.5);
+
     $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
     $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
   })();
