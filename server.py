@@ -3,12 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from pydantic import BaseModel
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from dateutil import parser as dtparser
-from zoneinfo import ZoneInfo
 
 import math
 import os
+import io
 import requests
 
 # --- drought helper (used by /api/drought) ---
@@ -18,7 +18,7 @@ from drought_long import evaluate_city  # noqa: E402
 
 # ---------------- CONFIG ----------------
 USER_AGENT = "metapplication/1.0 (contact: you@example.com)"
-TIMEOUT = 12
+TIMEOUT = 18
 
 # City codes used by the frontend
 CITIES = {
@@ -34,8 +34,11 @@ ENTRY_BUFFER = 0.01
 
 SIGMA_BY_LEAD_DAYS = {0: 2.5, 1: 3.0, 2: 4.0, 3: 5.0, 4: 6.0, 5: 7.0}
 DEFAULT_SIGMA = 7.5
-
 MAX_DAYS_AHEAD = 14
+
+# HRRR (NOMADS filter)
+HRRR_FILTER = "https://nomads.ncep.noaa.gov/cgi-bin/filter_hrrr_2d.pl"
+HRRR_BBOX_DEG = 0.30  # small box around point for tiny subset
 # --------------------------------------
 
 
@@ -57,89 +60,17 @@ def http_get_json(url: str, headers=None, params=None):
     return r.json()
 
 
-def nws_points(lat: float, lon: float) -> dict:
-    return http_get_json(
+def nws_forecast_periods(lat: float, lon: float) -> list[dict]:
+    points = http_get_json(
         f"https://api.weather.gov/points/{lat},{lon}",
         headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
     )
-
-
-def nws_forecast_periods(lat: float, lon: float) -> list[dict]:
-    points = nws_points(lat, lon)
     forecast_url = points["properties"]["forecast"]
     fc = http_get_json(
         forecast_url,
         headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
     )
     return fc["properties"]["periods"]
-
-
-def nws_hourly_periods(lat: float, lon: float) -> list[dict]:
-    points = nws_points(lat, lon)
-    hourly_url = points["properties"].get("forecastHourly")
-    if not hourly_url:
-        return []
-    fc = http_get_json(
-        hourly_url,
-        headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-    )
-    return fc["properties"]["periods"]
-
-
-def nws_observation_now(lat: float, lon: float) -> dict:
-    """
-    Returns:
-      {
-        "temp_f": float|None,
-        "obs_time_utc": "ISO"|None,
-        "local_time": "ISO"|None,
-        "timezone": "America/...",
-        "station": "KXXX"|None
-      }
-    """
-    points = nws_points(lat, lon)
-    tz = points["properties"].get("timeZone") or "UTC"
-
-    stations_url = points["properties"].get("observationStations")
-    if not stations_url:
-        return {"temp_f": None, "obs_time_utc": None, "local_time": None, "timezone": tz, "station": None}
-
-    stations = http_get_json(
-        stations_url,
-        headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-    )
-    feats = stations.get("features") or []
-    if not feats:
-        return {"temp_f": None, "obs_time_utc": None, "local_time": None, "timezone": tz, "station": None}
-
-    station_id = feats[0].get("properties", {}).get("stationIdentifier") or feats[0].get("id")
-    station_url = feats[0].get("id")
-    if not station_url:
-        return {"temp_f": None, "obs_time_utc": None, "local_time": None, "timezone": tz, "station": station_id}
-
-    obs = http_get_json(
-        f"{station_url}/observations/latest",
-        headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-        params={"require_qc": "true"},
-    )
-    props = obs.get("properties", {}) or {}
-    t_c = props.get("temperature", {}).get("value", None)
-    ts = props.get("timestamp", None)
-
-    temp_f = None
-    if isinstance(t_c, (int, float)) and t_c is not None:
-        temp_f = (float(t_c) * 9.0 / 5.0) + 32.0
-
-    local_time = None
-    if ts:
-        try:
-            dt_utc = dtparser.isoparse(ts)
-            dt_local = dt_utc.astimezone(ZoneInfo(tz))
-            local_time = dt_local.isoformat()
-        except Exception:
-            local_time = None
-
-    return {"temp_f": temp_f, "obs_time_utc": ts, "local_time": local_time, "timezone": tz, "station": station_id}
 
 
 def daily_daytime_highs(periods: list[dict]) -> dict[date, int]:
@@ -154,13 +85,48 @@ def daily_daytime_highs(periods: list[dict]) -> dict[date, int]:
     return out
 
 
+def nws_current_temp_f(lat: float, lon: float) -> tuple[float | None, str | None]:
+    """
+    Current observed temp (°F) + ISO time from NWS station obs.
+    """
+    try:
+        points = http_get_json(
+            f"https://api.weather.gov/points/{lat},{lon}",
+            headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
+        )
+        stations_url = points["properties"].get("observationStations")
+        if not stations_url:
+            return None, None
+        stations = http_get_json(
+            stations_url,
+            headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
+        )
+        feats = stations.get("features") or []
+        if not feats:
+            return None, None
+        sid = feats[0]["properties"].get("stationIdentifier")
+        if not sid:
+            return None, None
+        obs = http_get_json(
+            f"https://api.weather.gov/stations/{sid}/observations/latest",
+            headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
+        )
+        tC = obs["properties"]["temperature"]["value"]
+        tF = (tC * 9 / 5 + 32) if isinstance(tC, (int, float)) else None
+        ot = obs["properties"].get("timestamp")
+        return tF, ot
+    except Exception:
+        return None, None
+
+
 def norm_cdf(x: float) -> float:
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
 
 def prob_ge(mu: float, sigma: float, threshold: float) -> float:
     """
-    P(High >= threshold) with a continuity correction.
+    P(High >= threshold) with continuity correction.
+    threshold in °F.
     """
     if sigma <= 0:
         return 1.0 if mu >= threshold else 0.0
@@ -248,144 +214,159 @@ def api_highs(city: str):
     return {"city": code, "city_name": info["name"], "highs": highs_list}
 
 
-@app.get("/api/now")
-def api_now(city: str):
-    code = (city or "").strip().lower()
-    if code not in CITIES:
-        return {"error": "unknown_city", "allowed": list(CITIES.keys())}
+# ---------------- HRRR 2m TEMP ----------------
+def _utcnow():
+    return datetime.now(timezone.utc)
 
-    info = CITIES[code]
-    now = nws_observation_now(info["lat"], info["lon"])
 
-    # also return a “server-side” local time (even if obs time missing)
-    tz = now.get("timezone") or "UTC"
-    server_local = datetime.now(tz=ZoneInfo(tz)).isoformat()
+def _hrrr_run_candidates():
+    """
+    Try last ~4 possible hourly runs (UTC).
+    """
+    now = _utcnow()
+    for back in range(0, 4):
+        t = now - timedelta(hours=back)
+        ymd = t.strftime("%Y%m%d")
+        hh = t.strftime("%H")
+        yield ymd, hh
 
-    return {
-        "city": code,
-        "city_name": info["name"],
-        "timezone": tz,
-        "server_local_time": server_local,
-        "obs_local_time": now.get("local_time"),
-        "obs_time_utc": now.get("obs_time_utc"),
-        "temp_f": now.get("temp_f"),
-        "station": now.get("station"),
+
+def _hrrr_filter_download(ymd: str, hh: str, fxx: int, lon: float, lat: float) -> bytes:
+    """
+    Download a tiny GRIB2 subset for TMP @ 2m in a small bbox around the point.
+    """
+    leftlon = lon - HRRR_BBOX_DEG
+    rightlon = lon + HRRR_BBOX_DEG
+    bottomlat = lat - HRRR_BBOX_DEG
+    toplat = lat + HRRR_BBOX_DEG
+
+    file = f"hrrr.t{hh}z.wrfsfcf{fxx:02d}.grib2"
+    # NOMADS filter expects dir like /hrrr.YYYYMMDD/conus
+    params = {
+        "file": file,
+        "dir": f"/hrrr.{ymd}/conus",
+        "var_TMP": "on",
+        "lev_2_m_above_ground": "on",
+        "subregion": "",
+        "leftlon": f"{leftlon:.4f}",
+        "rightlon": f"{rightlon:.4f}",
+        "toplat": f"{toplat:.4f}",
+        "bottomlat": f"{bottomlat:.4f}",
     }
+    r = session.get(HRRR_FILTER, params=params, timeout=TIMEOUT, headers={"User-Agent": USER_AGENT})
+    r.raise_for_status()
+    return r.content
 
 
-def _nowcast_mu_sigma_for_date(city_lat: float, city_lon: float, target_d: date, daily_mu: float) -> tuple[float, float, dict]:
+def _parse_grib2_point_temp_f(grib_bytes: bytes, lon: float, lat: float) -> float:
     """
-    For today: blend in current obs + hourly forecast remaining max.
-    For future dates: fall back to daily_mu + sigma_for.
+    Parse subset GRIB2 and return nearest-gridpoint TMP @ 2m in °F.
+    Requires: xarray + cfgrib + eccodes.
     """
-    info = {"used_nowcast": False}
+    import xarray as xr  # type: ignore
 
-    today = datetime.now().astimezone().date()
-    base_sigma = sigma_for(target_d)
+    bio = io.BytesIO(grib_bytes)
 
-    if target_d != today:
-        return float(daily_mu), float(base_sigma), info
+    # cfgrib needs a file-like path in some environments; BytesIO works in many,
+    # but to be safest we write to a temp file.
+    import tempfile
 
-    info["used_nowcast"] = True
+    with tempfile.NamedTemporaryFile(suffix=".grib2", delete=True) as tf:
+        tf.write(bio.read())
+        tf.flush()
 
-    # current obs
-    obs = nws_observation_now(city_lat, city_lon)
-    cur_f = obs.get("temp_f")
-    tz = obs.get("timezone") or "UTC"
+        ds = xr.open_dataset(tf.name, engine="cfgrib")
 
-    # hourly remaining max for today
-    hourly = nws_hourly_periods(city_lat, city_lon)
-    now_local = datetime.now(tz=ZoneInfo(tz))
-    max_rem = None
-    hours_left = None
-
-    temps = []
-    for p in hourly:
-        try:
-            st = dtparser.isoparse(p["startTime"]).astimezone(ZoneInfo(tz))
-        except Exception:
-            continue
-        if st.date() != today:
-            continue
-        if st < now_local:
-            continue
-        t = p.get("temperature")
-        if isinstance(t, (int, float)):
-            temps.append(float(t))
-
-    if temps:
-        max_rem = max(temps)
-
-    # crude hours left estimate: to 23:59 local
-    end_local = datetime(now_local.year, now_local.month, now_local.day, 23, 59, tzinfo=ZoneInfo(tz))
-    hours_left = max(0.0, (end_local - now_local).total_seconds() / 3600.0)
-
-    # mu_now = best guess of max: at least current temp, at least forecast daily high, at least remaining hourly max
-    mu_now = float(daily_mu)
-    if isinstance(cur_f, (int, float)):
-        mu_now = max(mu_now, float(cur_f))
-    if isinstance(max_rem, (int, float)):
-        mu_now = max(mu_now, float(max_rem))
-
-    # tighten sigma late day:
-    # early day ~2.5; late day ~1.5 (but never below 1.2)
-    if hours_left is None:
-        sigma_now = max(1.2, min(2.5, base_sigma))
+    if "t2m" in ds.data_vars:
+        vname = "t2m"
     else:
-        sigma_now = max(1.2, min(2.5, 1.2 + 0.06 * hours_left * 10.0))  # ~1.2..2.5
+        # some builds name it "t" or "TMP_2maboveground"
+        vname = list(ds.data_vars.keys())[0]
 
-    info.update({
-        "obs_temp_f": cur_f,
-        "hourly_max_remaining_f": max_rem,
-        "hours_left_today": hours_left,
-        "timezone": tz,
-    })
+    # Identify lat/lon coords
+    latc = None
+    lonc = None
+    for cand in ("latitude", "lat"):
+        if cand in ds.coords:
+            latc = ds.coords[cand]
+            break
+    for cand in ("longitude", "lon"):
+        if cand in ds.coords:
+            lonc = ds.coords[cand]
+            break
+    if latc is None or lonc is None:
+        raise RuntimeError("HRRR parse failed: lat/lon coords not found in subset.")
 
-    return float(mu_now), float(sigma_now), info
+    # Nearest selection (handles 2D lat/lon grids)
+    # xarray nearest works if coords are 1D; for 2D we compute manual nearest.
+    import numpy as np  # type: ignore
+
+    latv = latc.values
+    lonv = lonc.values
+
+    # normalize lon grids if needed
+    lon_target = lon
+    if np.nanmax(lonv) > 180 and lon_target < 0:
+        lon_target = lon_target + 360
+
+    if latv.ndim == 2 and lonv.ndim == 2:
+        d2 = (latv - lat) ** 2 + (lonv - lon_target) ** 2
+        iy, ix = np.unravel_index(np.nanargmin(d2), d2.shape)
+        tK = float(ds[vname].values[iy, ix])
+    else:
+        # 1D case
+        iy = int(np.nanargmin((latv - lat) ** 2))
+        ix = int(np.nanargmin((lonv - lon_target) ** 2))
+        tK = float(ds[vname].values[iy, ix])
+
+    # HRRR TMP is Kelvin
+    tC = tK - 273.15
+    tF = tC * 9 / 5 + 32
+    return float(tF)
 
 
-@app.get("/api/curve")
-def api_curve(city: str, date_str: str, min_f: float, max_f: float, steps: int = 41):
-    """
-    Returns curve points for plotting:
-      { mu, sigma, points: [{t, p_yes}], debug: {...} }
-    """
+@app.get("/api/hrrr_t2m")
+def api_hrrr_t2m(city: str, hours: int = 18):
     code = (city or "").strip().lower()
     if code not in CITIES:
         return {"error": "unknown_city", "allowed": list(CITIES.keys())}
 
-    try:
-        d = parse_date_any(date_str)
-    except Exception:
-        return {"error": "bad_date"}
+    hours = max(1, min(int(hours), 18))
+    info = CITIES[code]
+    lat = info["lat"]
+    lon = info["lon"]
 
-    info_city = CITIES[code]
-    periods = nws_forecast_periods(info_city["lat"], info_city["lon"])
-    highs = daily_daytime_highs(periods)
-    if d not in highs:
-        return {"error": "nws_high_not_available"}
+    last_err = None
+    for ymd, hh in _hrrr_run_candidates():
+        series = []
+        ok = True
+        try:
+            for fxx in range(0, hours):
+                b = _hrrr_filter_download(ymd, hh, fxx, lon, lat)
+                tF = _parse_grib2_point_temp_f(b, lon, lat)
+                valid = (datetime.strptime(f"{ymd}{hh}", "%Y%m%d%H").replace(tzinfo=timezone.utc) + timedelta(hours=fxx))
+                series.append({"valid_utc": valid.isoformat(), "t2m_f": round(tF, 1)})
+        except Exception as e:
+            ok = False
+            last_err = str(e)
 
-    daily_mu = float(highs[d])
-    mu, sigma, dbg = _nowcast_mu_sigma_for_date(info_city["lat"], info_city["lon"], d, daily_mu)
+        if ok and series:
+            return {
+                "city": code,
+                "city_name": info["name"],
+                "run_utc": f"{ymd}T{hh}:00Z",
+                "hours": hours,
+                "series": series,
+                "source": "NOAA NOMADS HRRR filter_hrrr_2d.pl",
+            }
 
-    steps = int(max(11, min(201, steps)))
-    lo = float(min_f)
-    hi = float(max_f)
-    if hi <= lo:
-        hi = lo + 1.0
-
-    pts = []
-    for i in range(steps):
-        t = lo + (hi - lo) * (i / (steps - 1))
-        p = prob_ge(mu, sigma, t)
-        pts.append({"t": t, "p_yes": p})
-
-    return {"city": code, "city_name": info_city["name"], "date": d.isoformat(), "mu": mu, "sigma": sigma, "points": pts, "debug": dbg}
+    return {"error": "hrrr_unavailable", "detail": last_err or "unknown error"}
 
 
+# ---------------- TEMPERATURE MARKET ----------------
 class EvalOneRequest(BaseModel):
-    city: str
-    date: str
+    city: str          # den/nyc/dal/chi
+    date: str          # yyyy-mm-dd (from the dropdown)
     threshold_f: float
     yes_cents: float
     no_cents: float
@@ -393,7 +374,7 @@ class EvalOneRequest(BaseModel):
 
 @app.post("/api/evaluate_one")
 def api_evaluate_one(req: EvalOneRequest):
-    code = (req.city or "").strip().lower()
+    code = req.city.strip().lower()
     if code not in CITIES:
         return {"error": "unknown_city", "allowed": list(CITIES.keys())}
 
@@ -418,20 +399,36 @@ def api_evaluate_one(req: EvalOneRequest):
     if d not in highs:
         return {"error": "nws_high_not_available"}
 
-    daily_mu = float(highs[d])
-    mu, sigma, dbg = _nowcast_mu_sigma_for_date(info["lat"], info["lon"], d, daily_mu)
+    mu_forecast = float(highs[d])
+    sigma = sigma_for(d)
     t = float(req.threshold_f)
 
-    fair_yes = prob_ge(mu, sigma, t)
+    # NOWCASTING: high cannot be below current temp
+    now_tF, now_time = nws_current_temp_f(info["lat"], info["lon"])
+    mu_nowcast = mu_forecast
+    if isinstance(now_tF, (int, float)):
+        mu_nowcast = max(mu_forecast, float(now_tF))
+
+    fair_yes = prob_ge(mu_nowcast, sigma, t)
     signal, edge_yes, edge_no, fair_no = decide(fair_yes, yes_price, no_price)
+
+    # Build a *real* fair curve for display (so the graph is consistent)
+    lo = int(round(t - 10))
+    hi = int(round(t + 10))
+    curve = []
+    for thr in range(lo, hi + 1):
+        curve.append({"threshold_f": thr, "fair_yes": prob_ge(mu_nowcast, sigma, float(thr))})
 
     return {
         "city": code,
         "city_name": info["name"],
         "date": d.isoformat(),
         "threshold_f": t,
-        "mu": mu,
+        "mu_forecast_high": mu_forecast,
+        "mu_nowcast_high": mu_nowcast,
         "sigma": sigma,
+        "now_temp_f": now_tF,
+        "now_time_iso": now_time,
         "market_yes": yes_price,
         "market_no": no_price,
         "fair_yes": fair_yes,
@@ -440,7 +437,7 @@ def api_evaluate_one(req: EvalOneRequest):
         "edge_no": edge_no,
         "signal": signal,
         "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
-        "nowcast_debug": dbg,
+        "curve": curve,
     }
 
 
@@ -465,6 +462,7 @@ def api_drought(req: DroughtReq):
         "city": code,
         "city_name": info["name"],
         "expected_drought_90d": out.get("expected_drought_90d", 0.0),
+        "expected_severity_0to4": out.get("expected_severity_0to4", None),
         "components": out.get("components", {}),
         "notes": out.get("notes", ""),
     }
