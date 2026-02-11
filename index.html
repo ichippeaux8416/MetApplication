@@ -12,245 +12,62 @@
       --line:#1b2330;
       --text:#e9eef7;
       --muted:#a0aec2;
-      --blue:#7fb4ff;      /* light blue accent */
+      --blue:#7fb4ff;
       --blue2:#a6ccff;
       --good:#2cc38a;
       --warn:#f3c969;
       --bad:#ff6b6b;
       --shadow: 0 16px 55px rgba(0,0,0,.45);
-      --radius:10px;       /* less rounded */
+      --radius:10px;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
-    }
+    body{margin:0;background:var(--bg);color:var(--text);font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;}
     .wrap{max-width:1180px;margin:0 auto;padding:26px 18px 44px}
-    header{
-      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-      padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);
-    }
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);}
     .brand{display:flex;flex-direction:column;gap:8px}
-    .brand h1{
-      margin:0;
-      font-size:48px;
-      font-weight:900;
-      letter-spacing:.18em;
-      line-height:1;
-      color:var(--text);
-    }
-    .sub{
-      color:var(--muted);
-      font-weight:800;
-      letter-spacing:.08em;
-      font-size:13px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap:18px;
-      margin-top:22px;
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card-h{
-      padding:16px 16px 12px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      letter-spacing:.14em;
-      font-weight:900;
-      color:#c2cde0;
-      text-transform:uppercase;
-      font-size:12px;
-    }
+    .brand h1{margin:0;font-size:48px;font-weight:900;letter-spacing:.18em;line-height:1;color:var(--text);}
+    .sub{color:var(--muted);font-weight:800;letter-spacing:.08em;font-size:13px;}
+    .nav{display:flex;gap:10px;justify-content:flex-end;padding-top:6px;}
+    .nav a{color:var(--text);text-decoration:none;font-weight:900;padding:10px 12px;border:1px solid rgba(255,255,255,.10);background: rgba(255,255,255,.03);border-radius: 12px;}
+    .nav a:hover{border-color: rgba(127,180,255,.35)}
+    .grid{display:grid;grid-template-columns: 1.1fr 1fr;gap:18px;margin-top:22px;}
+    .card{background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.10);border-radius: var(--radius);box-shadow: var(--shadow);overflow:hidden;}
+    .card-h{padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;letter-spacing:.14em;font-weight:900;color:#c2cde0;text-transform:uppercase;font-size:12px;}
     .card-b{padding:16px}
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:14px;
-    }
-    label{
-      display:block;
-      color:#c2cde0;
-      font-weight:900;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      font-size:12px;
-      margin-bottom:10px;
-    }
-    select, input{
-      width:100%;
-      padding:16px 14px;
-      border-radius: 10px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(10,14,20,.85);
-      color: var(--text);
-      outline:none;
-      font-size:18px;
-    }
+    .row{display:grid;grid-template-columns: 1fr 1fr;gap:14px;}
+    label{display:block;color:#c2cde0;font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:12px;margin-bottom:10px;}
+    select, input{width:100%;padding:16px 14px;border-radius: 10px;border:1px solid rgba(255,255,255,.12);background: rgba(10,14,20,.85);color: var(--text);outline:none;font-size:18px;}
     select:focus, input:focus{border-color: rgba(127,180,255,.55)}
-    .btn{
-      width:100%;
-      margin-top:14px;
-      padding:16px 16px;
-      border-radius: 10px;
-      border:1px solid rgba(127,180,255,.65);
-      background: rgba(127,180,255,.18);
-      color: var(--text);
-      font-weight:900;
-      font-size:18px;
-      letter-spacing:.04em;
-      cursor:pointer;
-    }
+    .btn{width:100%;margin-top:14px;padding:16px 16px;border-radius: 10px;border:1px solid rgba(127,180,255,.65);background: rgba(127,180,255,.18);color: var(--text);font-weight:900;font-size:18px;letter-spacing:.04em;cursor:pointer;}
     .btn:hover{filter:brightness(1.05)}
-
-    .btnSecondary{
-      width:100%;
-      margin-top:12px;
-      padding:14px 16px;
-      border-radius: 10px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
-      font-weight:900;
-      font-size:16px;
-      letter-spacing:.04em;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .btnSecondary:hover{border-color: rgba(127,180,255,.35)}
-
-    .status{
-      display:flex;align-items:center;gap:10px;margin-top:14px;
-      color: var(--muted);
-      font-weight:800;
-    }
+    .status{display:flex;align-items:center;gap:10px;margin-top:14px;color: var(--muted);font-weight:800;}
     .dot{width:10px;height:10px;border-radius:999px;background:#667;box-shadow:0 0 0 3px rgba(255,255,255,.05)}
     .dot.ok{background: var(--good)}
     .dot.err{background: var(--bad)}
     .dot.busy{background: var(--blue)}
-    .big{
-      font-size:56px;
-      font-weight:900;
-      letter-spacing:.02em;
-      margin:6px 0 0;
-    }
-    .subtitle{
-      color:var(--muted);
-      font-weight:800;
-      letter-spacing:.01em;
-      margin-top:6px;
-      font-size:16px;
-    }
-    .miniGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-      margin-top:14px;
-    }
-    .mini{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(10,14,20,.55);
-      border-radius: 12px;
-      padding:12px;
-    }
-    .mini h4{
-      margin:0 0 8px;
-      letter-spacing:.14em;
-      font-weight:900;
-      text-transform:uppercase;
-      color:#c2cde0;
-      font-size:12px;
-    }
-    .mini .val{
-      font-size:14px;
-      font-weight:900;
-      color: var(--text);
-      line-height:1.35;
-      word-break: break-word;
-    }
-
-    .chartWrap{
-      margin-top:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(10,14,20,.55);
-      border-radius: 12px;
-      padding:12px;
-      position:relative;
-    }
-    .legend{
-      position:absolute;
-      top:10px;
-      right:12px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      font-weight:900;
-      font-size:12px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:#c2cde0;
-      background: rgba(10,14,20,.65);
-      border:1px solid rgba(255,255,255,.10);
-      padding:8px 10px;
-      border-radius: 10px;
-    }
-    .sw{
-      width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px;
-    }
+    .big{font-size:56px;font-weight:900;letter-spacing:.02em;margin:6px 0 0;}
+    .subtitle{color:var(--muted);font-weight:800;letter-spacing:.01em;margin-top:6px;font-size:16px;}
+    .miniGrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px;margin-top:14px;}
+    .mini{border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
+    .mini h4{margin:0 0 8px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
+    .mini .val{font-size:14px;font-weight:900;color: var(--text);line-height:1.35;word-break: break-word;}
+    .chartWrap{margin-top:14px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;position:relative;}
+    .legend{position:absolute;top:10px;right:12px;display:flex;gap:12px;align-items:center;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c2cde0;background: rgba(10,14,20,.65);border:1px solid rgba(255,255,255,.10);padding:8px 10px;border-radius: 10px;}
+    .sw{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px;}
     .sw.fair{background: var(--blue)}
     .sw.you{background: var(--warn)}
     canvas{width:100%;height:280px;display:block}
 
-    .pillRow{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-      margin-top:14px;
-    }
-    .pill{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      justify-content:space-between;
-    }
-    .pill .k{
-      color:var(--muted);
-      font-weight:900;
-      letter-spacing:.10em;
-      text-transform:uppercase;
-      font-size:11px;
-    }
-    .pill .v{
-      font-weight:900;
-      font-size:14px;
-      letter-spacing:.02em;
-      color:var(--text);
-      text-align:right;
-    }
-
+    .thin{color:var(--muted);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+    .hrrrList{margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
+    .hrrrGrid{display:grid;grid-template-columns: 1fr 1fr 1fr;gap:10px}
+    .hrrrItem{border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 10px;padding:10px}
+    .hrrrItem .t{font-weight:900}
+    .hrrrItem .s{color:var(--muted);font-weight:800;font-size:12px;margin-top:4px}
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
       .brand h1{font-size:36px}
-      .pillRow{grid-template-columns:1fr}
+      .hrrrGrid{grid-template-columns: 1fr 1fr}
     }
   </style>
 </head>
@@ -260,6 +77,9 @@
       <div class="brand">
         <h1>MetApplication</h1>
         <div class="sub">HIGH TEMPERATURE PREDICTION MARKET GUIDANCE</div>
+      </div>
+      <div class="nav">
+        <a href="/drought.html">Drought Odds</a>
       </div>
     </header>
 
@@ -308,8 +128,24 @@
             </div>
           </div>
 
-          <!-- ONLY ONE BUTTON that goes to drought.html -->
-          <a class="btnSecondary" href="/drought.html">Open Drought Odds</a>
+          <!-- Current conditions moved OFF the header -->
+          <div class="miniGrid" style="margin-top:14px;">
+            <div class="mini">
+              <h4>Local Time</h4>
+              <div class="val" id="localTime">—</div>
+            </div>
+            <div class="mini">
+              <h4>Current Temp</h4>
+              <div class="val" id="currentTemp">—</div>
+            </div>
+          </div>
+
+          <!-- HRRR 18h -->
+          <div class="hrrrList">
+            <div class="thin">HRRR 2m Temperature — Next 18 Hours</div>
+            <div class="note" id="hrrrNote" style="margin-top:6px;">—</div>
+            <div class="hrrrGrid" id="hrrrGrid" style="margin-top:10px;"></div>
+          </div>
 
           <div class="status" id="status">
             <span class="dot ok" id="dot"></span>
@@ -324,19 +160,6 @@
           <div id="cityTop" style="font-weight:900;letter-spacing:.14em;color:#c2cde0;text-transform:uppercase;">—</div>
         </div>
         <div class="card-b">
-
-          <!-- current time/temp NOT in header -->
-          <div class="pillRow">
-            <div class="pill">
-              <div class="k">Local Time</div>
-              <div class="v" id="localTime">—</div>
-            </div>
-            <div class="pill">
-              <div class="k">Current Temp</div>
-              <div class="v" id="currentTemp">—</div>
-            </div>
-          </div>
-
           <div class="big" id="signal">—</div>
           <div class="subtitle" id="subline">—</div>
 
@@ -373,10 +196,16 @@
 
 <script>
   const $ = (id)=>document.getElementById(id);
-
   const cityNames = { den:"Denver", nyc:"New York City", dal:"Dallas", chi:"Chicago" };
+  const cityGeo = {
+    den: {lat:39.7392, lon:-104.9903},
+    nyc: {lat:40.7128, lon:-74.0060},
+    dal: {lat:32.7767, lon:-96.7970},
+    chi: {lat:41.8781, lon:-87.6298},
+  };
 
-  let latestHighs = []; // [{date:"YYYY-MM-DD", high_f:..}]
+  let latestHighs = [];
+  let latestTz = null;
   let timer = null;
 
   function setStatus(kind, text){
@@ -384,16 +213,8 @@
     dot.className = "dot " + (kind || "ok");
     $("statusText").textContent = text;
   }
-
-  function pct(x){
-    if (x === null || x === undefined || Number.isNaN(x)) return "—";
-    return (x*100).toFixed(1) + "%";
-  }
-
-  function money(x){
-    if (x === null || x === undefined || Number.isNaN(x)) return "—";
-    return (x*100).toFixed(1) + "¢";
-  }
+  function pct(x){ return (x===null||x===undefined||Number.isNaN(x)) ? "—" : (x*100).toFixed(1)+"%"; }
+  function money(x){ return (x===null||x===undefined||Number.isNaN(x)) ? "—" : (x*100).toFixed(1)+"¢"; }
 
   function populateTemps(){
     const sel = $("t");
@@ -406,7 +227,6 @@
     }
     sel.value = "73";
   }
-
   function populateDates(){
     const sel = $("date");
     sel.innerHTML = "";
@@ -424,61 +244,62 @@
     $("cityTop").textContent = (cityNames[city] || "—").toUpperCase();
 
     setStatus("busy", "Loading…");
-    try{
-      const res = await fetch(`/api/highs?city=${encodeURIComponent(city)}`);
-      const data = await res.json();
-      if(data.error){
-        setStatus("err", data.error);
-        return;
-      }
-      latestHighs = data.highs || [];
-      populateDates();
-      setStatus("ok", "Ready");
-    }catch(e){
-      setStatus("err", "Network error");
+    const res = await fetch(`/api/highs?city=${encodeURIComponent(city)}`);
+    const data = await res.json();
+    if(data.error){
+      setStatus("err", data.error);
+      return;
     }
+    latestHighs = data.highs || [];
+    populateDates();
+    setStatus("ok", "Ready");
   }
 
-  // ---- Current Temp + Local Time (server-side /api/now) ----
-  function fmtLocal(iso){
-    try{
-      const d = new Date(iso);
-      // nice short format
-      return new Intl.DateTimeFormat(undefined, {
-        weekday:"short",
-        month:"short",
-        day:"numeric",
-        hour:"numeric",
-        minute:"2-digit"
-      }).format(d);
-    }catch(e){
-      return "—";
-    }
+  // ---- Current Temp + Local Time (client-side NWS) ----
+  async function fetchNwsNow(city){
+    const {lat, lon} = cityGeo[city];
+    const points = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
+    const tzName = points?.properties?.timeZone || null;
+    latestTz = tzName;
+
+    const stationsUrl = points?.properties?.observationStations;
+    if(!stationsUrl) return {tempF:null, tz:tzName};
+
+    const stations = await fetch(stationsUrl, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
+    const feats = stations?.features || [];
+    if(!feats.length) return {tempF:null, tz:tzName};
+
+    const stationId = feats[0]?.properties?.stationIdentifier;
+    if(!stationId) return {tempF:null, tz:tzName};
+
+    const obs = await fetch(`https://api.weather.gov/stations/${stationId}/observations/latest`, {headers: {"Accept":"application/geo+json"}}).then(r=>r.json());
+    const tC = obs?.properties?.temperature?.value;
+    const tempF = (typeof tC === "number") ? (tC*9/5 + 32) : null;
+    return {tempF, tz:tzName};
+  }
+
+  function updateLocalTimeDisplay(){
+    if(!latestTz){ $("localTime").textContent = "—"; return; }
+    const fmt = new Intl.DateTimeFormat(undefined, {
+      timeZone: latestTz,
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      month: "short",
+      day: "numeric"
+    });
+    $("localTime").textContent = fmt.format(new Date());
   }
 
   async function refreshNowPanel(){
     const city = $("city").value;
     try{
-      const res = await fetch(`/api/now?city=${encodeURIComponent(city)}`);
-      const data = await res.json();
-      if(data.error){
-        $("localTime").textContent = "—";
-        $("currentTemp").textContent = "—";
-        return;
-      }
-
-      // prefer obs time if available; else server local time
-      const lt = data.obs_local_time || data.server_local_time;
-      $("localTime").textContent = lt ? fmtLocal(lt) : "—";
-
-      const tf = data.temp_f;
-      if(typeof tf === "number" && !Number.isNaN(tf)){
-        $("currentTemp").textContent = `${tf.toFixed(1)}°F`;
-      }else{
-        $("currentTemp").textContent = "—";
-      }
-    }catch(e){
-      $("localTime").textContent = "—";
+      const {tempF, tz} = await fetchNwsNow(city);
+      latestTz = tz || latestTz;
+      updateLocalTimeDisplay();
+      $("currentTemp").textContent = (tempF==null || Number.isNaN(tempF)) ? "—" : `${tempF.toFixed(1)}°F`;
+    }catch{
+      updateLocalTimeDisplay();
       $("currentTemp").textContent = "—";
     }
   }
@@ -486,11 +307,51 @@
   function startNowTicker(){
     if(timer) clearInterval(timer);
     refreshNowPanel();
-    timer = setInterval(refreshNowPanel, 60000);
+    timer = setInterval(()=>{ refreshNowPanel(); }, 60000);
   }
 
-  // ---- Chart: backend curve (/api/curve) ----
-  function drawChartFromPoints(points, tVal, fairAtT, yourAtT){
+  // ---- HRRR panel ----
+  function renderHrrr(series, runUtc){
+    const grid = $("hrrrGrid");
+    grid.innerHTML = "";
+    const fmt = new Intl.DateTimeFormat(undefined, {
+      timeZone: latestTz || undefined,
+      hour: "numeric",
+      minute: "2-digit"
+    });
+
+    for(const p of series){
+      const d = new Date(p.valid_utc);
+      const item = document.createElement("div");
+      item.className = "hrrrItem";
+      item.innerHTML = `
+        <div class="t">${fmt.format(d)} — ${p.t2m_f}°F</div>
+        <div class="s">${p.valid_utc.replace(".000","")}</div>
+      `;
+      grid.appendChild(item);
+    }
+    $("hrrrNote").textContent = `Run: ${runUtc} (UTC)`;
+  }
+
+  async function loadHrrr(){
+    const city = $("city").value;
+    $("hrrrNote").textContent = "Loading HRRR…";
+    $("hrrrGrid").innerHTML = "";
+    try{
+      const res = await fetch(`/api/hrrr_t2m?city=${encodeURIComponent(city)}&hours=18`);
+      const data = await res.json();
+      if(data.error){
+        $("hrrrNote").textContent = `HRRR unavailable: ${data.detail || data.error}`;
+        return;
+      }
+      renderHrrr(data.series || [], data.run_utc || "—");
+    }catch(e){
+      $("hrrrNote").textContent = "HRRR network error";
+    }
+  }
+
+  // ---- Chart (uses backend curve points) ----
+  function drawChartFromCurve(curve, yourP, tVal){
     const c = $("chart");
     const ctx = c.getContext("2d");
     const w = c.width, h = c.height;
@@ -501,9 +362,9 @@
     const plotW = w - padL - padR;
     const plotH = h - padT - padB;
 
-    // grid + y labels
     ctx.strokeStyle = "rgba(255,255,255,.10)";
     ctx.lineWidth = 1;
+
     ctx.fillStyle = "rgba(255,255,255,.35)";
     ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
     for(let i=0;i<=4;i++){
@@ -516,11 +377,10 @@
       ctx.fillText(Math.round(p*100)+"%", 10, y+4);
     }
 
-    // x domain from returned points
-    const t0 = points.length ? points[0].t : (tVal - 10);
-    const t1 = points.length ? points[points.length-1].t : (tVal + 10);
+    // x range from curve thresholds
+    const t0 = Math.min(...curve.map(p=>p.threshold_f));
+    const t1 = Math.max(...curve.map(p=>p.threshold_f));
 
-    // x labels
     ctx.fillStyle = "rgba(255,255,255,.35)";
     for(let i=0;i<=4;i++){
       const x = padL + (plotW * (i/4));
@@ -528,7 +388,6 @@
       ctx.fillText(tv+"°", x-10, padT+plotH+24);
     }
 
-    // axis lines
     ctx.strokeStyle = "rgba(255,255,255,.18)";
     ctx.beginPath();
     ctx.moveTo(padL, padT);
@@ -536,55 +395,32 @@
     ctx.lineTo(padL+plotW, padT+plotH);
     ctx.stroke();
 
-    // fair curve
+    // fair line from actual curve
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
-    for(let i=0;i<points.length;i++){
-      const tv = points[i].t;
-      const p = Math.max(0, Math.min(1, points[i].p_yes));
+    curve.forEach((p, i)=>{
+      const tv = p.threshold_f;
+      const prob = Math.max(0, Math.min(1, p.fair_yes));
       const x = padL + (plotW * ((tv - t0)/(t1-t0)));
-      const y = padT + (plotH * (1 - p));
+      const y = padT + (plotH * (1 - prob));
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    }
+    });
     ctx.stroke();
 
-    // x position for chosen threshold
+    // points at selected threshold (tVal)
     const xP = padL + (plotW * ((tVal - t0)/(t1-t0)));
 
-    // your point (YES price)
-    const yY = padT + (plotH * (1 - Math.max(0, Math.min(1, yourAtT))));
-    ctx.fillStyle = "rgba(243,201,105,.95)";
-    ctx.beginPath();
-    ctx.arc(xP, yY, 6, 0, Math.PI*2);
-    ctx.fill();
+    const fairAt = curve.find(p=>p.threshold_f === Math.round(tVal))?.fair_yes;
+    const fairP = (typeof fairAt === "number") ? fairAt : 0.5;
 
-    // fair point at tVal
-    const yF = padT + (plotH * (1 - Math.max(0, Math.min(1, fairAtT))));
+    const yF = padT + (plotH * (1 - Math.max(0, Math.min(1, fairP))));
     ctx.fillStyle = "rgba(127,180,255,.95)";
-    ctx.beginPath();
-    ctx.arc(xP, yF, 5, 0, Math.PI*2);
-    ctx.fill();
-  }
+    ctx.beginPath(); ctx.arc(xP, yF, 5, 0, Math.PI*2); ctx.fill();
 
-  async function drawChartBackend(city, date, tVal, fairYes, yourYes){
-    // show a window around threshold
-    const minF = Math.max(30, tVal - 10);
-    const maxF = Math.min(120, tVal + 10);
-    const url = `/api/curve?city=${encodeURIComponent(city)}&date_str=${encodeURIComponent(date)}&min_f=${encodeURIComponent(minF)}&max_f=${encodeURIComponent(maxF)}&steps=61`;
-
-    try{
-      const res = await fetch(url);
-      const data = await res.json();
-      if(data.error || !Array.isArray(data.points)){
-        // fallback simple flat chart
-        drawChartFromPoints([{t:minF,p_yes:0.5},{t:maxF,p_yes:0.5}], tVal, fairYes, yourYes);
-        return;
-      }
-      drawChartFromPoints(data.points, tVal, fairYes, yourYes);
-    }catch(e){
-      drawChartFromPoints([{t:minF,p_yes:0.5},{t:maxF,p_yes:0.5}], tVal, fairYes, yourYes);
-    }
+    const yY = padT + (plotH * (1 - Math.max(0, Math.min(1, yourP))));
+    ctx.fillStyle = "rgba(243,201,105,.95)";
+    ctx.beginPath(); ctx.arc(xP, yY, 6, 0, Math.PI*2); ctx.fill();
   }
 
   async function evaluate(){
@@ -605,13 +441,7 @@
       const res = await fetch("/api/evaluate_one", {
         method:"POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          city,
-          date,
-          threshold_f: t,
-          yes_cents: yes,
-          no_cents: no
-        })
+        body: JSON.stringify({ city, date, threshold_f: t, yes_cents: yes, no_cents: no })
       });
 
       const data = await res.json();
@@ -623,7 +453,7 @@
         $("fairNo").textContent = "—";
         $("yourYes").textContent = "—";
         $("yourNo").textContent = "—";
-        await drawChartBackend(city, date, t, 0.5, 0.5);
+        drawChartFromCurve([{threshold_f: t-10, fair_yes:0.5},{threshold_f:t, fair_yes:0.5},{threshold_f:t+10, fair_yes:0.5}], 0.5, t);
         return;
       }
 
@@ -634,17 +464,22 @@
 
       $("signal").textContent = data.signal;
 
-      // show nowcast in subline (mu is nowcast-adjusted in server.py)
-      const mu = (typeof data.mu === "number") ? data.mu : null;
-      const sig = (typeof data.sigma === "number") ? data.sigma : null;
-      $("subline").textContent = `Fair YES ${pct(fairYes)} · μ ${mu !== null ? mu.toFixed(1) : "—"}°F · σ ${sig !== null ? sig.toFixed(1) : "—"}°F`;
+      const muF = data.mu_forecast_high;
+      const muN = data.mu_nowcast_high;
+      const nowT = (typeof data.now_temp_f === "number") ? `${data.now_temp_f.toFixed(1)}°F` : "—";
+      $("subline").textContent = `Fair YES ${pct(fairYes)} · forecast μ ${muF}°F · nowcast μ ${muN}°F · now ${nowT}`;
 
       $("fairYes").textContent = pct(fairYes);
       $("fairNo").textContent = pct(fairNo);
       $("yourYes").textContent = money(yourYes);
       $("yourNo").textContent = money(yourNo);
 
-      await drawChartBackend(city, date, t, fairYes, yourYes);
+      const curve = Array.isArray(data.curve) ? data.curve : [];
+      if(curve.length >= 2){
+        drawChartFromCurve(curve, yourYes, t);
+      }else{
+        drawChartFromCurve([{threshold_f: t-10, fair_yes:0.5},{threshold_f:t, fair_yes:fairYes},{threshold_f:t+10, fair_yes:0.5}], yourYes, t);
+      }
 
       setStatus("ok", "OK");
     }catch(e){
@@ -655,16 +490,18 @@
   $("city").addEventListener("change", async ()=>{
     await loadHighs();
     startNowTicker();
+    loadHrrr();
   });
 
   $("go").addEventListener("click", evaluate);
 
   (function init(){
     populateTemps();
-    loadHighs().then(()=>startNowTicker());
-    // initial chart placeholder
-    drawChartFromPoints([{t:63,p_yes:0.5},{t:83,p_yes:0.5}], 73, 0.5, 0.5);
-
+    loadHighs().then(()=>{
+      startNowTicker();
+      loadHrrr();
+    });
+    drawChartFromCurve([{threshold_f:63, fair_yes:0.5},{threshold_f:73, fair_yes:0.5},{threshold_f:83, fair_yes:0.5}], 0.5, 73);
     $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
     $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
   })();
