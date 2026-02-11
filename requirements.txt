@@ -7,3 +7,7 @@ uvicorn
 requests
 python-dateutil
 pyshp
+xarray
+cfgrib
+eccodes
+numpy
