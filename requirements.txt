@@ -11,3 +11,15 @@ xarray
 cfgrib
 eccodes
 numpy
+fastapi==0.115.6
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+python-dateutil==2.9.0.post0
+requests==2.32.3
+
+# HRRR Zarr (no GRIB decoding / no eccodes)
+xarray==2024.11.0
+zarr==2.18.2
+fsspec==2024.10.0
+s3fs==2024.10.0
+numpy==2.1.3
