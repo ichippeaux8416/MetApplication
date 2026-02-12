@@ -1,33 +1,57 @@
-# rap.py
 from __future__ import annotations
 
 import argparse
 import json
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, List
 
-import requests
-from siphon.catalog import TDSCatalog, get_latest_access_url
+from siphon.catalog import get_latest_access_url
 from siphon.ncss import NCSS
 from netCDF4 import Dataset, num2date
 
-
-# RAP catalogs on thredds.ucar.edu (try in order)
-RAP_CATALOG_CANDIDATES = [
-    # Common pattern (works for many NCEP models)
-    "https://thredds.ucar.edu/thredds/catalog/grib/NCEP/RAP/CONUS_13km/catalog.xml",
-    # Some installs provide a "latest.xml" catalog
-    "https://thredds.ucar.edu/thredds/catalog/grib/NCEP/RAP/CONUS_13km/latest.xml",
-]
-
-VAR_NAME = "Temperature_height_above_ground"  # 2m temp is typically this var at ~2m
+RAP_CATALOG = "https://thredds.ucar.edu/thredds/catalog/grib/NCEP/RAP/CONUS_13km/catalog.xml"
+VAR_NAME = "Temperature_height_above_ground"
 
 CITIES = {
     "den": {"name": "Denver", "lat": 39.7392, "lon": -104.9903},
-    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.0060},
-    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.7970},
+    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.006},
+    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.797},
     "chi": {"name": "Chicago", "lat": 41.8781, "lon": -87.6298},
+    "lax": {"name": "Los Angeles", "lat": 34.0522, "lon": -118.2437},
+    "sea": {"name": "Seattle", "lat": 47.6062, "lon": -122.3321},
+    "sfo": {"name": "San Francisco", "lat": 37.7749, "lon": -122.4194},
+    "hou": {"name": "Houston", "lat": 29.7604, "lon": -95.3698},
+    "aus": {"name": "Austin", "lat": 30.2672, "lon": -97.7431},
+    "bna": {"name": "Nashville", "lat": 36.1627, "lon": -86.7816},
+    "okc": {"name": "Oklahoma City", "lat": 35.4676, "lon": -97.5164},
+    "phx": {"name": "Phoenix", "lat": 33.4484, "lon": -112.074},
+    "las": {"name": "Las Vegas", "lat": 36.1699, "lon": -115.1398},
+    "msp": {"name": "Minneapolis-Saint Paul", "lat": 44.9778, "lon": -93.265},
+    "sat": {"name": "San Antonio", "lat": 29.4241, "lon": -98.4936},
 }
+
+
+def _find_time_var(ds: Dataset) -> str:
+    if "time" in ds.variables:
+        return "time"
+    for k in ds.variables.keys():
+        if "time" in k.lower():
+            return k
+    raise RuntimeError(f"Could not find time variable. Vars: {list(ds.variables.keys())[:60]}")
+
+
+def _pick_height_index(ds: Dataset, var) -> int:
+    for dn in var.dimensions:
+        if "height" in dn.lower():
+            if dn in ds.variables:
+                h = ds.variables[dn][:]
+                best_i, best_d = 0, 1e18
+                for i, v in enumerate(h):
+                    d = abs(float(v) - 2.0)
+                    if d < best_d:
+                        best_d, best_i = d, i
+                return int(best_i)
+            return 0
+    return 0
 
 
 def _k_to_f(k: float) -> float:
@@ -35,13 +59,13 @@ def _k_to_f(k: float) -> float:
 
 
 def _to_iso_utc(t) -> str:
-    # num2date may return datetime or cftime-like objects
     if isinstance(t, datetime):
         if t.tzinfo is None:
             t = t.replace(tzinfo=timezone.utc)
         else:
             t = t.astimezone(timezone.utc)
         return t.isoformat().replace("+00:00", "Z")
+
     try:
         dt = datetime(
             int(t.year),
@@ -57,65 +81,7 @@ def _to_iso_utc(t) -> str:
         return str(t) + "Z"
 
 
-def _find_time_var(ds: Dataset) -> str:
-    if "time" in ds.variables:
-        return "time"
-    for k in ds.variables.keys():
-        if "time" in k.lower():
-            return k
-    raise RuntimeError(f"Could not find time variable. Vars: {list(ds.variables.keys())[:80]}")
-
-
-def _pick_height_index(ds: Dataset, var) -> int:
-    # If var includes a height-ish dimension, pick level closest to 2m
-    for dn in var.dimensions:
-        if "height" in dn.lower():
-            if dn in ds.variables:
-                h = ds.variables[dn][:]
-                best_i, best_d = 0, 1e18
-                for i, v in enumerate(h):
-                    d = abs(float(v) - 2.0)
-                    if d < best_d:
-                        best_d, best_i = d, i
-                return int(best_i)
-            return 0
-    return 0
-
-
-def resolve_latest_ncss_url() -> str:
-    last_err = None
-
-    # First try get_latest_access_url where possible
-    for cat_url in RAP_CATALOG_CANDIDATES:
-        try:
-            return get_latest_access_url(cat_url, "NetcdfSubset")
-        except Exception as e:
-            last_err = e
-
-    # Fallback: use TDSCatalog and pick the first dataset with NetcdfSubset
-    for cat_url in RAP_CATALOG_CANDIDATES:
-        try:
-            cat = TDSCatalog(cat_url)
-            # Prefer "latest" if present
-            ds = getattr(cat, "latest", None)
-            if ds and getattr(ds, "access_urls", None):
-                au = ds.access_urls
-                if "NetcdfSubset" in au:
-                    return au["NetcdfSubset"]
-
-            # Otherwise scan datasets
-            for ds in cat.datasets:
-                au = ds.access_urls
-                if "NetcdfSubset" in au:
-                    return au["NetcdfSubset"]
-
-        except Exception as e:
-            last_err = e
-
-    raise RuntimeError(f"Could not resolve RAP NetcdfSubset URL. Last error: {last_err}")
-
-
-def fetch_city_series(ncss: NCSS, lat: float, lon: float, hours: int) -> List[Dict[str, Any]]:
+def fetch_city_series(ncss: NCSS, lat: float, lon: float, hours: int) -> list[dict]:
     q = ncss.query()
     start = datetime.now(timezone.utc)
     end = start + timedelta(hours=hours)
@@ -125,9 +91,7 @@ def fetch_city_series(ncss: NCSS, lat: float, lon: float, hours: int) -> List[Di
     q.variables(VAR_NAME)
     q.accept("netcdf4")
 
-    raw = ncss.get_data_raw(q)  # bytes
-
-    # Read from memory
+    raw = ncss.get_data_raw(q)
     ds = Dataset("inmemory.nc", mode="r", memory=raw)  # type: ignore
 
     if VAR_NAME not in ds.variables:
@@ -141,7 +105,7 @@ def fetch_city_series(ncss: NCSS, lat: float, lon: float, hours: int) -> List[Di
     times = num2date(tvar[:], units=tvar.units)  # type: ignore
 
     v = ds.variables[VAR_NAME]
-    arr = v[:]  # typically (time,height) or (time,)
+    arr = v[:]
 
     if getattr(arr, "ndim", 0) == 2:
         hi = _pick_height_index(ds, v)
@@ -165,19 +129,15 @@ def main():
 
     hours = max(1, min(24, int(args.hours)))
 
-    ncss_url = resolve_latest_ncss_url()
+    ncss_url = get_latest_access_url(RAP_CATALOG, "NetcdfSubset")
     ncss = NCSS(ncss_url)
 
     payload = {
-        "model": "RAP",
         "run_ncss": ncss_url,
         "asof_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "hours": hours,
         "cities": {},
     }
-
-    print(f"RAP NCSS: {ncss_url}")
-    print(f"Hours: next {hours}\n")
 
     for code, info in CITIES.items():
         series = fetch_city_series(ncss, info["lat"], info["lon"], hours)
@@ -188,9 +148,8 @@ def main():
             "series": series,
         }
 
-        # Print as time=temp pairs
-        parts = [f"{p['valid_utc']}={p['temp_f']:.1f}F" for p in series]
-        print(f"{code.upper()} ({info['name']}): " + ", ".join(parts))
+        temps = ", ".join(f"{p['temp_f']:.1f}" for p in series)
+        print(f"{code.upper()} ({info['name']}): {temps}")
 
     if args.json:
         with open(args.json, "w", encoding="utf-8") as f:
