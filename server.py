@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from pydantic import BaseModel
 from datetime import datetime, timedelta, date, timezone
-from zoneinfo import ZoneInfo
 from dateutil import parser as dtparser
 
 import math
@@ -20,34 +19,15 @@ try:
 except Exception:
     hrrr4 = None  # endpoint will return hrrr_unavailable
 
-# --- RAP helper script (you added this to repo) ---
-# MUST be named exactly: rap.py
-try:
-    import rap as rap4  # type: ignore
-except Exception:
-    rap4 = None  # endpoint will return rap_unavailable
-
-
 # ---------------- CONFIG ----------------
 USER_AGENT = "metapplication/1.0 (contact: you@example.com)"
 TIMEOUT = 12
 
 CITIES = {
     "den": {"name": "Denver", "lat": 39.7392, "lon": -104.9903},
-    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.006},
-    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.797},
+    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.0060},
+    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.7970},
     "chi": {"name": "Chicago", "lat": 41.8781, "lon": -87.6298},
-    "lax": {"name": "Los Angeles", "lat": 34.0522, "lon": -118.2437},
-    "sea": {"name": "Seattle", "lat": 47.6062, "lon": -122.3321},
-    "sfo": {"name": "San Francisco", "lat": 37.7749, "lon": -122.4194},
-    "hou": {"name": "Houston", "lat": 29.7604, "lon": -95.3698},
-    "aus": {"name": "Austin", "lat": 30.2672, "lon": -97.7431},
-    "sat": {"name": "San Antonio", "lat": 29.4241, "lon": -98.4936},
-    "okc": {"name": "Oklahoma City", "lat": 35.4676, "lon": -97.5164},
-    "phx": {"name": "Phoenix", "lat": 33.4484, "lon": -112.074},
-    "las": {"name": "Las Vegas", "lat": 36.1699, "lon": -115.1398},
-    "msp": {"name": "Minneapolis–Saint Paul", "lat": 44.9778, "lon": -93.265},
-    "bna": {"name": "Nashville", "lat": 36.1627, "lon": -86.7816},
 }
 
 MIN_EDGE = 0.05
@@ -58,7 +38,6 @@ DEFAULT_SIGMA = 7.5
 
 MAX_DAYS_AHEAD = 14
 # --------------------------------------
-
 
 app = FastAPI(title="MetApplication Backend")
 
@@ -111,6 +90,7 @@ def daily_daytime_highs(periods: list[dict]) -> dict[date, int]:
 def nws_latest_obs(lat: float, lon: float):
     """
     Returns: (temp_f: float|None, tz_name: str|None, obs_time_iso: str|None)
+    Tries multiple nearby NWS stations because some stations intermittently omit temperature.
     """
     points = nws_points(lat, lon)
     tz_name = points["properties"].get("timeZone")
@@ -127,145 +107,30 @@ def nws_latest_obs(lat: float, lon: float):
     if not feats:
         return None, tz_name, None
 
-    station_id = feats[0].get("properties", {}).get("stationIdentifier")
-    if not station_id:
-        return None, tz_name, None
+    last_obs_time = None
 
-    obs = http_get_json(
-        f"https://api.weather.gov/stations/{station_id}/observations/latest",
-        headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-    )
-    props = obs.get("properties") or {}
-    t_c = (props.get("temperature") or {}).get("value")
-    obs_time = props.get("timestamp")
-
-    if isinstance(t_c, (int, float)):
-        temp_f = t_c * 9 / 5 + 32
-        return float(temp_f), tz_name, obs_time
-
-    return None, tz_name, obs_time
-
-
-# ---------------- Observations: today's max + post-2pm decline rule ----------------
-def nws_primary_station_id(lat: float, lon: float):
-    """Return (station_id, tz_name) for the nearest NWS observation station."""
-    points = nws_points(lat, lon)
-    tz_name = points["properties"].get("timeZone")
-
-    stations_url = points["properties"].get("observationStations")
-    if not stations_url:
-        return None, tz_name
-
-    stations = http_get_json(
-        stations_url,
-        headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-    )
-    feats = stations.get("features") or []
-    if not feats:
-        return None, tz_name
-
-    station_id = feats[0].get("properties", {}).get("stationIdentifier")
-    return station_id, tz_name
-
-
-def nws_obs_series_today(lat: float, lon: float):
-    """
-    Pull observations from local midnight -> now (fallback to last ~24h if needed).
-
-    Returns dict:
-      - max_f: max temp observed so far today (F)
-      - declined_after_2pm: True if any decrease occurs after 2pm local
-      - cap_f: if declined_after_2pm, cap_f == max_f (day's high is capped)
-    """
-    station_id, tz_name = nws_primary_station_id(lat, lon)
-    if not station_id or not tz_name:
-        return {
-            "tz": tz_name,
-            "station_id": station_id,
-            "max_f": None,
-            "declined_after_2pm": False,
-            "cap_f": None,
-            "samples": [],
-        }
-
-    try:
-        tz = ZoneInfo(tz_name)
-    except Exception:
-        tz = timezone.utc
-
-    now_local = datetime.now(tz)
-    start_local = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
-    start_utc = start_local.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-    end_utc = now_local.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-    url = f"https://api.weather.gov/stations/{station_id}/observations"
-    params = {"start": start_utc, "end": end_utc}
-
-    try:
-        data = http_get_json(
-            url,
-            headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-            params=params,
-        )
-    except Exception:
-        data = http_get_json(
-            url,
-            headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
-            params={"limit": 200},
-        )
-
-    feats = data.get("features") or []
-    samples = []
-    for feat in feats:
-        props = feat.get("properties") or {}
-        ts = props.get("timestamp")
-        t_c = (props.get("temperature") or {}).get("value")
-        if not ts or not isinstance(t_c, (int, float)):
+    # Try several stations until we get a numeric temperature.
+    for feat in feats[:10]:
+        station_id = (feat.get("properties") or {}).get("stationIdentifier")
+        if not station_id:
             continue
         try:
-            dt_utc = dtparser.isoparse(ts)
-            if dt_utc.tzinfo is None:
-                dt_utc = dt_utc.replace(tzinfo=timezone.utc)
-            dt_local = dt_utc.astimezone(tz)
-            temp_f = float(t_c) * 9 / 5 + 32
-            samples.append((dt_local, temp_f))
+            obs = http_get_json(
+                f"https://api.weather.gov/stations/{station_id}/observations/latest",
+                headers={"User-Agent": USER_AGENT, "Accept": "application/geo+json"},
+            )
         except Exception:
             continue
 
-    samples.sort(key=lambda x: x[0])
-    if not samples:
-        return {
-            "tz": tz_name,
-            "station_id": station_id,
-            "max_f": None,
-            "declined_after_2pm": False,
-            "cap_f": None,
-            "samples": [],
-        }
+        props = obs.get("properties") or {}
+        last_obs_time = props.get("timestamp") or last_obs_time
+        t_c = (props.get("temperature") or {}).get("value")
 
-    max_f = max(t for _, t in samples)
+        if isinstance(t_c, (int, float)):
+            temp_f = float(t_c) * 9 / 5 + 32
+            return float(temp_f), tz_name, last_obs_time
 
-    declined_after_2pm = False
-    cap_f = None
-    if now_local.hour >= 14:
-        after2 = [(dt, t) for (dt, t) in samples if dt.hour >= 14]
-        if len(after2) >= 2:
-            prev = after2[0][1]
-            for _, t in after2[1:]:
-                if t < prev - 0.05:
-                    declined_after_2pm = True
-                    cap_f = max_f
-                    break
-                prev = t
-
-    return {
-        "tz": tz_name,
-        "station_id": station_id,
-        "max_f": float(max_f),
-        "declined_after_2pm": declined_after_2pm,
-        "cap_f": (float(cap_f) if cap_f is not None else None),
-        "samples": samples,
-    }
+    return None, tz_name, last_obs_time
 
 
 # ---------------- Probability model ----------------
@@ -382,7 +247,7 @@ def api_now(city: str):
     }
 
 
-# ---------------- API: evaluate one (with simple nowcasting floor + "impossible" rule) ----------------
+# ---------------- API: evaluate one (with simple nowcasting floor) ----------------
 class EvalOneRequest(BaseModel):
     city: str
     date: str
@@ -425,46 +290,6 @@ def api_evaluate_one(req: EvalOneRequest):
 
     temp_now, tz_name, obs_time = nws_latest_obs(info["lat"], info["lon"])
 
-    obs_cap = None
-    obs_max = None
-    obs_declined_after_2pm = False
-    if d == today:
-        obs = nws_obs_series_today(info["lat"], info["lon"])
-        obs_max = obs.get("max_f")
-        obs_declined_after_2pm = bool(obs.get("declined_after_2pm"))
-        obs_cap = obs.get("cap_f") if obs_declined_after_2pm else None
-
-        # "Impossible" rule: if temps have started falling after 2pm local,
-        # today's high cannot exceed the max already observed.
-        if isinstance(obs_cap, float) and obs_cap < t:
-            fair_yes = 0.0
-            signal, edge_yes, edge_no, fair_no = decide(fair_yes, yes_price, no_price)
-            return {
-                "city": code,
-                "city_name": info["name"],
-                "date": d.isoformat(),
-                "threshold_f": t,
-                "mu": mu_forecast,
-                "mu_forecast_high": mu_forecast,
-                "mu_nowcast": temp_now,
-                "sigma": sigma,
-                "current_temp_f": temp_now,
-                "current_tz": tz_name,
-                "obs_time": obs_time,
-                "market_yes": yes_price,
-                "market_no": no_price,
-                "fair_yes": fair_yes,
-                "fair_no": 1.0,
-                "edge_yes": fair_yes - yes_price,
-                "edge_no": (1.0 - fair_yes) - no_price,
-                "signal": signal,
-                "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
-                "obs_max_f": obs_max,
-                "obs_declined_after_2pm": obs_declined_after_2pm,
-                "obs_cap_f": obs_cap,
-                "notes": f"obs-cap: temps fell after 2pm; capped high {obs_cap:.1f}F < threshold → P=0",
-            }
-
     mu_used = mu_forecast
     nowcast_note = "nowcast: none"
 
@@ -492,9 +317,6 @@ def api_evaluate_one(req: EvalOneRequest):
                 "edge_no": (0.0 - no_price),
                 "signal": signal,
                 "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
-                "obs_max_f": obs_max,
-                "obs_declined_after_2pm": obs_declined_after_2pm,
-                "obs_cap_f": obs_cap,
                 "notes": "nowcast: current temp already >= threshold → P=1",
             }
 
@@ -528,14 +350,11 @@ def api_evaluate_one(req: EvalOneRequest):
         "edge_no": edge_no,
         "signal": signal,
         "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
-        "obs_max_f": obs_max,
-        "obs_declined_after_2pm": obs_declined_after_2pm,
-        "obs_cap_f": obs_cap,
         "notes": nowcast_note,
     }
 
 
-# ---------------- HRRR (all cities) via YOUR working script ----------------
+# ---------------- HRRR (four cities) via YOUR working script ----------------
 HRRR_FOUR_CACHE = {"ts": 0.0, "hours": 12, "payload": None}
 HRRR_FOUR_CACHE_TTL_SEC = 180  # 3 minutes
 
@@ -543,7 +362,7 @@ HRRR_FOUR_CACHE_TTL_SEC = 180  # 3 minutes
 @app.get("/api/hrrr_four")
 def api_hrrr_four(hours: int = 12):
     """
-    Returns HRRR 2m temp series for all configured cities.
+    Returns HRRR 2m temp series for den/nyc/dal/chi using hrrr_12h_four_cities.py logic.
     """
     hours = int(hours)
     if hours < 1:
@@ -595,68 +414,6 @@ def api_hrrr_four(hours: int = 12):
         return payload
     except Exception as e:
         return {"error": "hrrr_unavailable", "detail": str(e)}
-
-
-# ---------------- RAP (all cities) via rap.py ----------------
-RAP_FOUR_CACHE = {"ts": 0.0, "hours": 12, "payload": None}
-RAP_FOUR_CACHE_TTL_SEC = 180  # 3 minutes
-
-
-@app.get("/api/rap_four")
-def api_rap_four(hours: int = 12):
-    """
-    Returns RAP 2m temp series for all configured cities.
-    """
-    hours = int(hours)
-    if hours < 1:
-        hours = 1
-    if hours > 24:
-        hours = 24
-
-    now_ts = datetime.now(timezone.utc).timestamp()
-    if (
-        RAP_FOUR_CACHE["payload"] is not None
-        and RAP_FOUR_CACHE["hours"] == hours
-        and (now_ts - RAP_FOUR_CACHE["ts"] < RAP_FOUR_CACHE_TTL_SEC)
-    ):
-        return RAP_FOUR_CACHE["payload"]
-
-    if rap4 is None:
-        return {"error": "rap_unavailable", "detail": "Could not import rap.py in backend."}
-
-    try:
-        from siphon.catalog import get_latest_access_url
-        from siphon.ncss import NCSS
-    except Exception as e:
-        return {"error": "rap_unavailable", "detail": f"Missing siphon: {e}"}
-
-    try:
-        ncss_url = get_latest_access_url(rap4.RAP_CATALOG, "NetcdfSubset")
-        ncss = NCSS(ncss_url)
-
-        payload = {
-            "run_ncss": ncss_url,
-            "asof_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            "hours": hours,
-            "cities": {},
-        }
-
-        for code, info in CITIES.items():
-            series = rap4.fetch_city_series(ncss, info["lat"], info["lon"], hours)
-            payload["cities"][code] = {
-                "name": info["name"],
-                "lat": info["lat"],
-                "lon": info["lon"],
-                "series": series,
-            }
-
-        RAP_FOUR_CACHE["ts"] = now_ts
-        RAP_FOUR_CACHE["hours"] = hours
-        RAP_FOUR_CACHE["payload"] = payload
-
-        return payload
-    except Exception as e:
-        return {"error": "rap_unavailable", "detail": str(e)}
 
 
 # ---------------- DROUGHT API ----------------
