@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse, Response
@@ -24,9 +22,9 @@ except Exception:
 # --- RAP helper script (you added this to repo) ---
 # MUST be named exactly: rap.py
 try:
-    import rap as rapm  # type: ignore
+    import rap as rap4  # type: ignore
 except Exception:
-    rapm = None  # endpoint will return rap_unavailable
+    rap4 = None  # endpoint will return rap_unavailable
 
 
 # ---------------- CONFIG ----------------
@@ -35,9 +33,20 @@ TIMEOUT = 12
 
 CITIES = {
     "den": {"name": "Denver", "lat": 39.7392, "lon": -104.9903},
-    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.0060},
-    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.7970},
+    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.006},
+    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.797},
     "chi": {"name": "Chicago", "lat": 41.8781, "lon": -87.6298},
+    "lax": {"name": "Los Angeles", "lat": 34.0522, "lon": -118.2437},
+    "sea": {"name": "Seattle", "lat": 47.6062, "lon": -122.3321},
+    "sfo": {"name": "San Francisco", "lat": 37.7749, "lon": -122.4194},
+    "hou": {"name": "Houston", "lat": 29.7604, "lon": -95.3698},
+    "aus": {"name": "Austin", "lat": 30.2672, "lon": -97.7431},
+    "bna": {"name": "Nashville", "lat": 36.1627, "lon": -86.7816},
+    "okc": {"name": "Oklahoma City", "lat": 35.4676, "lon": -97.5164},
+    "phx": {"name": "Phoenix", "lat": 33.4484, "lon": -112.074},
+    "las": {"name": "Las Vegas", "lat": 36.1699, "lon": -115.1398},
+    "msp": {"name": "Minneapolis-Saint Paul", "lat": 44.9778, "lon": -93.265},
+    "sat": {"name": "San Antonio", "lat": 29.4241, "lon": -98.4936},
 }
 
 MIN_EDGE = 0.05
@@ -250,50 +259,7 @@ def api_now(city: str):
     }
 
 
-# ---------------- Model risk helpers (HRRR/RAP vs NWS high) ----------------
-def _risk_from_model_high(signal: str, model_high: float, nws_high: float) -> str:
-    """
-    Rules you specified:
-      BUY YES: model 2 lower than NWS => HIGH, 1 lower => MEDIUM, same => LOW, 1+ above => VERY LOW
-      BUY NO:  model 2 higher than NWS => HIGH, 1 higher => MEDIUM, same => LOW, 1+ below => VERY LOW
-    """
-    sig = (signal or "").upper()
-    d = model_high - nws_high  # positive => model warmer than NWS
-
-    if sig == "BUY YES":
-        if d <= -2.0:
-            return "HIGH"
-        if d < 0.0:
-            return "MEDIUM"
-        if abs(d) < 1e-9:
-            return "LOW"
-        return "VERY LOW"
-
-    if sig == "BUY NO":
-        if d >= 2.0:
-            return "HIGH"
-        if d > 0.0:
-            return "MEDIUM"
-        if abs(d) < 1e-9:
-            return "LOW"
-        return "VERY LOW"
-
-    return "—"
-
-
-def _combine_risk(r1: str, r2: str) -> str:
-    # worst-case (highest risk) wins
-    order = {"HIGH": 3, "MEDIUM": 2, "LOW": 1, "VERY LOW": 0}
-    if r1 not in order and r2 not in order:
-        return "—"
-    if r1 not in order:
-        return r2
-    if r2 not in order:
-        return r1
-    return r1 if order[r1] >= order[r2] else r2
-
-
-# ---------------- API: evaluate one (with simple nowcasting floor + model risk) ----------------
+# ---------------- API: evaluate one (with simple nowcasting floor) ----------------
 class EvalOneRequest(BaseModel):
     city: str
     date: str
@@ -364,7 +330,6 @@ def api_evaluate_one(req: EvalOneRequest):
                 "signal": signal,
                 "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
                 "notes": "nowcast: current temp already >= threshold → P=1",
-                "model_compare": {"note": "model risk only computed when date==today AND model series available"},
             }
 
         if temp_now > mu_forecast:
@@ -376,115 +341,6 @@ def api_evaluate_one(req: EvalOneRequest):
 
     fair_yes = prob_ge(mu_used, sigma, t)
     signal, edge_yes, edge_no, fair_no = decide(fair_yes, yes_price, no_price)
-
-    # ---- HRRR + RAP comparison (today only, next-12h high) ----
-    model_compare = {"note": "model risk computed using next-12h model high vs NWS high (today only)."}
-    hrrr_high = None
-    rap_high = None
-    hrrr_risk = "—"
-    rap_risk = "—"
-    combined_risk = "—"
-
-    if d == today:
-        # HRRR
-        try:
-            if hrrr4 is not None:
-                from siphon.catalog import get_latest_access_url
-                from siphon.ncss import NCSS
-                ncss_url = get_latest_access_url(hrrr4.HRRR_CATALOG, "NetcdfSubset")
-                ncss = NCSS(ncss_url)
-                series = hrrr4.fetch_city_series(ncss, info["lat"], info["lon"], 12)
-                temps = [float(p["temp_f"]) for p in series if isinstance(p.get("temp_f"), (int, float))]
-                if temps:
-                    hrrr_high = max(temps)
-                    hrrr_risk = _risk_from_model_high(signal, hrrr_high, mu_forecast)
-                    model_compare["hrrr_ncss"] = ncss_url
-        except Exception as e:
-            model_compare["hrrr_error"] = str(e)
-
-        # RAP
-        try:
-            if rapm is not None:
-                # Prefer rap.py's constants if present; otherwise fall back to known RAP THREDDS catalog
-                rap_catalog = getattr(
-                    rapm,
-                    "RAP_CATALOG",
-                    "https://thredds.ucar.edu/thredds/catalog/grib/NCEP/RAP/CONUS_13km/catalog.xml",
-                )
-                rap_var = getattr(rapm, "VAR_NAME", "Temperature_height_above_ground")
-
-                from siphon.catalog import get_latest_access_url
-                from siphon.ncss import NCSS
-                from netCDF4 import Dataset, num2date
-
-                ncss_url = get_latest_access_url(rap_catalog, "NetcdfSubset")
-                ncss = NCSS(ncss_url)
-
-                # If rap.py has a fetch_city_series function, use it (counts as “calling rap.py” logic).
-                if hasattr(rapm, "fetch_city_series"):
-                    series = rapm.fetch_city_series(ncss, info["lat"], info["lon"], 12)  # type: ignore
-                else:
-                    # Minimal built-in RAP point series (still “calls rap.py” via import; uses rap_catalog/rap_var)
-                    q = ncss.query()
-                    start = datetime.now(timezone.utc)
-                    end = start + timedelta(hours=12)
-                    q.lonlat_point(info["lon"], info["lat"]).time_range(start, end).variables(rap_var).accept("netcdf4")
-                    raw = ncss.get_data_raw(q)
-                    ds = Dataset("inmemory.nc", mode="r", memory=raw)  # type: ignore
-
-                    # time var
-                    tname = "time" if "time" in ds.variables else next((k for k in ds.variables if "time" in k.lower()), None)
-                    if not tname:
-                        raise RuntimeError("RAP: could not find time var in returned NetCDF.")
-                    tvar = ds.variables[tname]
-                    times = num2date(tvar[:], units=tvar.units)  # type: ignore
-
-                    if rap_var not in ds.variables:
-                        raise RuntimeError(f"RAP: missing var {rap_var}")
-
-                    v = ds.variables[rap_var]
-                    arr = v[:]
-                    # handle (time,height) vs (time,)
-                    if getattr(arr, "ndim", 0) == 2:
-                        series_k = arr[:, 0]
-                    else:
-                        series_k = arr
-
-                    series = []
-                    for tdt, kval in zip(times, series_k):
-                        k = float(kval)
-                        f = (k - 273.15) * 9 / 5 + 32
-                        # to iso utc
-                        if isinstance(tdt, datetime):
-                            if tdt.tzinfo is None:
-                                tdt = tdt.replace(tzinfo=timezone.utc)
-                            else:
-                                tdt = tdt.astimezone(timezone.utc)
-                            iso = tdt.isoformat().replace("+00:00", "Z")
-                        else:
-                            iso = str(tdt) + "Z"
-                        series.append({"valid_utc": iso, "temp_f": float(f)})
-
-                temps = [float(p["temp_f"]) for p in series if isinstance(p.get("temp_f"), (int, float))]
-                if temps:
-                    rap_high = max(temps)
-                    rap_risk = _risk_from_model_high(signal, rap_high, mu_forecast)
-                    model_compare["rap_ncss"] = ncss_url
-        except Exception as e:
-            model_compare["rap_error"] = str(e)
-
-        combined_risk = _combine_risk(hrrr_risk, rap_risk)
-
-    model_compare.update(
-        {
-            "nws_high": mu_forecast,
-            "hrrr_high_next12": hrrr_high,
-            "rap_high_next12": rap_high,
-            "hrrr_risk": hrrr_risk,
-            "rap_risk": rap_risk,
-            "combined_risk": combined_risk,
-        }
-    )
 
     return {
         "city": code,
@@ -507,11 +363,10 @@ def api_evaluate_one(req: EvalOneRequest):
         "signal": signal,
         "thresholds": {"min_edge": MIN_EDGE, "entry_buffer": ENTRY_BUFFER},
         "notes": nowcast_note,
-        "model_compare": model_compare,
     }
 
 
-# ---------------- HRRR (four cities) via YOUR working script ----------------
+# ---------------- HRRR (all cities) via YOUR working script ----------------
 HRRR_FOUR_CACHE = {"ts": 0.0, "hours": 12, "payload": None}
 HRRR_FOUR_CACHE_TTL_SEC = 180  # 3 minutes
 
@@ -570,7 +425,7 @@ def api_hrrr_four(hours: int = 12):
         return {"error": "hrrr_unavailable", "detail": str(e)}
 
 
-# ---------------- RAP (four cities) via rap.py ----------------
+# ---------------- RAP (all cities) via rap.py ----------------
 RAP_FOUR_CACHE = {"ts": 0.0, "hours": 12, "payload": None}
 RAP_FOUR_CACHE_TTL_SEC = 180  # 3 minutes
 
@@ -591,7 +446,7 @@ def api_rap_four(hours: int = 12):
     ):
         return RAP_FOUR_CACHE["payload"]
 
-    if rapm is None:
+    if rap4 is None:
         return {"error": "rap_unavailable", "detail": "Could not import rap.py in backend."}
 
     try:
@@ -601,13 +456,7 @@ def api_rap_four(hours: int = 12):
         return {"error": "rap_unavailable", "detail": f"Missing siphon: {e}"}
 
     try:
-        rap_catalog = getattr(
-            rapm,
-            "RAP_CATALOG",
-            "https://thredds.ucar.edu/thredds/catalog/grib/NCEP/RAP/CONUS_13km/catalog.xml",
-        )
-
-        ncss_url = get_latest_access_url(rap_catalog, "NetcdfSubset")
+        ncss_url = get_latest_access_url(rap4.RAP_CATALOG, "NetcdfSubset")
         ncss = NCSS(ncss_url)
 
         payload = {
@@ -618,12 +467,7 @@ def api_rap_four(hours: int = 12):
         }
 
         for code, info in CITIES.items():
-            if hasattr(rapm, "fetch_city_series"):
-                series = rapm.fetch_city_series(ncss, info["lat"], info["lon"], hours)  # type: ignore
-            else:
-                # If rap.py doesn’t expose the helper, we still return a clear error
-                return {"error": "rap_unavailable", "detail": "rap.py missing fetch_city_series(ncss, lat, lon, hours)."}
-
+            series = rap4.fetch_city_series(ncss, info["lat"], info["lon"], hours)
             payload["cities"][code] = {
                 "name": info["name"],
                 "lat": info["lat"],
