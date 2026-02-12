@@ -51,18 +51,25 @@
     .mini{border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
     .mini h4{margin:0 0 8px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
     .mini .val{font-size:14px;font-weight:900;color: var(--text);line-height:1.35;word-break: break-word;}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background: rgba(10,14,20,.65);font-weight:900;letter-spacing:.08em;text-transform:uppercase;font-size:12px;}
+    .pill .pDot{width:10px;height:10px;border-radius:999px;background:#666;}
+    .pill.low .pDot{background: var(--good)}
+    .pill.med .pDot{background: var(--warn)}
+    .pill.high .pDot{background: var(--bad)}
+    .pill.vlow .pDot{background: var(--blue)}
     .chartWrap{margin-top:14px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;position:relative;}
     .legend{position:absolute;top:10px;right:12px;display:flex;gap:12px;align-items:center;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c2cde0;background: rgba(10,14,20,.65);border:1px solid rgba(255,255,255,.10);padding:8px 10px;border-radius: 10px;}
     .sw{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px;}
     .sw.fair{background: var(--blue)}
     .sw.you{background: var(--warn)}
     canvas{width:100%;height:280px;display:block}
-    .hrrrList{margin-top:12px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
-    .hrrrList h4{margin:0 0 10px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
-    .hrrrRow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);}
-    .hrrrRow:last-child{border-bottom:none;}
-    .hrrrT{color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
-    .hrrrV{font-weight:900;}
+    .modelList{margin-top:12px;border:1px solid rgba(255,255,255,.10);background: rgba(10,14,20,.55);border-radius: 12px;padding:12px;}
+    .modelList h4{margin:0 0 10px;letter-spacing:.14em;font-weight:900;text-transform:uppercase;color:#c2cde0;font-size:12px;}
+    .mRow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+    .mRow:last-child{border-bottom:none;}
+    .mT{color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
+    .mV{font-weight:900;}
+    .tag{display:inline-block;margin-left:10px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background: rgba(10,14,20,.65);font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c2cde0;}
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
       .brand h1{font-size:36px}
@@ -101,12 +108,12 @@
                 <option value="sfo">San Francisco</option>
                 <option value="hou">Houston</option>
                 <option value="aus">Austin</option>
-                <option value="bna">Nashville</option>
+                <option value="sat">San Antonio</option>
                 <option value="okc">Oklahoma City</option>
                 <option value="phx">Phoenix</option>
                 <option value="las">Las Vegas</option>
-                <option value="msp">Minneapolis-Saint Paul</option>
-                <option value="sat">San Antonio</option>
+                <option value="msp">Minneapolis–Saint Paul</option>
+                <option value="bna">Nashville</option>
               </select>
             </div>
             <div>
@@ -148,17 +155,17 @@
             </div>
           </div>
 
-          <div class="hrrrList">
+          <div class="modelList">
             <h4>HRRR 2m temperature — next 12 hours</h4>
             <div id="hrrrBody">
-              <div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">—</div></div>
+              <div class="mRow"><div class="mT">Status</div><div class="mV">—</div></div>
             </div>
           </div>
 
-          <div class="hrrrList">
+          <div class="modelList">
             <h4>RAP 2m temperature — next 12 hours</h4>
             <div id="rapBody">
-              <div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">—</div></div>
+              <div class="mRow"><div class="mT">Status</div><div class="mV">—</div></div>
             </div>
           </div>
 
@@ -195,6 +202,22 @@
               <h4>Your No</h4>
               <div class="val" id="yourNo">—</div>
             </div>
+
+            <div class="mini">
+              <h4>HRRR vs NWS Risk</h4>
+              <div class="val">
+                <span id="riskPillHrrr" class="pill low"><span class="pDot"></span><span id="riskLabelHrrr">—</span></span>
+                <div style="margin-top:8px;color:var(--muted);font-weight:900;">Δ(HRRR−NWS) <span id="deltaHrrr">—</span></div>
+              </div>
+            </div>
+
+            <div class="mini">
+              <h4>RAP vs NWS Risk</h4>
+              <div class="val">
+                <span id="riskPillRap" class="pill low"><span class="pDot"></span><span id="riskLabelRap">—</span></span>
+                <div style="margin-top:8px;color:var(--muted);font-weight:900;">Δ(RAP−NWS) <span id="deltaRap">—</span></div>
+              </div>
+            </div>
           </div>
 
           <div class="chartWrap">
@@ -202,7 +225,7 @@
               <span><span class="sw fair"></span>Fair Price</span>
               <span><span class="sw you"></span>Your Price</span>
             </div>
-            <canvas id="chart" width="900" height="280"></canvas>
+            <canvas id="chart"></canvas>
           </div>
         </div>
       </section>
@@ -211,11 +234,14 @@
 
 <script>
   const $ = (id)=>document.getElementById(id);
-  const cityNames = { den:"Denver", nyc:"New York City", dal:"Dallas", chi:"Chicago", lax:"Los Angeles", sea:"Seattle", sfo:"San Francisco", hou:"Houston", aus:"Austin", bna:"Nashville", okc:"Oklahoma City", phx:"Phoenix", las:"Las Vegas", msp:"Minneapolis-Saint Paul", sat:"San Antonio" };
+  const cityNames = { den:"Denver", nyc:"New York City", dal:"Dallas", chi:"Chicago", lax:"Los Angeles", sea:"Seattle", sfo:"San Francisco", hou:"Houston", aus:"Austin", sat:"San Antonio", okc:"Oklahoma City", phx:"Phoenix", las:"Las Vegas", msp:"Minneapolis–Saint Paul", bna:"Nashville" };
 
   let latestHighs = [];
   let latestMu = null;
   let latestSigma = null;
+
+  // caches from /api/hrrr_four and /api/rap_four
+  let modelCache = { hrrr: null, rap: null };
 
   function setStatus(kind, text){
     const dot = $("dot");
@@ -300,87 +326,145 @@
     }
   }
 
-  function renderModelSeries(containerId, title, payload, city, hours){
-    const body = $(containerId);
-    const cityObj = payload?.cities?.[city];
-    if(!cityObj){
-      body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">${title}</div><div class="hrrrV">No data</div></div>`;
-      return;
-    }
-    const series = cityObj.series || [];
-    if(!series.length){
-      body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">${title}</div><div class="hrrrV">No data</div></div>`;
-      return;
-    }
-
-    let hi = -Infinity;
-    let hiIdx = -1;
-    for(let i=0;i<series.length;i++){
-      const v = series[i]?.temp_f;
-      if(typeof v === "number" && v > hi){
-        hi = v;
-        hiIdx = i;
-      }
-    }
-
-    const asof = payload.asof_utc || "—";
-    body.innerHTML = `
-      <div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">OK • asof ${asof} UTC</div></div>
-    `;
-
-    for(let i=0;i<Math.min(hours, series.length);i++){
-      const row = series[i];
-      const iso = row.valid_utc || "—";
-      const dt = new Date(iso);
-      const label = dt.toLocaleString(undefined, { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
-      const v = (typeof row.temp_f === "number") ? row.temp_f.toFixed(1)+"°F" : "—";
-      const isHi = (i === hiIdx);
-
-      const el = document.createElement("div");
-      el.className = "hrrrRow";
-      el.innerHTML = `
-        <div class="hrrrT">${label}</div>
-        <div class="hrrrV">${v}${isHi ? ' <span style="margin-left:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.06);font-size:12px;letter-spacing:.12em;text-transform:uppercase;">Forecast High</span>' : ""}</div>
-      `;
-      body.appendChild(el);
+  function fmtLocalFromISO(isoZ, tz){
+    try{
+      // If browser supports timeZone, use it. If not, fall back to UTC label.
+      const d = new Date(isoZ);
+      if(!tz) return d.toUTCString().replace("GMT","UTC");
+      return new Intl.DateTimeFormat(undefined, {
+        weekday:"short", month:"short", day:"numeric",
+        hour:"numeric", minute:"2-digit",
+        timeZone: tz
+      }).format(d);
+    }catch(e){
+      return String(isoZ || "—");
     }
   }
 
-  async function refreshHrrr12(){
+  function computeForecastHighForDate(series, dateISO, tz){
+    // Use local date match when possible; if Intl fails, fall back to UTC date prefix.
+    let best = null;
+    for(const p of (series||[])){
+      if(!p.valid_utc) continue;
+      const d = new Date(p.valid_utc);
+      let localDate = null;
+      try{
+        if(tz){
+          const parts = new Intl.DateTimeFormat("en-CA",{timeZone:tz, year:"numeric", month:"2-digit", day:"2-digit"}).formatToParts(d);
+          const y = parts.find(x=>x.type==="year")?.value;
+          const m = parts.find(x=>x.type==="month")?.value;
+          const da = parts.find(x=>x.type==="day")?.value;
+          if(y && m && da) localDate = `${y}-${m}-${da}`;
+        }
+      }catch(e){}
+      const compareDate = localDate || d.toISOString().slice(0,10);
+      if(compareDate !== dateISO) continue;
+      if(typeof p.temp_f !== "number") continue;
+      if(best === null || p.temp_f > best) best = p.temp_f;
+    }
+    return best;
+  }
+
+  function renderModelList(bodyEl, modelName, payload, cityCode, tz){
+    const body = bodyEl;
+    const cityObj = payload?.cities?.[cityCode];
+    const series = cityObj?.series || [];
+    if(!series.length){
+      body.innerHTML = `<div class="mRow"><div class="mT">${modelName}</div><div class="mV">No data</div></div>`;
+      return {series:[], high:null, asof: payload?.asof_utc || null};
+    }
+    body.innerHTML = "";
+    const dateISO = $("date").value;
+    const hi = computeForecastHighForDate(series, dateISO, tz);
+    for(const row of series){
+      const t = fmtLocalFromISO(row.valid_utc, tz);
+      const v = (typeof row.temp_f === "number") ? row.temp_f.toFixed(1)+"°F" : "—";
+      const isHigh = (hi !== null && typeof row.temp_f === "number" && Math.abs(row.temp_f - hi) < 0.05);
+      const el = document.createElement("div");
+      el.className = "mRow";
+      el.innerHTML = `<div class="mT">${t}</div><div class="mV">${v}${isHigh ? `<span class="tag">FORECAST HIGH</span>` : ""}</div>`;
+      body.appendChild(el);
+    }
+    return {series, high:hi, asof: payload?.asof_utc || null};
+  }
+
+  function riskClass(label){
+    const s = String(label||"").toLowerCase();
+    if(s.includes("very low")) return "vlow";
+    if(s.includes("low")) return "low";
+    if(s.includes("medium")) return "med";
+    if(s.includes("high")) return "high";
+    return "low";
+  }
+
+  function riskFromDelta(signal, delta){
+    // signal is BUY YES / BUY NO / PASS
+    if(!isFinite(delta)) return {label:"—", cls:"low"};
+    const d = Math.round(delta); // treat 0.4 as 0, 1.2 as 1 etc.
+    if(signal === "BUY YES"){
+      if(d <= -2) return {label:"HIGH RISK", cls:"high"};
+      if(d === -1) return {label:"MEDIUM RISK", cls:"med"};
+      if(d === 0) return {label:"LOW RISK", cls:"low"};
+      if(d >= 1) return {label:"VERY LOW RISK", cls:"vlow"};
+    }
+    if(signal === "BUY NO"){
+      if(d >= 2) return {label:"HIGH RISK", cls:"high"};
+      if(d === 1) return {label:"MEDIUM RISK", cls:"med"};
+      if(d === 0) return {label:"LOW RISK", cls:"low"};
+      if(d <= -1) return {label:"VERY LOW RISK", cls:"vlow"};
+    }
+    return {label:"—", cls:"low"};
+  }
+
+  async function refreshModels12(){
     const city = $("city").value;
-    const body = $("hrrrBody");
-    body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">Loading…</div></div>`;
+    const dateISO = $("date").value;
+
+    // get tz from /api/now (already fetched in UI); reuse by parsing localTime label if needed
+    let tz = null;
+    try{
+      const res = await fetch(`/api/now?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      tz = data.tz || null;
+    }catch(e){}
+
+    // HRRR
+    const hrrrBody = $("hrrrBody");
+    hrrrBody.innerHTML = `<div class="mRow"><div class="mT">Status</div><div class="mV">Loading…</div></div>`;
     try{
       const res = await fetch(`/api/hrrr_four?hours=12`);
       const data = await res.json();
+      modelCache.hrrr = data;
       if(data.error){
-        body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">${data.error}</div></div>`;
-        return;
+        hrrrBody.innerHTML = `<div class="mRow"><div class="mT">HRRR</div><div class="mV">${data.error}</div></div>`;
+      }else{
+        const meta = renderModelList(hrrrBody, "HRRR", data, city, tz);
+        // stash computed high for later risk calc
+        modelCache.hrrr_high = meta.high;
       }
-      renderModelSeries("hrrrBody", "HRRR", data, city, 12);
     }catch(e){
-      body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">HRRR</div><div class="hrrrV">Network error</div></div>`;
+      hrrrBody.innerHTML = `<div class="mRow"><div class="mT">HRRR</div><div class="mV">Network error</div></div>`;
     }
-  }
 
-  async function refreshRap12(){
-    const city = $("city").value;
-    const body = $("rapBody");
-    body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">Status</div><div class="hrrrV">Loading…</div></div>`;
+    // RAP
+    const rapBody = $("rapBody");
+    rapBody.innerHTML = `<div class="mRow"><div class="mT">Status</div><div class="mV">Loading…</div></div>`;
     try{
       const res = await fetch(`/api/rap_four?hours=12`);
       const data = await res.json();
+      modelCache.rap = data;
       if(data.error){
-        body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">RAP</div><div class="hrrrV">${data.error}</div></div>`;
-        return;
+        rapBody.innerHTML = `<div class="mRow"><div class="mT">RAP</div><div class="mV">${data.error}</div></div>`;
+      }else{
+        const meta = renderModelList(rapBody, "RAP", data, city, tz);
+        modelCache.rap_high = meta.high;
       }
-      renderModelSeries("rapBody", "RAP", data, city, 12);
     }catch(e){
-      body.innerHTML = `<div class="hrrrRow"><div class="hrrrT">RAP</div><div class="hrrrV">Network error</div></div>`;
+      rapBody.innerHTML = `<div class="mRow"><div class="mT">RAP</div><div class="mV">Network error</div></div>`;
     }
   }
 
-  // ---- Chart (uses SAME probability math; but dot can be overridden to match backend) ----
+  // ---- Chart math (must match backend) ----
   function erf(x){
     const sign = x >= 0 ? 1 : -1;
     x = Math.abs(x);
@@ -396,10 +480,23 @@
     return Math.max(0, Math.min(1, 1 - normCdf(z)));
   }
 
-  function drawChart(mu, sigma, yourP, tVal, fairOverride){
+  function drawChart(mu, sigma, yourP, tVal){
     const c = $("chart");
+    const rect = c.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    // Fix "not to scale" rendering by drawing at device pixel density.
+    const targetW = Math.max(300, Math.round(rect.width * dpr));
+    const targetH = Math.max(200, Math.round(rect.height * dpr));
+    if (c.width !== targetW || c.height !== targetH){
+      c.width = targetW;
+      c.height = targetH;
+    }
+
     const ctx = c.getContext("2d");
-    const w = c.width, h = c.height;
+    ctx.setTransform(dpr,0,0,dpr,0,0); // draw in CSS pixels
+    const w = rect.width;
+    const h = rect.height;
 
     ctx.clearRect(0,0,w,h);
 
@@ -420,7 +517,7 @@
     }
 
     const t0 = Math.max(0, tVal - 10);
-    const t1 = Math.min(130, tVal + 10);
+    const t1 = Math.min(120, tVal + 10);
 
     ctx.fillStyle = "rgba(255,255,255,.35)";
     for(let i=0;i<=4;i++){
@@ -436,7 +533,6 @@
     ctx.lineTo(padL+plotW, padT+plotH);
     ctx.stroke();
 
-    // Fair curve
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(127,180,255,.95)";
     ctx.beginPath();
@@ -449,12 +545,7 @@
     }
     ctx.stroke();
 
-    // IMPORTANT FIX:
-    // Backend sometimes hard-sets fair_yes=1.0 (e.g. current temp >= threshold).
-    // Use fairOverride for the dot position so the plot matches the displayed Fair YES.
-    const fairAtT = (typeof fairOverride === "number")
-      ? Math.max(0, Math.min(1, fairOverride))
-      : probGE(mu, sigma, tVal);
+    const fairAtT = probGE(mu, sigma, tVal);
 
     const xP = padL + (plotW * ((tVal - t0)/(t1-t0)));
     const yF = padT + (plotH * (1 - fairAtT));
@@ -466,6 +557,13 @@
     ctx.beginPath(); ctx.arc(xP, yP, 6, 0, Math.PI*2); ctx.fill();
 
     return fairAtT;
+  }
+
+  function setRiskUI(prefix, risk){
+    const pill = $(prefix==="hrrr" ? "riskPillHrrr" : "riskPillRap");
+    const lab = $(prefix==="hrrr" ? "riskLabelHrrr" : "riskLabelRap");
+    pill.className = "pill " + risk.cls;
+    lab.textContent = risk.label;
   }
 
   async function evaluate(){
@@ -498,7 +596,11 @@
         $("fairNo").textContent = "—";
         $("yourYes").textContent = "—";
         $("yourNo").textContent = "—";
-        drawChart(70, 7.5, 0.5, t, null);
+        $("deltaHrrr").textContent = "—";
+        $("deltaRap").textContent = "—";
+        setRiskUI("hrrr",{label:"—",cls:"low"});
+        setRiskUI("rap",{label:"—",cls:"low"});
+        drawChart(70, 7.5, 0.5, t);
         return;
       }
 
@@ -511,6 +613,7 @@
       latestSigma = (typeof data.sigma === "number") ? data.sigma : null;
 
       $("signal").textContent = data.signal;
+
       const muTxt = (typeof data.mu === "number") ? `${data.mu.toFixed(1)}°F` : "—";
       const muF = (typeof data.mu_forecast_high === "number") ? `${data.mu_forecast_high.toFixed(1)}°F` : "—";
       $("subline").textContent = `Fair YES ${pct(fairYes)} · μ(nowcast) ${muTxt} · μ(NWS high) ${muF}`;
@@ -520,9 +623,28 @@
       $("yourYes").textContent = money(yourYes);
       $("yourNo").textContent = money(yourNo);
 
+      // Draw chart using SAME mu/sigma used to compute fairYes
       const muForChart = (latestMu ?? 70);
       const sgForChart = (latestSigma ?? 7.5);
-      drawChart(muForChart, sgForChart, yourYes, t, fairYes);
+      drawChart(muForChart, sgForChart, yourYes, t);
+
+      // Model risk: compare each model's (12h) forecast high for selected date vs NWS high
+      const nwsHigh = (typeof data.mu_forecast_high === "number") ? data.mu_forecast_high : null;
+
+      const hHigh = (typeof modelCache.hrrr_high === "number") ? modelCache.hrrr_high : null;
+      const rHigh = (typeof modelCache.rap_high === "number") ? modelCache.rap_high : null;
+
+      const dH = (nwsHigh !== null && hHigh !== null) ? (hHigh - nwsHigh) : NaN;
+      const dR = (nwsHigh !== null && rHigh !== null) ? (rHigh - nwsHigh) : NaN;
+
+      $("deltaHrrr").textContent = isFinite(dH) ? `${dH.toFixed(1)}°F` : "—";
+      $("deltaRap").textContent = isFinite(dR) ? `${dR.toFixed(1)}°F` : "—";
+
+      const riskH = riskFromDelta(data.signal, dH);
+      const riskR = riskFromDelta(data.signal, dR);
+
+      setRiskUI("hrrr", riskH);
+      setRiskUI("rap", riskR);
 
       setStatus("ok", "OK");
     }catch(e){
@@ -533,11 +655,21 @@
   $("city").addEventListener("change", async ()=>{
     await loadHighs();
     await refreshNowPanel();
-    await refreshHrrr12();
-    await refreshRap12();
+    await refreshModels12();
+  });
+
+  $("date").addEventListener("change", async ()=>{
+    await refreshModels12(); // re-tag forecast-high for selected date
   });
 
   $("go").addEventListener("click", evaluate);
+
+  window.addEventListener("resize", ()=>{
+    const t = parseFloat($("t").value || "73");
+    const muForChart = (latestMu ?? 70);
+    const sgForChart = (latestSigma ?? 7.5);
+    drawChart(muForChart, sgForChart, 0.5, t);
+  });
 
   (function init(){
     populateTemps();
@@ -545,9 +677,8 @@
       $("cityTag").textContent = (cityNames[$("city").value] || "—").toUpperCase();
       $("cityTop").textContent = (cityNames[$("city").value] || "—").toUpperCase();
       await refreshNowPanel();
-      await refreshHrrr12();
-      await refreshRap12();
-      drawChart(70, 7.5, 0.5, 73, null);
+      await refreshModels12();
+      drawChart(70, 7.5, 0.5, 73);
     });
   })();
 </script>
