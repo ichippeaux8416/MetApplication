@@ -13,9 +13,20 @@ VAR_NAME = "Temperature_height_above_ground"  # 2m temp is this var at ~2m
 
 CITIES = {
     "den": {"name": "Denver", "lat": 39.7392, "lon": -104.9903},
-    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.0060},
-    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.7970},
+    "nyc": {"name": "New York City", "lat": 40.7128, "lon": -74.006},
+    "dal": {"name": "Dallas", "lat": 32.7767, "lon": -96.797},
     "chi": {"name": "Chicago", "lat": 41.8781, "lon": -87.6298},
+    "lax": {"name": "Los Angeles", "lat": 34.0522, "lon": -118.2437},
+    "sea": {"name": "Seattle", "lat": 47.6062, "lon": -122.3321},
+    "sfo": {"name": "San Francisco", "lat": 37.7749, "lon": -122.4194},
+    "hou": {"name": "Houston", "lat": 29.7604, "lon": -95.3698},
+    "aus": {"name": "Austin", "lat": 30.2672, "lon": -97.7431},
+    "bna": {"name": "Nashville", "lat": 36.1627, "lon": -86.7816},
+    "okc": {"name": "Oklahoma City", "lat": 35.4676, "lon": -97.5164},
+    "phx": {"name": "Phoenix", "lat": 33.4484, "lon": -112.074},
+    "las": {"name": "Las Vegas", "lat": 36.1699, "lon": -115.1398},
+    "msp": {"name": "Minneapolis-Saint Paul", "lat": 44.9778, "lon": -93.265},
+    "sat": {"name": "San Antonio", "lat": 29.4241, "lon": -98.4936},
 }
 
 
@@ -29,7 +40,6 @@ def _find_time_var(ds: Dataset) -> str:
 
 
 def _pick_height_index(ds: Dataset, var) -> int:
-    # if var has a height-ish dimension, pick level closest to 2m
     for dn in var.dimensions:
         if "height" in dn.lower():
             if dn in ds.variables:
@@ -49,11 +59,6 @@ def _k_to_f(k: float) -> float:
 
 
 def _to_iso_utc(t) -> str:
-    """
-    num2date can return either datetime OR cftime datetime-like objects.
-    Convert both safely to an ISO string with Z.
-    """
-    # Standard datetime path
     if isinstance(t, datetime):
         if t.tzinfo is None:
             t = t.replace(tzinfo=timezone.utc)
@@ -61,7 +66,6 @@ def _to_iso_utc(t) -> str:
             t = t.astimezone(timezone.utc)
         return t.isoformat().replace("+00:00", "Z")
 
-    # cftime path: has year/month/day/hour/minute/second attributes
     try:
         dt = datetime(
             int(t.year),
@@ -74,7 +78,6 @@ def _to_iso_utc(t) -> str:
         )
         return dt.isoformat().replace("+00:00", "Z")
     except Exception:
-        # last resort: string it
         return str(t) + "Z"
 
 
@@ -88,7 +91,7 @@ def fetch_city_series(ncss: NCSS, lat: float, lon: float, hours: int) -> list[di
     q.variables(VAR_NAME)
     q.accept("netcdf4")
 
-    raw = ncss.get_data_raw(q)  # bytes
+    raw = ncss.get_data_raw(q)
     ds = Dataset("inmemory.nc", mode="r", memory=raw)  # type: ignore
 
     if VAR_NAME not in ds.variables:
@@ -96,15 +99,13 @@ def fetch_city_series(ncss: NCSS, lat: float, lon: float, hours: int) -> list[di
 
     tname = _find_time_var(ds)
     tvar = ds.variables[tname]
-
-    # If the server returns no times, fail loudly so you see it.
     if getattr(tvar, "size", 0) == 0:
         raise RuntimeError("Time variable is empty (no forecast times returned).")
 
     times = num2date(tvar[:], units=tvar.units)  # type: ignore
 
     v = ds.variables[VAR_NAME]
-    arr = v[:]  # point query -> typically (time,height) or (time,)
+    arr = v[:]
 
     if getattr(arr, "ndim", 0) == 2:
         hi = _pick_height_index(ds, v)
