@@ -256,7 +256,7 @@
   function populateTemps(){
     const sel = $("t");
     sel.innerHTML = "";
-    for(let f=40; f<=110; f+=1){
+    for(let f=20; f<=110; f+=1){
       const o = document.createElement("option");
       o.value = String(f);
       o.textContent = String(f) + "°F";
